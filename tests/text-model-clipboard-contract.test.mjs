@@ -13,7 +13,7 @@ test("supported text models stay isolated by site", () => {
     assert.match(bundle, /TUDOU_TEXT_MODELS=\[\]/);
     assert.match(
         bundle,
-        /function siteTextModelNames\(e\)\{return e===RUNNINGHUB_SITE_ID\?RUNNINGHUB_TEXT_MODELS:e===TUDOU_SITE_ID\?TUDOU_TEXT_MODELS:e===GRSAI_SITE_ID\?GRSAI_TEXT_MODELS:e===APIMART_SITE_ID\?APIMART_TEXT_MODELS:APOLLO_TEXT_MODELS\}/,
+        /function siteTextModelNames\(e\)\{return e===RUNNINGHUB_SITE_ID\?RUNNINGHUB_TEXT_MODELS:e===TUDOU_SITE_ID\?TUDOU_TEXT_MODELS:e===GRSAI_SITE_ID\?GRSAI_TEXT_MODELS:e===APIMART_SITE_ID\?APIMART_TEXT_MODELS:e==="soon"\?\[\]:APOLLO_TEXT_MODELS\}/,
     );
     assert.deepEqual(APIMART_TEXT_MODELS, ["gemini-3.8-flash"]);
     assert.match(bundle, /textModels:siteModelRefs\(t,siteTextModelNames\(t\)\)/);

@@ -41,10 +41,10 @@ function runtime() {
     return scope;
 }
 
-test("all five site catalogs remove only GPT2 routes and retain their GPT2.5 entries", () => {
+test("all six site catalogs remove only GPT2 routes and retain their GPT2.5 entries", () => {
     const scope = runtime();
     const channels = scope.wxe();
-    assert.equal(channels.length, 5);
+    assert.equal(channels.length, 6);
     for (const channel of channels) {
         const images = Array.from(scope.siteImageModelNames(channel.id));
         for (const model of removed) {

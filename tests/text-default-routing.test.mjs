@@ -33,6 +33,7 @@ const channels = [
     { id: "tudou", provider: "tudou", models: constants.TUDOU_SITE_MODELS },
     { id: "grsai", provider: "grsai", models: ["nano-banana-pro"] },
     { id: "apimart", provider: "apimart", models: APIMART_SITE_MODELS },
+    { id: "soon", provider: "soon", models: ["nano-banana-pro"] },
 ].map(site => ({ ...site, apiKey: `${site.id}-test-key`, baseUrl: `https://${site.id}.example`, apiFormat: "openai" }));
 
 function config(activeSiteId, textSiteId = "default") {
