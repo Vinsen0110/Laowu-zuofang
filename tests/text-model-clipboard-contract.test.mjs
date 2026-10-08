@@ -28,8 +28,9 @@ test("supported text models stay isolated by site", () => {
 test("text model labels keep model names with only the RH display prefix omitted", () => {
     assert.match(bundle, /r===RUNNINGHUB_SITE_ID&&n\.startsWith\("google\/"\)\?n\.slice\(7\):n/);
     assert.doesNotMatch(bundle, /UNIFIED_TEXT_MODEL_NAME|APILIO_TEXT_MODEL_NAME/);
-    assert.match(bundle, /r==="text"\?displayTextModelName\(e,v\):pr\(v\)/);
-    assert.match(bundle, /textValue:r==="text"\?displayTextModelName\(e,w\):pr\(w\)/);
+    assert.match(bundle, /r==="text"\?displayTextModelName\(e,v\):r==="image"\?displayImageModelName\(v\):pr\(v\)/);
+    assert.match(bundle, /textValue:r==="text"\?displayTextModelName\(e,w\):r==="image"\?displayImageModelName\(w\):pr\(w\)/);
+    assert.match(bundle, /children:n==="text"\?displayTextModelName\(e,t\):n==="image"\?displayImageModelName\(t\):pr\(t\)/);
     assert.match(bundle, /APOLLO_TEXT_MODELS=\["gemini-3\.8-flash"\]/);
     assert.match(bundle, /APOLLO_SITE_MODELS=\[[^\]]*gemini-3\.8-flash/);
     assert.doesNotMatch(bundle, /APOLLO_TEXT_MODELS=\["gemini-3\.7-flash"\]/);

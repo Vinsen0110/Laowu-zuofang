@@ -4,6 +4,9 @@ import test from "node:test";
 
 import {
     APIMART_BACKEND_MODEL,
+    APIMART_IMAGE_MODELS,
+    APIMART_NANO21_FIXED_BACKEND_MODEL,
+    APIMART_NANO21_UPLOAD_MAX_BYTES,
     APIMART_GPT_FIXED_BACKEND_MODEL,
     APIMART_GPT_FIXED_QUALITY,
     APIMART_GPT_OFFICIAL_BACKEND_MODEL,
@@ -23,6 +26,7 @@ import {
     prepareApiMartReferenceBlob,
     runApiMartImageGeneration,
     uploadApiMartReferenceBlob,
+    validateApiMartNano21ReferenceBytes,
 } from "../apimart-api.js";
 
 const bundle = await readFile(new URL("../assets/index-B2KJ37fm.js", import.meta.url), "utf8");
@@ -68,6 +72,95 @@ test("APIMart converts 0.3 and 0.4 Credits to the displayed dollar balance unit"
         assert.equal(apiMartImagePrice({ quality }), 0.03);
     }
     assert.equal(apiMartImagePrice({ quality: "4k" }), 0.04);
+});
+
+test("APIMart Nano Banana 2.1 uses only the Ext contract and remains distinct from Pro", () => {
+    assert.deepEqual(APIMART_IMAGE_MODELS, ["nano-banana-2.1", "nano-banana-pro", "gpt-image-2.5"]);
+    const references = ["https://cdn.example/reference.png", "data:image/png;base64,AQID"];
+    const spec = apiMartImageRequestSpec({
+        model: "apimart::nano-banana-2.1", size: "1920x1080", quality: "2k", count: "4",
+        gptImageQuality: "high", apimartBackground: "transparent", apimartOutputFormat: "jpeg",
+    }, "  edit the poster  ", references);
+    assert.equal(APIMART_NANO21_FIXED_BACKEND_MODEL, "gemini-nano-banana-2.1-ext");
+    assert.deepEqual(spec, {
+        endpoint: "/images/generations",
+        body: {
+            model: "gemini-nano-banana-2.1-ext", prompt: "edit the poster", size: "16:9",
+            resolution: "2K", n: 1, image_urls: references,
+        },
+    });
+    const defaultSpec = apiMartImageRequestSpec({ model: "nano-banana-2.1" }, "draw");
+    assert.equal(defaultSpec.body.size, "auto");
+    assert.equal(defaultSpec.body.resolution, "1K");
+    assert.equal("image_urls" in defaultSpec.body, false);
+    for (const [size, expected] of [["16x9", "16:9"], ["1024x1024", "1:1"], ["4096x3072", "4:3"]]) {
+        assert.equal(apiMartImageRequestSpec({ model: "nano-banana-2.1", size }, "draw").body.size, expected);
+    }
+    for (const [quality, price] of [["auto", 0.02], ["1k", 0.02], ["2k", 0.025], ["4k", 0.03]]) {
+        assert.equal(apiMartImagePrice({ model: "apimart::nano-banana-2.1", quality }), price);
+    }
+    assert.equal(apiMartImagePrice({ model: "nano-banana-pro", quality: "1k" }), 0.03);
+    assert.equal(apiMartImagePrice({ model: "nano-banana-pro", quality: "2k" }), 0.03);
+    assert.equal(apiMartImagePrice({ model: "nano-banana-pro", quality: "4k" }), 0.04);
+});
+
+test("APIMart Nano Banana 2.1 rejects unsupported inputs before submission", () => {
+    const config = { model: "nano-banana-2.1", apiKey: "test-key" };
+    for (const size of ["2:1", "9:21", "2048x1024", "1200x700", "0x1080", "custom"]) {
+        assert.throws(() => apiMartImageRequestSpec({ ...config, size }, "draw"), /不支持尺寸比例/);
+    }
+    assert.throws(() => apiMartImageRequestSpec({ ...config, quality: "8k" }, "draw"), /不支持分辨率/);
+    assert.throws(() => apiMartImageRequestSpec(config, "  "), /请输入提示词/);
+    for (const reference of ["blob:local", "file:///tmp/image.png", "AQID", "data:image/png;base64,", null]) {
+        assert.throws(() => apiMartImageRequestSpec(config, "draw", [reference]), /参考图必须/);
+    }
+    assert.throws(() => apiMartImageRequestSpec(config, "draw", Array(15).fill("https://cdn.example/r.png")), /本应用.*最多可选择 14/);
+    assert.doesNotThrow(() => validateApiMartNano21ReferenceBytes(config, [20_000_000, 20_000_000, 10_000_000]));
+    assert.throws(() => validateApiMartNano21ReferenceBytes(config, [20_000_000, 20_000_000, 10_000_001]), /总大小不能超过 50 MB/);
+    assert.throws(() => validateApiMartNano21ReferenceBytes(config, [NaN]), /大小无效/);
+    assert.doesNotThrow(() => validateApiMartNano21ReferenceBytes({ model: "nano-banana-pro" }, [60_000_000]));
+});
+
+test("APIMart Nano Banana 2.1 reuses one submission and returns all asynchronous result URLs", async () => {
+    const calls = [];
+    const responses = [
+        { data: [{ task_id: "nano-21-task", status: "pending" }] },
+        { data: { id: "internal-record", status: "processing", progress: 60 } },
+        { data: { status: "completed", result: { images: [{ url: ["https://cdn.example/one.png", "https://cdn.example/two.png"] }] } } },
+    ];
+    let clock = 0;
+    const urls = await runApiMartImageGeneration({ model: "apimart::nano-banana-2.1", apiKey: "test-key", quality: "4k" }, "draw", [], {
+        fetchImpl: async (url, init) => {
+            calls.push({ url: String(url), init });
+            return jsonResponse(responses.shift());
+        },
+        sleep: async () => {}, now: () => (clock += 1000),
+    });
+    assert.deepEqual(urls, ["https://cdn.example/one.png", "https://cdn.example/two.png"]);
+    assert.equal(calls.filter(({ init }) => init.method === "POST").length, 1);
+    assert.deepEqual(JSON.parse(calls[0].init.body), {
+        model: "gemini-nano-banana-2.1-ext", prompt: "draw", size: "auto", resolution: "4K", n: 1,
+    });
+    assert.deepEqual(calls.slice(1).map(({ url }) => url), Array(2).fill(`${APIMART_ORIGIN}/v1/tasks/nano-21-task?language=zh`));
+});
+
+test("APIMart Nano Banana 2.1 compresses above decimal 20 MB and exposes prepared upload sizes", async () => {
+    const original = { size: APIMART_NANO21_UPLOAD_MAX_BYTES + 1, type: "image/png" };
+    assert.ok(original.size < APIMART_UPLOAD_MAX_BYTES);
+    const compressed = new Blob([Uint8Array.from([1, 2, 3])], { type: "image/webp" });
+    let prepared;
+    const uploaded = await uploadApiMartReferenceBlob({ model: "nano-banana-2.1", apiKey: "test-key" }, original, {
+        decodeImage: async () => ({ image: {}, width: 4096, height: 4096, dispose() {} }),
+        encodeImage: async () => compressed,
+        onPrepared: (blob) => { prepared = blob; },
+        fetchImpl: async (url, init) => {
+            assert.equal(init.body.get("file").size, compressed.size);
+            return jsonResponse({ data: { url: "https://cdn.example/upload.webp" } });
+        },
+    });
+    assert.equal(uploaded, "https://cdn.example/upload.webp");
+    assert.equal(prepared, compressed);
+    assert.equal(original.size, APIMART_NANO21_UPLOAD_MAX_BYTES + 1);
 });
 
 test("APIMart GPT Image 2 uses fixed mode without quality and official mode for auto and quality tiers", () => {

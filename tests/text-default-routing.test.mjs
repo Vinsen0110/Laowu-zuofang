@@ -91,7 +91,7 @@ test("Mart text generation passes the real model and credential preflight on eve
         assert.equal(scope.xxe(defaults, "apimart::unsupported-model"), false);
         assert.equal(JSON.stringify(defaults), before);
     }
-    assert.deepEqual(APIMART_IMAGE_MODELS, ["nano-banana-pro", "gpt-image-2.5"]);
+    assert.deepEqual(APIMART_IMAGE_MODELS, ["nano-banana-2.1", "nano-banana-pro", "gpt-image-2.5"]);
     assert.deepEqual(APIMART_SITE_MODELS, [...APIMART_IMAGE_MODELS, ...APIMART_TEXT_MODELS]);
 });
 
