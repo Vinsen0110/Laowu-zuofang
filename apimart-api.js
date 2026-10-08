@@ -1,10 +1,13 @@
 export const APIMART_ORIGIN = "https://api.apimart.ai";
 export const APIMART_SITE_ID = "apimart";
 export const APIMART_SITE_NAME = "Mart";
-export const APIMART_IMAGE_MODELS = ["nano-banana-pro", "gpt-image-2.5"];
+export const APIMART_IMAGE_MODELS = ["nano-banana-2.1", "nano-banana-pro", "gpt-image-2.5"];
 export const APIMART_TEXT_MODELS = ["gemini-3.8-flash"];
 export const APIMART_SITE_MODELS = [...APIMART_IMAGE_MODELS, ...APIMART_TEXT_MODELS];
 export const APIMART_BACKEND_MODEL = "gemini-3-pro-image-preview";
+export const APIMART_NANO21_FIXED_BACKEND_MODEL = "gemini-nano-banana-2.1-ext";
+export const APIMART_NANO21_UPLOAD_MAX_BYTES = 20_000_000;
+export const APIMART_NANO21_REFERENCE_TOTAL_MAX_BYTES = 50_000_000;
 export const APIMART_GPT_FIXED_BACKEND_MODEL = "gpt-image-2";
 export const APIMART_GPT_OFFICIAL_BACKEND_MODEL = "gpt-image-2-official";
 export const APIMART_GPT25_DEFAULT_BACKEND_MODEL = "gpt-image-2.5-flare";
@@ -44,6 +47,14 @@ const GPT25_FIXED_PRICE_USD = {
     "1k": 0.0085,
     "2k": 0.014,
     "4k": 0.021,
+};
+
+// Public paid-resolution rates, matching the estimates used for Pro and GPT 2.5:
+// https://api.apimart.ai/api/pricing/model?model=gemini-nano-banana-2.1-ext
+const NANO21_FIXED_PRICE_USD = {
+    "1k": 0.02,
+    "2k": 0.025,
+    "4k": 0.03,
 };
 
 function abortError(signal) {
@@ -103,6 +114,41 @@ function apiMartResolutionKey(config) {
     return apiMartResolution(config).toLowerCase();
 }
 
+export function validateApiMartNano21ReferenceBytes(config, byteSizes) {
+    if (modelName(config) !== "nano-banana-2.1") return;
+    if (!Array.isArray(byteSizes) || byteSizes.some((size) => !Number.isFinite(size) || size < 0)) {
+        throw new Error("APIMart Nano Banana 2.1 参考图大小无效");
+    }
+    if (byteSizes.reduce((total, size) => total + size, 0) > APIMART_NANO21_REFERENCE_TOTAL_MAX_BYTES) {
+        throw new Error("APIMart Nano Banana 2.1 固定渠道参考图总大小不能超过 50 MB");
+    }
+}
+
+function nano21Size(value) {
+    if (NANO_ASPECT_RATIOS.has(value)) return value;
+    const dimensions = /^(\d+)x(\d+)$/.exec(value);
+    if (dimensions) {
+        const width = Number(dimensions[1]), height = Number(dimensions[2]);
+        if (Number.isSafeInteger(width) && Number.isSafeInteger(height) && width > 0 && height > 0) {
+            let divisor = width, remainder = height;
+            while (remainder) [divisor, remainder] = [remainder, divisor % remainder];
+            const ratio = `${width / divisor}:${height / divisor}`;
+            if (NANO_ASPECT_RATIOS.has(ratio)) return ratio;
+        }
+    }
+    throw new Error(`APIMart Nano Banana 2.1 不支持尺寸比例 ${value}`);
+}
+
+function validNano21Reference(value) {
+    if (typeof value !== "string") return false;
+    if (/^data:image\/(?:jpeg|png|webp|gif);base64,[A-Za-z0-9+/\s]+={0,2}$/i.test(value)) return true;
+    try {
+        return ["http:", "https:"].includes(new URL(value).protocol);
+    } catch {
+        return false;
+    }
+}
+
 export function apiMartGptImageQuality(config) {
     const value = String(config?.gptImageQuality || APIMART_GPT_FIXED_QUALITY).trim().toLowerCase();
     const is25 = modelName(config) === "gpt-image-2.5";
@@ -135,6 +181,7 @@ export function apiMartGptOutputFormat(config) {
 
 export function apiMartImagePrice(config) {
     const model = modelName(config);
+    if (model === "nano-banana-2.1") return NANO21_FIXED_PRICE_USD[apiMartResolutionKey(config)];
     if (model === "gpt-image-2.5") {
         return apiMartGptImageQuality(config) === APIMART_GPT_FIXED_QUALITY
             ? GPT25_FIXED_PRICE_USD[apiMartResolutionKey(config)]
@@ -153,8 +200,31 @@ export function apiMartImagePrice(config) {
 
 export function apiMartImageRequestSpec(config, prompt, imageUrls = []) {
     const model = modelName(config);
-    if (!["nano-banana-pro", "gpt-image-2", "gpt-image-2.5"].includes(model)) {
-        throw new Error("APIMart 当前只支持 Nano Banana Pro、GPT Image 2 和 GPT Image 2.5");
+    if (!["nano-banana-pro", "nano-banana-2.1", "gpt-image-2", "gpt-image-2.5"].includes(model)) {
+        throw new Error("APIMart 当前只支持 Nano Banana Pro、Nano Banana 2.1、GPT Image 2 和 GPT Image 2.5");
+    }
+    if (model === "nano-banana-2.1") {
+        if (!Array.isArray(imageUrls) || imageUrls.some((url) => !validNano21Reference(url))) {
+            throw new Error("APIMart Nano Banana 2.1 参考图必须是 HTTP(S) URL 或完整图片 Data URL");
+        }
+        if (imageUrls.length > NANO_MAX_REFERENCE_IMAGES) throw new Error("本应用 Nano Banana 2.1 最多可选择 14 张参考图");
+        const quality = String(config?.quality || "auto").trim().toLowerCase();
+        if (!["auto", "1k", "2k", "4k", "high", "medium", "hd"].includes(quality)) {
+            throw new Error(`APIMart Nano Banana 2.1 不支持分辨率 ${quality}`);
+        }
+        const text = String(prompt || "").trim();
+        if (!text) throw new Error("请输入提示词");
+        return {
+            endpoint: "/images/generations",
+            body: {
+                model: APIMART_NANO21_FIXED_BACKEND_MODEL,
+                prompt: text,
+                size: nano21Size(String(config?.size || "auto").trim().toLowerCase()),
+                resolution: apiMartResolution(config),
+                n: 1,
+                ...(imageUrls.length ? { image_urls: imageUrls } : {}),
+            },
+        };
     }
     const maxReferences = model === "gpt-image-2" || model === "gpt-image-2.5" ? 16 : NANO_MAX_REFERENCE_IMAGES;
     if (imageUrls.length > maxReferences) throw new Error(`APIMart ${model === "gpt-image-2" ? "GPT Image 2" : model === "gpt-image-2.5" ? "GPT Image 2.5" : "Nano Banana Pro"} 最多支持 ${maxReferences} 张参考图`);
@@ -386,7 +456,8 @@ async function encodeReferenceImage(image, width, height, quality) {
 
 export async function prepareApiMartReferenceBlob(blob, options = {}) {
     if (!blob?.size) throw new Error("APIMart 参考图为空");
-    if (blob.size <= (options.maxBytes || APIMART_UPLOAD_MAX_BYTES)) return blob;
+    const maxBytes = options.maxBytes || APIMART_UPLOAD_MAX_BYTES;
+    if (blob.size <= maxBytes) return blob;
     const decoded = await (options.decodeImage || decodeReferenceBlob)(blob);
     const encodeImage = options.encodeImage || encodeReferenceImage;
     const targetBytes = options.targetBytes || APIMART_UPLOAD_TARGET_BYTES;
@@ -402,7 +473,7 @@ export async function prepareApiMartReferenceBlob(blob, options = {}) {
                 if (candidate.size <= targetBytes) return candidate;
             }
         }
-        if (smallest?.size <= APIMART_UPLOAD_MAX_BYTES) return smallest;
+        if (smallest?.size <= maxBytes) return smallest;
         throw new Error("APIMart 临时参考图压缩后仍超过 20 MB");
     } finally {
         decoded.dispose?.();
@@ -427,8 +498,14 @@ export async function uploadApiMartReferenceBlob(config, originalBlob, options =
     if (originalBlob?.type && !IMAGE_TYPES.has(originalBlob.type)) {
         throw new Error("APIMart 仅支持 JPEG、PNG、WebP 和 GIF 图片");
     }
-    const requestBlob = await prepareApiMartReferenceBlob(originalBlob, options);
-    if (requestBlob.size > APIMART_UPLOAD_MAX_BYTES) throw new Error("APIMart 临时参考图超过 20 MB");
+    const isNano21 = modelName(config) === "nano-banana-2.1";
+    const maxBytes = isNano21 ? APIMART_NANO21_UPLOAD_MAX_BYTES : APIMART_UPLOAD_MAX_BYTES;
+    const requestBlob = await prepareApiMartReferenceBlob(originalBlob, {
+        ...options,
+        ...(isNano21 ? { maxBytes, targetBytes: 18_000_000 } : {}),
+    });
+    if (requestBlob.size > maxBytes) throw new Error("APIMart 临时参考图超过 20 MB");
+    options.onPrepared?.(requestBlob);
 
     const form = new FormData();
     form.set("file", requestBlob, uploadFilename(options.filename, requestBlob));

@@ -49,6 +49,24 @@ test("ratio displays keep Auto first and sort by numerator then denominator", ()
     );
 });
 
+test("Mart 2.1 stays beside the existing Mart model without reordering other providers", () => {
+    const references = [
+        "soon::nano-banana-pro",
+        "apimart::nano-banana-2.1",
+        "tudou::nano-banana-pro",
+        "apimart::nano-banana-pro",
+        "grsai::nano-banana-pro",
+    ];
+    assert.deepEqual(orderModelReferences(references), [
+        "tudou::nano-banana-pro",
+        "grsai::nano-banana-pro",
+        "apimart::nano-banana-2.1",
+        "apimart::nano-banana-pro",
+        "soon::nano-banana-pro",
+    ]);
+    assert.equal(references[0], "soon::nano-banana-pro");
+});
+
 test("all site and ratio selectors use the shared display order", () => {
     assert.match(bundle, /from"\.\.\/display-order\.js"/);
     assert.match(bundle, /orderSiteChannels\(a\.channels\)\.map/);

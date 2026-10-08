@@ -141,6 +141,21 @@ test("new model subtrees are processed without modifying neighboring prompt text
   assert.equal(app.documentScans(), 2);
 });
 
+test("Mart 2.1 model labels normalize without changing prompts or Nano Banana Pro", () => {
+  const app = runtime();
+  const wrapper = new ElementStub();
+  const picker = wrapper.append(new ElementStub([".canvas-model-picker"], " nano-banana-2.1 "));
+  const settings = wrapper.append(new ElementStub([".settings-model-select"], "nano-banana-2.1"));
+  const pro = wrapper.append(new ElementStub([".canvas-model-picker"], "nano-banana-pro"));
+  const prompt = wrapper.append(new ElementStub([], "nano-banana-2.1"));
+  app.notify([{ type: "childList", target: new ElementStub(), addedNodes: [wrapper] }]);
+  app.flush();
+  assert.equal(picker.textContent, " Nano Banana 2.1 ");
+  assert.equal(settings.textContent, "Nano Banana 2.1");
+  assert.equal(pro.textContent, "nano-banana-pro");
+  assert.equal(prompt.textContent, "nano-banana-2.1");
+});
+
 test("queued ancestors subsume their descendants regardless of insertion order", () => {
   for (const parentFirst of [true, false]) {
     const app = runtime();

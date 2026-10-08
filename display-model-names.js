@@ -1,5 +1,6 @@
 const DISPLAY_NAME_MAP = new Map([
   ["gpt-image-2-vip", "gpt-image-2"],
+  ["nano-banana-2.1", "Nano Banana 2.1"],
 ]);
 const DISPLAY_ICON_MAP = new Map([
   ["gemini-3.7-flash", "./icons/gemini.svg"],
