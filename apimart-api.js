@@ -31,6 +31,7 @@ const NANO_ASPECT_RATIOS = new Set([
     "auto", "1:1", "2:3", "3:2", "3:4", "4:3",
     "4:5", "5:4", "9:16", "16:9", "21:9",
 ]);
+const NANO21_ASPECT_RATIOS = new Set([...NANO_ASPECT_RATIOS, "1:4", "4:1", "1:8", "8:1"]);
 const GPT_ASPECT_RATIOS = new Set([
     "auto", "1:1", "2:3", "3:2", "3:4", "4:3",
     "4:5", "5:4", "9:16", "16:9", "2:1", "1:2",
@@ -125,7 +126,7 @@ export function validateApiMartNano21ReferenceBytes(config, byteSizes) {
 }
 
 function nano21Size(value) {
-    if (NANO_ASPECT_RATIOS.has(value)) return value;
+    if (NANO21_ASPECT_RATIOS.has(value)) return value;
     const dimensions = /^(\d+)x(\d+)$/.exec(value);
     if (dimensions) {
         const width = Number(dimensions[1]), height = Number(dimensions[2]);
@@ -133,7 +134,7 @@ function nano21Size(value) {
             let divisor = width, remainder = height;
             while (remainder) [divisor, remainder] = [remainder, divisor % remainder];
             const ratio = `${width / divisor}:${height / divisor}`;
-            if (NANO_ASPECT_RATIOS.has(ratio)) return ratio;
+            if (NANO21_ASPECT_RATIOS.has(ratio)) return ratio;
         }
     }
     throw new Error(`APIMart Nano Banana 2.1 不支持尺寸比例 ${value}`);

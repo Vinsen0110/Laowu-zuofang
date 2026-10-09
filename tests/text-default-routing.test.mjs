@@ -68,7 +68,7 @@ function runtime() {
 test("Apilio, RH, and Mart offer text models; Tudou retains image models", () => {
     const scope = runtime();
     assert.deepEqual(channels.filter(site => scope.siteTextModelNames(site.id).length).map(site => site.id), ["default", "runninghub", "apimart"]);
-    assert.deepEqual(constants.TUDOU_SITE_MODELS, ["nano-banana-pro"]);
+    assert.deepEqual(constants.TUDOU_SITE_MODELS, ["nano-banana-2.1", "nano-banana-pro"]);
 });
 
 test("Mart text generation passes the real model and credential preflight on every image site", () => {

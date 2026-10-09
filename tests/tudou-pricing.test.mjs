@@ -4,7 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 import { isRunningHubSite, runningHubImagePrice } from "../runninghub-api.js";
 import { isApiMartSite, apiMartImagePrice } from "../apimart-api.js";
-import { isGrsaiSite } from "../grsai-api.js";
+import { isGrsaiSite, grsaiImagePrice } from "../grsai-api.js";
 
 const source = await readFile(new URL("../assets/index-B2KJ37fm.js", import.meta.url), "utf8");
 
@@ -31,10 +31,11 @@ const context = vm.createContext({
     isApiMartSite,
     apiMartImagePrice,
     isGrsaiSite,
+    grsaiImagePrice,
     bd: (config, model) => config.channels.find(channel => channel.id === model.split("::")[0]),
 });
 for (const name of [
-    "$S", "pr", "jMe", "isTudouSite", "isApilioSite",
+    "$S", "pr", "jMe", "isTudouNano21Model", "isTudouSite", "isApilioSite",
     "tudouResolution", "tudouQuality", "tudouImagePrice", "vX", "pke",
 ]) {
     vm.runInContext(functionSource(name), context);
@@ -50,6 +51,25 @@ test("Tudou Nano Banana Pro uses the supplied 2026-09-24 default-group prices", 
             assert.equal(context.tudouImagePrice({ imageModel: model, quality }), price);
         }
     }
+});
+
+test("Tudou Nano Banana 2.1 uses public default-group resolution prices", () => {
+    for (const model of ["nano-banana-2.1", "tudou::nano-banana-2.1", "gemini-nano-banana-2.1"]) {
+        for (const [quality, price] of [["auto", 0.088], ["1k", 0.088], ["2k", 0.088], ["4k", 0.11]]) {
+            assert.equal(context.tudouImagePrice({ model, quality }), price, `${model} ${quality}`);
+            assert.equal(context.tudouImagePrice({ imageModel: model, quality }), price);
+            for (const count of [1, 3, 15]) {
+                assert.equal(context.pke({ provider: "tudou", model, quality, count }), Number((price * count).toFixed(4)));
+                assert.equal(context.pke({ model: `tudou::${model.split("::").at(-1)}`, quality, count,
+                    channels: [{ id: "tudou", provider: "tudou" }] }), Number((price * count).toFixed(4)));
+            }
+        }
+        for (const quality of ["low", "medium", "hd", " 2K ", undefined]) {
+            assert.equal(context.tudouImagePrice({ model, quality }), 0.088);
+        }
+        assert.equal(context.tudouImagePrice({ model, quality: "high" }), 0.11);
+    }
+    assert.equal(context.tudouImagePrice({ model: "gemini-nano-banana-2.1-ext" }), 0, "Mart Ext must not be conflated with Tudou");
 });
 
 test("Tudou resolution normalization preserves new prices for saved legacy settings", () => {

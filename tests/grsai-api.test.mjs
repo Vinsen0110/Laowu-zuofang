@@ -4,6 +4,8 @@ import test from "node:test";
 
 import {
     GRSAI_ORIGIN,
+    GRSAI_SITE_MODELS,
+    grsaiImagePrice,
     fetchGrsaiAccountCredits,
     fetchGrsaiApiKeyCredits,
     grsaiImageRequestSpec,
@@ -26,6 +28,25 @@ test("builds asynchronous Nano Banana Pro request with shared canvas parameters"
     });
 });
 
+test("routes Nano Banana 2.1 explicitly and preserves display credit conversion", () => {
+    assert.deepEqual(GRSAI_SITE_MODELS, ["nano-banana-2.1", "nano-banana-pro"]);
+    for (const quality of ["1k", "2k", "4k"]) {
+        for (const size of ["auto", "1:1", "1:4", "4:1", "1:8", "8:1"]) {
+            const config = { model: "grsai::nano-banana-2.1", quality, size };
+            const spec = grsaiImageRequestSpec(config, " draw ", ["https://example.com/ref.png"]);
+            assert.equal(spec.endpoint, "/v1/api/generate");
+            assert.deepEqual(spec.body, {
+                model: "nano-banana-2.1", prompt: "draw", images: ["https://example.com/ref.png"],
+                aspectRatio: size, replyType: "async", imageSize: quality.toUpperCase(),
+            });
+            assert.equal(grsaiImagePrice(config), 0.12);
+        }
+    }
+    assert.equal(grsaiImagePrice({ model: "nano-banana-pro" }), 0.18);
+    assert.equal(grsaiImagePrice({ model: "gpt-image-2-vip" }), 0.2);
+    assert.throws(() => grsaiImageRequestSpec({ model: "unknown-model" }, "draw"), /不支持/);
+});
+
 test("maps GPT Image VIP ratio and resolution to pixel size", () => {
     const spec = grsaiImageRequestSpec({ model: "default::gpt-image-2-vip", size: "16:9", quality: "4k" }, "draw it");
     assert.equal(spec.body.model, "gpt-image-2-vip");
@@ -39,7 +60,7 @@ test("parses async result states and polls until success", async () => {
     assert.deepEqual(parseGrsaiTask({ data: { id: "task-1", status: "violation", message: "blocked" } }), { status: "failed", taskId: "task-1", error: "blocked" });
     const calls = [];
     const urls = await runGrsaiImageGeneration(
-        { baseUrl: GRSAI_ORIGIN, apiKey: "sk-test", model: "nano-banana-pro", size: "1:1", quality: "1k" },
+        { baseUrl: GRSAI_ORIGIN, apiKey: "sk-test", model: "nano-banana-2.1", size: "1:1", quality: "1k" },
         "draw it",
         [],
         {
@@ -56,6 +77,8 @@ test("parses async result states and polls until success", async () => {
     assert.deepEqual(urls, ["https://cdn.example/result.png"]);
     assert.equal(calls[0].url, `${GRSAI_ORIGIN}/v1/api/generate`);
     assert.equal(calls[0].init.method, "POST");
+    assert.equal(JSON.parse(calls[0].init.body).model, "nano-banana-2.1");
+    assert.equal(calls.filter(call => call.init.method === "POST").length, 1);
     assert.equal(calls[1].url, `${GRSAI_ORIGIN}/v1/api/result?id=task-1`);
     assert.equal(calls[1].init.method, "GET");
 });
@@ -80,7 +103,7 @@ test("bundle keeps Grsai generation, balance, and settings branches", () => {
     assert.match(bundle, /g\?\.provider==="apilio"\|\|g\?\.provider==="grsai"/);
     assert.match(bundle, /g\?\.provider==="grsai"\?"Grsai/);
     assert.match(bundle, /\["gpt-image-2","gpt-image-2-vip","gpt-image-2\.5"\]/);
-    assert.match(bundle, /s&&n==="nano-banana-pro"\?\.18/);
+    assert.match(bundle, /s&&\(n==="nano-banana-pro"\|\|n==="nano-banana-2\.1"\)\?grsaiImagePrice\(e\)/);
     assert.match(bundle, /s&&\(n==="gpt-image-2"\|\|n==="gpt-image-2-vip"\)\?\.2/);
     assert.match(bundle, /pr\(t\)==="gpt-image-2-vip"\?"gpt-image-2"/);
     assert.match(bundle, /fetchGrsaiApiKeyCredits\(K\).*De\(le\/1e4\)/);

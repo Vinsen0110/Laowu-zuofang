@@ -5,6 +5,7 @@ import vm from 'node:vm';
 import * as mart from '../apimart-api.js';
 import * as rh from '../runninghub-api.js';
 import * as grsai from '../grsai-api.js';
+import * as soon from '../soon-api.js';
 import { orderModelReferences, orderRatioPresets } from '../display-order.js';
 
 const source = await readFile(new URL('../assets/index-B2KJ37fm.js', import.meta.url), 'utf8');
@@ -24,13 +25,17 @@ function functionSource(name) {
 function arraySource(name) {
     const start = source.indexOf(`${name}=[`) + name.length + 1;
     assert.ok(start > name.length, name);
-    const end = source.indexOf(']', start);
-    return source.slice(start, end + 1);
+    for (let end = source.indexOf(']', start); end !== -1; end = source.indexOf(']', end + 1)) {
+        const candidate = source.slice(start, end + 1);
+        try { new vm.Script(`(${candidate})`); return candidate; }
+        catch (error) { if (!(error instanceof SyntaxError)) throw error; }
+    }
+    throw new Error(`Cannot extract ${name}`);
 }
 function runtime(extra = {}) {
     const constants = Object.fromEntries(['APOLLO_SITE_MODELS', 'APOLLO_IMAGE_MODELS', 'APOLLO_TEXT_MODELS',
         'TUDOU_SITE_MODELS', 'TUDOU_IMAGE_MODELS', 'TUDOU_TEXT_MODELS'].map(name => [name, vm.runInNewContext(arraySource(name))]));
-    const scope = vm.createContext({ ...constants, ...mart, ...rh, ...grsai,
+    const scope = vm.createContext({ ...constants, ...mart, ...rh, ...grsai, ...soon,
         DP: 'default', VR: '::', a7: 'Apilio', cy: 'https://api.apilio.ai',
         TUDOU_SITE_ID: 'tudou', TUDOU_SITE_NAME: 'Tudou', TUDOU_BASE_URL: 'https://api.ai-tudou.net',
         zP: site => site, normalizeSiteApiKeys: site => ({ apiKey: site.apiKey, apiKeys: site.apiKeys || [] }),
@@ -41,11 +46,12 @@ function runtime(extra = {}) {
     });
     for (const name of ['ES', '$S', 'pr', 'v5', 'yx', 'Nxe', 'siteModelRefs', 'siteImageModelNames', 'siteTextModelNames',
         'activeSiteChannel', 'textSiteChannel', 'normalizeTextConfig', 'buildSiteConfigPatch', 'wxe', 'CS', 'bxe', 'ODe',
-        'imageNodeConfig', 'bd', 'xxe', 'cPe', 'vke', 'Q0', 'X0', 'NX', 'RX', 'isApolloGptImageModel', 'jMe', 'isNanoRatioModel',
+        'imageNodeConfig', 'bd', 'xxe', 'cPe', 'vke', 'Q0', 'X0', 'NX', 'RX', 'isApolloGptImageModel', 'jMe', 'isNanoRatioModel', 'nanoRatioPresets',
         'uy', 'Q6', 'displayImageModelName', 'runningHubUiParams', 'defaultImageModelParams', 'normalizeImageModelParams',
         'imageModelParamsFromConfig', 'projectImageModelParams', 'migrateImageGenerationDefaults', 'updateImageGenerationDefaults', 'applyImageGenerationDefaults',
         'canonicalImageModel', 'imageGenerationDefaultsKey', 'imageGenerationDefaultsFor', 'imageNodeDraftPatch', 'switchImageNodeSite',
         'n4e', 'ZM', 'Qa', 'Hke', 'vLocalAsset', 'CX', 'Ey']) vm.runInContext(functionSource(name), scope);
+    for (const name of ['NANO_PRO_RATIO_PRESETS', 'NANO_21_RATIO_PRESETS']) scope[name] = vm.runInContext(arraySource(name), scope);
     scope.channels = scope.wxe('', []).map(site => ({ ...site, apiKey: `${site.id}-test-key` }));
     scope.an = config(scope);
     return scope;
@@ -59,15 +65,15 @@ function config(scope, siteId = 'apimart') {
         imageModelDefaults: { [model]: { quality: '2k', size: '16:9' }, 'apimart::nano-banana-pro': { quality: '4k', size: '1:1' } } };
 }
 
-test('catalog migration exposes Nano Banana 2.1 first in Mart and nowhere else', () => {
+test('catalog migration exposes Nano Banana 2.1 in the three supported sites', () => {
     const scope = runtime();
     const oldChannels = scope.channels.map(site => ({ ...site, models: site.models.filter(name => name !== 'nano-banana-2.1') }));
     const migrated = scope.wxe('', oldChannels);
     for (const site of migrated) {
         assert.equal(site.apiKey, `${site.id}-test-key`);
         const imageModels = Array.from(scope.siteImageModelNames(site.id));
-        assert.equal(imageModels.includes('nano-banana-2.1'), site.id === 'apimart');
-        assert.equal(site.models.includes('nano-banana-2.1'), site.id === 'apimart');
+        assert.equal(imageModels.includes('nano-banana-2.1'), ['apimart', 'grsai', 'tudou'].includes(site.id));
+        assert.equal(site.models.includes('nano-banana-2.1'), ['apimart', 'grsai', 'tudou'].includes(site.id));
     }
     assert.deepEqual(Array.from(scope.siteImageModelNames('apimart')), ['nano-banana-2.1', 'nano-banana-pro', 'gpt-image-2.5']);
     const defaults = config(scope);
@@ -157,9 +163,9 @@ test('the settings ratio selector offers only ratios accepted by the Nano 2.1 ad
     const expression = source.match(/ratioPresets=(orderRatioPresets\([^;\n]*?\)),localPromptPreset=/)?.[1];
     assert.ok(expression, 'extract the real settings selector expression');
     const options = vm.runInContext(expression, scope);
-    assert.deepEqual(Array.from(options, option => option.value), ['auto', '1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9']);
+    assert.deepEqual(Array.from(options, option => option.value), ['auto', '1:1', '1:4', '1:8', '2:3', '3:2', '3:4', '4:1', '4:3', '4:5', '5:4', '8:1', '9:16', '16:9', '21:9']);
     for (const option of options) assert.doesNotThrow(() => mart.apiMartImageRequestSpec({ model, size: option.size || option.value }, 'draw'));
-    for (const unsupported of ['2:1', '4:1', '1:4', '3:1', '9:21']) assert.equal(options.some(option => option.value === unsupported), false);
+    for (const unsupported of ['2:1', '3:1', '9:21']) assert.equal(options.some(option => option.value === unsupported), false);
 });
 
 test('site switches and model defaults keep Nano 2.1 isolated from Pro and other providers', () => {
@@ -172,15 +178,16 @@ test('site switches and model defaults keep Nano 2.1 isolated from Pro and other
     assert.equal(scope.imageGenerationDefaultsFor(defaults, 'apimart', 'apimart::nano-banana-pro').quality, '4k');
     for (const site of scope.channels.filter(site => site.id !== 'apimart')) {
         const patch = scope.buildSiteConfigPatch(defaults, site.id);
-        assert.equal(patch.imageModel, `${site.id}::nano-banana-pro`);
-        assert.equal(patch.imageModels.some(value => value.endsWith('::nano-banana-2.1')), false);
+        const supportsNano21 = ['grsai', 'tudou'].includes(site.id);
+        assert.equal(patch.imageModel, `${site.id}::${supportsNano21 ? 'nano-banana-2.1' : 'nano-banana-pro'}`);
+        assert.equal(patch.imageModels.some(value => value.endsWith('::nano-banana-2.1')), supportsNano21);
     }
     assert.equal(JSON.stringify(defaults), before);
     assert.equal(scope.buildSiteConfigPatch(defaults, 'apimart').imageModel, model);
     const generated = { id: 'image', type: 'image', metadata: { content: 'blob:generated', model, quality: '2k', size: '16:9' } };
     const switched = scope.switchImageNodeSite(generated, config(scope, 'tudou'));
     assert.equal(switched.metadata.model, model, 'history stays on Mart');
-    assert.equal(switched.metadata.imageGenerationDraft.model, 'tudou::nano-banana-pro');
+    assert.equal(switched.metadata.imageGenerationDraft.model, 'tudou::nano-banana-2.1');
     assert.equal(generated.metadata.imageGenerationDraft, undefined);
 });
 
@@ -215,7 +222,7 @@ test('project save and reopen retain the generated Nano 2.1 model and request pa
         async getFile() { return files.get(path); },
     }; } };
     const savedNode = { id: 'image', type: 'image', width: 640, height: 360, metadata: {
-        model, quality: '2k', size: '16:9', count: 1, generationType: 'generation', content: 'blob:old',
+        model, quality: '2k', size: '8:1', count: 1, generationType: 'generation', content: 'blob:old',
         generatedAt: '2026-10-08T06:00:00Z', naturalWidth: 640, naturalHeight: 360,
         imageGenerationDraft: { model: 'apimart::nano-banana-pro', quality: '4k' },
     } };
