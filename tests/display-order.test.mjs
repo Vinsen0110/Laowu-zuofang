@@ -11,7 +11,7 @@ import {
 
 const bundle = await readFile(new URL("../assets/index-B2KJ37fm.js", import.meta.url), "utf8");
 
-test("site displays use RH, Mart, Soon, Tudou, Grsai, Apilio order without mutating stored channels", () => {
+test("site displays known providers first without mutating stored channels", () => {
     const channels = [
         { id: "default", name: "Apilio" },
         { id: "tudou", name: "Tudou" },
@@ -21,7 +21,7 @@ test("site displays use RH, Mart, Soon, Tudou, Grsai, Apilio order without mutat
         { id: "soon", name: "Soon" },
     ];
 
-    assert.deepEqual(SITE_DISPLAY_ORDER, ["runninghub", "apimart", "soon", "tudou", "grsai", "default"]);
+    assert.deepEqual(SITE_DISPLAY_ORDER, ["runninghub", "apimart", "soon", "tudou", "grsai"]);
     assert.deepEqual(orderSiteChannels(channels).map(({ name }) => name), ["RH", "Mart", "Soon", "Tudou", "Grsai", "Apilio"]);
     assert.deepEqual(channels.map(({ name }) => name), ["Apilio", "Tudou", "RH", "Grsai", "Mart", "Soon"]);
     assert.deepEqual(
