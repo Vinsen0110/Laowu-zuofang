@@ -11,18 +11,19 @@ import {
 
 const bundle = await readFile(new URL("../assets/index-B2KJ37fm.js", import.meta.url), "utf8");
 
-test("site displays use Tudou, Grsai, Mart, RH, Apilio order without mutating stored channels", () => {
+test("site displays use RH, Mart, Soon, Tudou, Grsai, Apilio order without mutating stored channels", () => {
     const channels = [
         { id: "default", name: "Apilio" },
         { id: "tudou", name: "Tudou" },
         { id: "runninghub", name: "RH" },
         { id: "grsai", name: "Grsai" },
         { id: "apimart", name: "Mart" },
+        { id: "soon", name: "Soon" },
     ];
 
-    assert.deepEqual(SITE_DISPLAY_ORDER, ["tudou", "grsai", "apimart", "runninghub", "default"]);
-    assert.deepEqual(orderSiteChannels(channels).map(({ name }) => name), ["Tudou", "Grsai", "Mart", "RH", "Apilio"]);
-    assert.deepEqual(channels.map(({ name }) => name), ["Apilio", "Tudou", "RH", "Grsai", "Mart"]);
+    assert.deepEqual(SITE_DISPLAY_ORDER, ["runninghub", "apimart", "soon", "tudou", "grsai", "default"]);
+    assert.deepEqual(orderSiteChannels(channels).map(({ name }) => name), ["RH", "Mart", "Soon", "Tudou", "Grsai", "Apilio"]);
+    assert.deepEqual(channels.map(({ name }) => name), ["Apilio", "Tudou", "RH", "Grsai", "Mart", "Soon"]);
     assert.deepEqual(
         orderModelReferences([
             "tudou::gpt-image-2",
@@ -30,12 +31,16 @@ test("site displays use Tudou, Grsai, Mart, RH, Apilio order without mutating st
             "runninghub::gpt-image-2",
             "runninghub::nano-banana-pro",
             "apimart::nano-banana-pro",
+            "soon::nano-banana-pro",
+            "grsai::nano-banana-pro",
         ]),
         [
-            "tudou::gpt-image-2",
-            "apimart::nano-banana-pro",
             "runninghub::gpt-image-2",
             "runninghub::nano-banana-pro",
+            "apimart::nano-banana-pro",
+            "soon::nano-banana-pro",
+            "tudou::gpt-image-2",
+            "grsai::nano-banana-pro",
             "default::nano-banana-pro",
         ],
     );
@@ -58,17 +63,17 @@ test("Mart 2.1 stays beside the existing Mart model without reordering other pro
         "grsai::nano-banana-pro",
     ];
     assert.deepEqual(orderModelReferences(references), [
-        "tudou::nano-banana-pro",
-        "grsai::nano-banana-pro",
         "apimart::nano-banana-2.1",
         "apimart::nano-banana-pro",
         "soon::nano-banana-pro",
+        "tudou::nano-banana-pro",
+        "grsai::nano-banana-pro",
     ]);
     assert.equal(references[0], "soon::nano-banana-pro");
 });
 
 test("all site and ratio selectors use the shared display order", () => {
-    assert.match(bundle, /from"\.\.\/display-order\.js"/);
+    assert.match(bundle, /from"\.\.\/display-order\.js(?:\?v=[^"]+)?"/);
     assert.match(bundle, /orderSiteChannels\(a\.channels\)\.map/);
     assert.match(bundle, /orderSiteChannels\(siteConfig\.channels\|\|\[\]\)\.map/);
     assert.match(bundle, /orderModelReferences\(Array\.from\(new Set/);

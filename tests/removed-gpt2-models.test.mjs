@@ -5,6 +5,7 @@ import vm from "node:vm";
 import * as mart from "../apimart-api.js";
 import * as rh from "../runninghub-api.js";
 import * as grsai from "../grsai-api.js";
+import * as soon from "../soon-api.js";
 
 const source = await readFile(new URL("../assets/index-B2KJ37fm.js", import.meta.url), "utf8");
 const removed = ["gpt-image-2", "gpt-image-2-all", "gpt-image-2-vip", "gpt-image-2-official"];
@@ -30,7 +31,7 @@ function functionSource(name) {
 
 function runtime() {
     const scope = vm.createContext({
-        ...constants, ...mart, ...rh, ...grsai,
+        ...constants, ...mart, ...rh, ...grsai, ...soon,
         DP: "default", VR: "::", a7: "Apilio", cy: "https://api.apilio.ai",
         TUDOU_SITE_ID: "tudou", TUDOU_SITE_NAME: "Tudou", TUDOU_BASE_URL: "https://api.ai-tudou.net",
         zP: site => site,

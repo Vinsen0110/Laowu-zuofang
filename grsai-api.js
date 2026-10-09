@@ -1,7 +1,7 @@
 export const GRSAI_ORIGIN = "https://grsaiapi.com";
 export const GRSAI_SITE_ID = "grsai";
 export const GRSAI_SITE_NAME = "Grsai";
-export const GRSAI_SITE_MODELS = ["nano-banana-pro"];
+export const GRSAI_SITE_MODELS = ["nano-banana-2.1", "nano-banana-pro"];
 export const GRSAI_IMAGE_MODELS = GRSAI_SITE_MODELS;
 export const GRSAI_TEXT_MODELS = [];
 
@@ -65,15 +65,29 @@ export function grsaiResolution(config) {
     return "1k";
 }
 
-export function grsaiImageRequestSpec(config, prompt, imageUrls = []) {
+function grsaiModel(config) {
     const model = String(config?.model || config?.imageModel || "nano-banana-pro").trim()
         .split("::").at(-1);
+    if (![...GRSAI_IMAGE_MODELS, "gpt-image-2-vip"].includes(model)) {
+        throw new Error("Grsai 不支持该图片模型");
+    }
+    return model;
+}
+
+export function grsaiImagePrice(config) {
+    // Display convention retained from the app: 10,000 credits = one price unit.
+    const model = grsaiModel(config);
+    return model === "nano-banana-2.1" ? 0.12 : model === "gpt-image-2-vip" ? 0.2 : 0.18;
+}
+
+export function grsaiImageRequestSpec(config, prompt, imageUrls = []) {
+    const model = grsaiModel(config);
     const resolution = grsaiResolution(config);
     const ratio = String(config?.size || "auto").trim();
     const isVip = model === "gpt-image-2-vip";
     const aspectRatio = isVip ? (VIP_RATIO_SIZES[ratio]?.[resolution] || "auto") : ratio;
     const body = {
-        model: isVip ? "gpt-image-2-vip" : "nano-banana-pro",
+        model,
         prompt: String(prompt || "").trim(),
         images: Array.isArray(imageUrls) ? imageUrls : [],
         aspectRatio,

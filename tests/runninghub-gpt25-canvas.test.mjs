@@ -71,7 +71,6 @@ const context = vm.createContext({
     activeSiteApiKey: () => null,
     apolloBillingGroupLabel: () => "default",
     hX: [{ value: "auto" }, { value: "1k" }, { value: "2k" }, { value: "4k" }],
-    NANO_PRO_RATIO_PRESETS: [{ value: "auto" }],
     orderRatioPresets: values => values,
     jMe: () => false,
     VR: "::",
@@ -89,15 +88,17 @@ const qualityStart = source.indexOf("GPT_IMAGE_QUALITY_OPTIONS=[");
 const optionsStart = source.indexOf("const APIMART_GPT_MODE_OPTIONS=");
 const ratioStart = source.indexOf("pX=[");
 const extraRatioStart = source.indexOf("GPT_IMAGE_EXTRA_RATIO_PRESETS=[");
+const nanoRatioStart = source.indexOf("NANO_PRO_RATIO_PRESETS=[");
 vm.runInContext(
     `const ${source.slice(qualityStart, source.indexOf(";", qualityStart) + 1)}
 ${source.slice(optionsStart, source.indexOf(";", optionsStart) + 1)}
 const ${source.slice(ratioStart, source.indexOf("],ike=", ratioStart) + 1)};
+const ${source.slice(nanoRatioStart, source.indexOf(",pg=", nanoRatioStart))};
 const ${source.slice(extraRatioStart, source.indexOf(";", extraRatioStart) + 1)}`,
     context,
 );
 for (const name of [
-    "ES", "$S", "pr", "Nxe", "siteModelRefs", "yx", "imageNodeConfig", "switchImageNodeSite", "vX", "gke", "runningHubUiParams", "RunningHub25Controls",
+    "ES", "$S", "pr", "Nxe", "siteModelRefs", "yx", "imageNodeConfig", "switchImageNodeSite", "vX", "gke", "nanoRatioPresets", "isNanoRatioModel", "runningHubUiParams", "RunningHub25Controls",
     "runningHub25RatioValue", "runningHub25RatioOptions", "runningHub25ModePatch",
     "apiMartGptMode", "apiMartGpt25Variant", "apiMartOfficialQuality",
     "defaultImageModelParams", "canonicalImageModel", "normalizeImageModelParams",

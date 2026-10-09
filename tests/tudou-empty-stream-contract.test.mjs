@@ -21,7 +21,7 @@ const extracted = [
     bundleBlock("function WMe", "function imageTaskIdentifier"),
 ].join("");
 
-const makeRuntime = new Function("fetch", "Jq", "eW", "aW", "cn", "Tm", `${extracted};return tudouGeminiStreamImages;`);
+const makeRuntime = new Function("fetch", "Jq", "eW", "aW", "cn", "Tm", "isTudouNano21Model", `${extracted};return tudouGeminiStreamImages;`);
 
 function sseResponse(blocks, headers = {}) {
     return new Response(blocks.join("\n\n") + "\n\n", {
@@ -45,6 +45,7 @@ async function runBundleStream(response) {
         async () => "request failed",
         () => "image-id",
         (value) => Boolean(value) && typeof value === "object" && !Array.isArray(value),
+        () => false,
     );
     const result = await stream({ model: "test" }, { contents: [] });
     return { requests, result };
