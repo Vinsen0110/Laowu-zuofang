@@ -41,6 +41,14 @@ test("price table closes on outside clicks while keeping inside controls open", 
   assert.match(script, /host\.classList\.remove\("is-open"\)/);
 });
 
+test("price table observer mounting is idempotent and cannot loop on its own divider", () => {
+  assert.match(script, /const dividers = Array\.from\(shell\.querySelectorAll\("\.canvas-price-table-divider"\)\)/);
+  assert.match(script, /dividers\.filter\(\(element\) => element !== dividerAfter\)\.forEach/);
+  assert.match(script, /host\.parentElement !== shell \|\| host\.nextElementSibling !== dividerAfter/);
+  assert.match(script, /dividerAfter\.parentElement !== shell \|\| dividerAfter\.previousElementSibling !== host/);
+  assert.doesNotMatch(script, /shell\.querySelectorAll\("\.canvas-price-table-divider"\)\.forEach\(\(element\) => element\.remove\(\)\)/);
+});
+
 test("price table does not expose the removed Apilio site", () => {
   assert.doesNotMatch(script, /site:\s*"Apilio"/);
 });
