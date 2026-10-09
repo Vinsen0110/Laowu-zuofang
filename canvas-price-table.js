@@ -387,9 +387,11 @@
       ["pointerdown", "mousedown", "wheel"].forEach((event) => host.addEventListener(event, (e) => e.stopPropagation()));
     }
     // Keep the price icon in the toolbar's existing empty cell. The native
-    // divider before the zoom value is the cell's left edge; remove any
-    // legacy marker inserted by an earlier build before adding the right edge.
-    shell.querySelectorAll(".canvas-price-table-divider").forEach((element) => element.remove());
+    // divider before the zoom value is the cell's left edge. This function is
+    // called by a subtree MutationObserver, so the DOM operations must be
+    // idempotent; removing and reinserting the divider on every callback would
+    // create an endless observer loop and freeze project creation/import.
+    const dividers = Array.from(shell.querySelectorAll(".canvas-price-table-divider"));
     const getDivider = (side) => {
       let divider = shell.querySelector(`.canvas-price-table-divider[data-price-table-divider="${side}"]`);
       if (!divider) {
@@ -401,9 +403,10 @@
       return divider;
     };
     const dividerAfter = getDivider("after");
+    dividers.filter((element) => element !== dividerAfter).forEach((element) => element.remove());
     const toolbarEnd = shell.lastElementChild;
-    if (host.parentElement !== shell) shell.insertBefore(host, toolbarEnd);
-    if (dividerAfter.parentElement !== shell) shell.insertBefore(dividerAfter, toolbarEnd);
+    if (host.parentElement !== shell || host.nextElementSibling !== dividerAfter) shell.insertBefore(host, toolbarEnd);
+    if (dividerAfter.parentElement !== shell || dividerAfter.previousElementSibling !== host) shell.insertBefore(dividerAfter, toolbarEnd);
     positionPanel(host);
     // Do not rebuild an open panel here: this function is called by the DOM
     // observer, and render itself changes the DOM.
