@@ -1,5 +1,5 @@
 // Keep the visible site selector aligned with the user's preferred workflow.
-export const SITE_DISPLAY_ORDER = ["runninghub", "apimart", "soon", "tudou", "grsai"];
+export const SITE_DISPLAY_ORDER = ["runninghub", "apimart", "tudou", "grsai", "soon"];
 
 function stableOrder(values, rank) {
     return [...values]

@@ -1,14 +1,10 @@
-import { isCloudinaryImageUrl, isLegacyImgBbImageUrl } from "./cloudinary-reference-upload.js";
+import { isCloudinaryImageUrl } from "./cloudinary-reference-upload.js";
 
 const MAX_REFERENCE_BYTES = 14 * 1024 * 1024;
 const TUDOU_GEMINI_IMAGE_PATH = /^\/v1beta\/models\/[^/]+:(?:generateContent|streamGenerateContent)$/;
 
-export function isImgBbImageUrl(value) {
-    return isLegacyImgBbImageUrl(value);
-}
-
 export function isHostedReferenceImageUrl(value) {
-    return isImgBbImageUrl(value) || isCloudinaryImageUrl(value);
+    return isCloudinaryImageUrl(value);
 }
 
 export function isTudouGeminiImageTarget(target) {

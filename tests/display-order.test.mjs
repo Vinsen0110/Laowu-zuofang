@@ -21,8 +21,8 @@ test("site displays known providers first without mutating stored channels", () 
         { id: "soon", name: "Soon" },
     ];
 
-    assert.deepEqual(SITE_DISPLAY_ORDER, ["runninghub", "apimart", "soon", "tudou", "grsai"]);
-    assert.deepEqual(orderSiteChannels(channels).map(({ name }) => name), ["RH", "Mart", "Soon", "Tudou", "Grsai", "Apilio"]);
+    assert.deepEqual(SITE_DISPLAY_ORDER, ["runninghub", "apimart", "tudou", "grsai", "soon"]);
+    assert.deepEqual(orderSiteChannels(channels).map(({ name }) => name), ["RH", "Mart", "Tudou", "Grsai", "Soon", "Apilio"]);
     assert.deepEqual(channels.map(({ name }) => name), ["Apilio", "Tudou", "RH", "Grsai", "Mart", "Soon"]);
     assert.deepEqual(
         orderModelReferences([
@@ -38,9 +38,9 @@ test("site displays known providers first without mutating stored channels", () 
             "runninghub::gpt-image-2",
             "runninghub::nano-banana-pro",
             "apimart::nano-banana-pro",
-            "soon::nano-banana-pro",
             "tudou::gpt-image-2",
             "grsai::nano-banana-pro",
+            "soon::nano-banana-pro",
             "default::nano-banana-pro",
         ],
     );
@@ -65,9 +65,9 @@ test("Mart 2.1 stays beside the existing Mart model without reordering other pro
     assert.deepEqual(orderModelReferences(references), [
         "apimart::nano-banana-2.1",
         "apimart::nano-banana-pro",
-        "soon::nano-banana-pro",
         "tudou::nano-banana-pro",
         "grsai::nano-banana-pro",
+        "soon::nano-banana-pro",
     ]);
     assert.equal(references[0], "soon::nano-banana-pro");
 });
