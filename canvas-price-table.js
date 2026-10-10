@@ -17,7 +17,7 @@
 .canvas-price-table-panel{position:absolute;left:0;bottom:calc(100% + 10px);display:none;width:min(500px,calc(100vw - 24px));max-height:min(72vh,620px);overflow:auto;padding:14px;border:1px solid rgba(148,163,184,.32);border-radius:16px;background:rgba(255,255,255,.98);color:#292524;box-shadow:0 18px 50px rgba(15,23,42,.18);backdrop-filter:blur(14px)}
 .canvas-price-table-host.is-open .canvas-price-table-panel{display:block}
 .canvas-price-table-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:2px;font-size:14px;font-weight:800;letter-spacing:.01em}.canvas-price-table-subtitle{margin-bottom:12px;color:#78716c;font-size:10px;line-height:1.4}.canvas-price-table-fx{display:flex;align-items:center;gap:6px;white-space:nowrap;color:#57534e;font-size:10px;font-weight:600}.canvas-price-table-fx input{width:48px;height:25px;padding:0 6px;border:1px solid rgba(99,102,241,.35);border-radius:7px;background:#fff;color:#292524;text-align:right;font:600 11px inherit}.canvas-price-table-fx button{height:25px;padding:0 7px;border:0;border-radius:7px;background:#eef2ff;color:#4338ca;font:700 10px inherit;cursor:pointer}.canvas-price-table-fx button:hover{background:#e0e7ff}
-.canvas-price-table-group{margin-top:11px;overflow:hidden;border:1px solid rgba(148,163,184,.25);border-radius:12px;background:rgba(248,250,252,.66)}.canvas-price-table-group-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;background:linear-gradient(90deg,rgba(238,242,255,.92),rgba(248,250,252,.72));color:#3730a3;font-size:11px;font-weight:800}.canvas-price-table-group.provider-rh .canvas-price-table-group-head{background:linear-gradient(90deg,#eff6ff,#f8fafc);color:#1d4ed8}.canvas-price-table-group.provider-mart .canvas-price-table-group-head{background:linear-gradient(90deg,#f5f3ff,#fafafa);color:#6d28d9}.canvas-price-table-group.provider-soon .canvas-price-table-group-head{background:linear-gradient(90deg,#fff7ed,#fffbeb);color:#c2410c}.canvas-price-table-group.provider-tudou .canvas-price-table-group-head{background:linear-gradient(90deg,#ecfdf5,#f0fdfa);color:#047857}.canvas-price-table-group.provider-grsai .canvas-price-table-group-head{background:linear-gradient(90deg,#fff1f2,#fff7ed);color:#be123c}.canvas-price-table-count{color:#78716c;font-size:10px;font-weight:500}.canvas-price-table-grid{display:grid;grid-template-columns:minmax(0,1fr) repeat(3,54px);gap:7px;align-items:center}.canvas-price-table-grid-head{padding:7px 10px 5px;color:#a8a29e;font-size:9px;font-weight:700;text-align:right;text-transform:uppercase}.canvas-price-table-grid-head:first-child{text-align:left}.canvas-price-table-row{padding:8px 10px;border-top:1px solid rgba(148,163,184,.18);font-size:11px;line-height:1.3}.canvas-price-table-name{min-width:0}.canvas-price-table-model{display:block;overflow:hidden;font-weight:700;text-overflow:ellipsis;white-space:nowrap}.canvas-price-table-quality{display:block;color:#78716c;font-size:9px}.canvas-price-table-value{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-size:10px;font-weight:700;color:#292524}.canvas-price-table-note{display:block;color:#a8a29e;font-size:9px;font-weight:500}.canvas-price-table-empty{padding:14px 4px;color:#78716c;font-size:11px;text-align:center}.dark .canvas-price-table-divider{--canvas-price-table-divider:rgba(120,113,108,.5)}.dark .canvas-price-table-toggle{color:#c7d2fe}.dark .canvas-price-table-toggle:hover{background:rgba(99,102,241,.2);color:#e0e7ff}.dark .canvas-price-table-panel{background:rgba(28,25,23,.98);border-color:#44403c;color:#f5f5f4}.dark .canvas-price-table-subtitle,.dark .canvas-price-table-quality,.dark .canvas-price-table-count{color:#a8a29e}.dark .canvas-price-table-fx{color:#d6d3d1}.dark .canvas-price-table-fx input{background:#292524;border-color:#6366f1;color:#f5f5f4}.dark .canvas-price-table-fx button{background:#312e81;color:#e0e7ff}.dark .canvas-price-table-group{border-color:#44403c;background:rgba(41,37,36,.5)}.dark .canvas-price-table-group-head{background:linear-gradient(90deg,rgba(49,46,129,.55),rgba(41,37,36,.5));color:#c7d2fe}.dark .canvas-price-table-grid-head{color:#78716c}.dark .canvas-price-table-row{border-color:rgba(120,113,108,.35)}.dark .canvas-price-table-value{color:#f5f5f4}.dark .canvas-price-table-empty{color:#a8a29e}
+.canvas-price-table-group{margin-top:11px;overflow:hidden;border:1px solid rgba(148,163,184,.25);border-radius:12px;background:rgba(248,250,252,.66)}.canvas-price-table-group-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;background:linear-gradient(90deg,rgba(238,242,255,.92),rgba(248,250,252,.72));color:#3730a3;font-size:11px;font-weight:800}.canvas-price-table-group.provider-rh .canvas-price-table-group-head{background:linear-gradient(90deg,#eff6ff,#f8fafc);color:#1d4ed8}.canvas-price-table-group.provider-mart .canvas-price-table-group-head{background:linear-gradient(90deg,#f5f3ff,#fafafa);color:#6d28d9}.canvas-price-table-group.provider-soon .canvas-price-table-group-head{background:linear-gradient(90deg,#fff7ed,#fffbeb);color:#c2410c}.canvas-price-table-group.provider-tudou .canvas-price-table-group-head{background:linear-gradient(90deg,#ecfdf5,#f0fdfa);color:#047857}.canvas-price-table-group.provider-grsai .canvas-price-table-group-head{background:linear-gradient(90deg,#fff1f2,#fff7ed);color:#be123c}.canvas-price-table-count{color:#78716c;font-size:10px;font-weight:500}.canvas-price-table-grid{display:grid;grid-template-columns:minmax(0,1fr) repeat(3,54px);gap:7px;align-items:center}.canvas-price-table-grid-head{padding:7px 10px 5px;color:#a8a29e;font-size:9px;font-weight:700;text-align:right;text-transform:uppercase}.canvas-price-table-grid-head:first-child{text-align:left}.canvas-price-table-row{padding:8px 10px;border-top:1px solid rgba(148,163,184,.18);font-size:11px;line-height:1.3}.canvas-price-table-name{min-width:0}.canvas-price-table-model{display:block;overflow:hidden;font-weight:700;text-overflow:ellipsis;white-space:nowrap}.canvas-price-table-quality{display:block;color:#78716c;font-size:9px}.canvas-price-table-value{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-size:10px;font-weight:700;color:#292524}.canvas-price-table-wide-note{grid-column:2 / span 3;color:#78716c;font-size:10px;text-align:center;white-space:nowrap}.canvas-price-table-note{display:block;color:#a8a29e;font-size:9px;font-weight:500}.canvas-price-table-empty{padding:14px 4px;color:#78716c;font-size:11px;text-align:center}.dark .canvas-price-table-divider{--canvas-price-table-divider:rgba(120,113,108,.5)}.dark .canvas-price-table-toggle{color:#c7d2fe}.dark .canvas-price-table-toggle:hover{background:rgba(99,102,241,.2);color:#e0e7ff}.dark .canvas-price-table-panel{background:rgba(28,25,23,.98);border-color:#44403c;color:#f5f5f4}.dark .canvas-price-table-subtitle,.dark .canvas-price-table-quality,.dark .canvas-price-table-count{color:#a8a29e}.dark .canvas-price-table-fx{color:#d6d3d1}.dark .canvas-price-table-fx input{background:#292524;border-color:#6366f1;color:#f5f5f4}.dark .canvas-price-table-fx button{background:#312e81;color:#e0e7ff}.dark .canvas-price-table-group{border-color:#44403c;background:rgba(41,37,36,.5)}.dark .canvas-price-table-group-head{background:linear-gradient(90deg,rgba(49,46,129,.55),rgba(41,37,36,.5));color:#c7d2fe}.dark .canvas-price-table-grid-head{color:#78716c}.dark .canvas-price-table-row{border-color:rgba(120,113,108,.35)}.dark .canvas-price-table-value{color:#f5f5f4}.dark .canvas-price-table-empty{color:#a8a29e}
 @media(max-width:767px){.canvas-price-table-panel{width:calc(100vw - 16px);max-height:58vh}.canvas-price-table-grid{grid-template-columns:minmax(0,1fr) repeat(3,48px);gap:4px}}
 `;
 
@@ -97,6 +97,7 @@
       currency: String(row.currency || (row.usd != null ? "USD" : "CNY")).toUpperCase(),
       priceByQuality: row.priceByQuality,
       note: row.note || row.hint || "",
+      fullWidthNote: row.fullWidthNote === true,
     };
   }
 
@@ -182,7 +183,8 @@
         const same = values.every((value) => value === values[0]);
         rows.push({ site, model: modelLabel, quality: same ? "1K / 2K / 4K" : "每张", currency,
           price: same ? values[0] : null, priceByQuality: same ? undefined : priceByQuality,
-          note: values.every((value) => value == null) ? "按实际用量计费" : note });
+          note: values.every((value) => value == null) ? "按实际用量计费" : note,
+          fullWidthNote: values.every((value) => value == null) });
       };
       const knownModels = [...new Set(models.map((model) => String(model).replace(/^.*::/, "")))];
       knownModels.forEach((model) => {
@@ -282,7 +284,8 @@
       const groupHead = document.createElement("div");
       groupHead.className = "canvas-price-table-group-head";
       const siteName = document.createElement("span");
-      siteName.textContent = site;
+      const advantages = { RH: "快速稳定", Mart: "需要魔法", Tudou: "经济实惠", Grsai: "备选一", Soon: "备选二" };
+      siteName.textContent = advantages[site] ? `${site} · ${advantages[site]}` : site;
       const count = document.createElement("span");
       count.className = "canvas-price-table-count";
       count.textContent = `${siteRows.length} 个模型`;
@@ -310,19 +313,26 @@
             // keep the model cell quiet instead of repeating it inline.
             quality.textContent = row.quality && !/^(1K \/ 2K \/ 4K|每张)$/i.test(row.quality) ? ` · ${row.quality}` : "";
         name.append(model, quality);
-        if (row.note) {
+        if (row.note && !row.fullWidthNote) {
           const note = document.createElement("span");
           note.className = "canvas-price-table-note";
           note.textContent = row.note;
           name.appendChild(note);
         }
         item.appendChild(name);
-        ["1K", "2K", "4K"].forEach((quality) => {
-          const value = document.createElement("div");
-          value.className = "canvas-price-table-value";
-          value.textContent = formatPrice(row, quality);
-          item.appendChild(value);
-        });
+        if (row.fullWidthNote && row.note) {
+          const wideNote = document.createElement("div");
+          wideNote.className = "canvas-price-table-wide-note";
+          wideNote.textContent = row.note;
+          item.appendChild(wideNote);
+        } else {
+          ["1K", "2K", "4K"].forEach((quality) => {
+            const value = document.createElement("div");
+            value.className = "canvas-price-table-value";
+            value.textContent = formatPrice(row, quality);
+            item.appendChild(value);
+          });
+        }
         group.appendChild(item);
       });
       panel.appendChild(group);

@@ -1,6 +1,13 @@
 const DISPLAY_NAME_MAP = new Map([
-  ["gpt-image-2-vip", "gpt-image-2"],
+  ["gpt-image-2.5", "GPT image 2.5"],
+  ["gpt-image-2-vip", "GPT image 2"],
+  ["gpt-image-2", "GPT image 2"],
   ["nano-banana-2.1", "Nano Banana 2.1"],
+  ["nano-banana-pro-2k", "Nano Banana Pro"],
+  ["nano-banana-pro-4k", "Nano Banana Pro"],
+  ["nano-banana-pro", "Nano Banana Pro"],
+  ["gemini-3.7-flash", "Gemini 3.7 Flash"],
+  ["gemini-3.8-flash", "Gemini 3.8 Flash"],
 ]);
 const DISPLAY_ICON_MAP = new Map([
   ["gemini-3.7-flash", "./icons/gemini.svg"],

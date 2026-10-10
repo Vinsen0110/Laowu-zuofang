@@ -17,6 +17,14 @@ test("canvas price table is loaded as a local module and keeps provider currency
   assert.match(script, /人民币 = 美元 × 汇率/);
   assert.match(script, /表内只显示人民币/);
   assert.match(script, /type = "number"/);
+  assert.match(script, /canvas-price-table-wide-note/);
+  assert.match(script, /fullWidthNote: values\.every\(\(value\) => value == null\)/);
+  assert.match(script, /RH: "快速稳定"/);
+  assert.match(script, /Mart: "需要魔法"/);
+  assert.match(script, /Tudou: "经济实惠"/);
+  assert.match(script, /Grsai: "备选一"/);
+  assert.match(script, /Soon: "备选二"/);
+  assert.match(script, /row\.note && !row\.fullWidthNote/);
 });
 
 test("price table is mounted as an icon in the lower-left canvas toolbar", () => {
