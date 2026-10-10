@@ -66,6 +66,13 @@ test("price table keeps Tudou and Grsai Nano Banana 2.1 while omitting Soon 2.1"
   assert.match(script, /return add\(model, "Nano Banana 2\.1"\)/);
 });
 
+test("price table shows Tudou GPT Image 2.5 variants", () => {
+  assert.match(script, /GPT Image 2\.5 · Flare/);
+  assert.match(script, /GPT Image 2\.5 · Sunburst/);
+  assert.match(script, /tudouGpt25Variant: "flare"/);
+  assert.match(script, /tudouGpt25Variant: "sunburst"/);
+});
+
 test("canvas bundle exposes the live canvas billing calculator", async () => {
   const bundle = await readFile(new URL("assets/index-B2KJ37fm.js", root), "utf8");
   assert.match(bundle, /__vinsenCanvasPriceCalculator/);

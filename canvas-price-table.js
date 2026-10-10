@@ -205,6 +205,10 @@
           add(model, `${label} · 固定`, { gptImageQuality: "fixed" });
           return add(model, `${label} · 官方`, { gptImageQuality: "medium" });
         }
+        if (model === "gpt-image-2.5" && provider === "tudou") {
+          add(model, "GPT Image 2.5 · Flare", { tudouGpt25Variant: "flare" });
+          return add(model, "GPT Image 2.5 · Sunburst", { tudouGpt25Variant: "sunburst" });
+        }
         if (["gpt-image-2", "gpt-image-2-all"].includes(model) && ["tudou", "runninghub"].includes(provider)) {
           ["low", "medium", "high"].forEach((quality) => add(model, `GPT Image 2 · ${quality}`, { gptImageQuality: quality }, false, provider === "runninghub" ? "无参考图" : ""));
           if (provider === "runninghub") add(model, "GPT Image 2 · low", { gptImageQuality: "low" }, true, "有参考图");
