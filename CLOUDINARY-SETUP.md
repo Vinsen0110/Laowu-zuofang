@@ -3,7 +3,7 @@
 Only Tudou and GRSAI use this integration. Each user registers their own Cloudinary
 account and enters their own Cloud Name, API Key and API Secret in API settings.
 There is no shared account, application access code, Vercel environment variable,
-server signing endpoint or image-host fallback to ImgBB.
+server signing endpoint.
 
 ## Account setup
 
@@ -38,7 +38,7 @@ secret. This personal-account mode is not equivalent security to a backend-held
 secret.
 
 Changing accounts applies to new uploads. An upload already in progress keeps
-the account snapshot it started with. Existing public Cloudinary and ImgBB URLs
+the account snapshot it started with. Existing public Cloudinary URLs
 remain usable and are never moved to a different account automatically.
 
 ## Image behavior

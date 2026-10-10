@@ -5,7 +5,7 @@ import test from "node:test";
 import vm from "node:vm";
 import {
     CLOUDINARY_MAX_BYTES, CLOUDINARY_TARGET_BYTES, CLOUDINARY_MAX_PIXELS,
-    usesCloudinaryReferenceHost, isCloudinaryImageUrl, isLegacyImgBbImageUrl,
+    usesCloudinaryReferenceHost, isCloudinaryImageUrl,
     prepareCloudinaryReferenceBlob, uploadCloudinaryReferenceBlob, cloudinaryReferenceSource,
     cloudinaryCredentials, signCloudinaryUpload,
 } from "../cloudinary-reference-upload.js";
@@ -26,10 +26,9 @@ function responseImage(body, cloudName = config.cloudinaryCloudName) {
     };
 }
 
-test("only Tudou and GRSAI use Cloudinary, regardless of saved legacy host preferences", () => {
+test("only Tudou and GRSAI use Cloudinary", () => {
     for (const provider of ["tudou", "grsai"]) {
         assert.equal(usesCloudinaryReferenceHost({ provider }), true);
-        assert.equal(usesCloudinaryReferenceHost({ provider, referenceImageHost: "imgbb" }), true);
     }
     for (const provider of ["apilio", "runninghub", "apimart", "default", "custom"]) {
         assert.equal(usesCloudinaryReferenceHost({ provider }), false);
@@ -50,8 +49,6 @@ test("host validators reject insecure, credentialed, non-image and lookalike URL
         "https://res.cloudinary.com:8080/demo/image/upload/a.png",
         "https://res.cloudinary.com/demo/image/fetch/https://example.com/a.png",
     ]) assert.equal(isCloudinaryImageUrl(url), false, url);
-    assert.equal(isLegacyImgBbImageUrl("https://i.ibb.co/a/b.png"), true);
-    assert.equal(isLegacyImgBbImageUrl("https://i.ibb.co.evil.test/a.png"), false);
 });
 
 test("a compliant 4K original is returned by identity with no encoding or image mutation", async () => {
@@ -181,7 +178,7 @@ test("each missing personal credential stops before reading pixels or contacting
     await assert.rejects(uploadCloudinaryReferenceBlob({ cloudinaryUploadToken: "old-access-code" }, input), /你自己的 Cloudinary/);
 });
 
-test("Cloudinary failures do not fall back to ImgBB or submit a model request", async () => {
+test("Cloudinary failures do not submit a model request", async () => {
     let calls = 0;
     await assert.rejects(uploadCloudinaryReferenceBlob(config, input, {
         decodeImage, fetchImpl: async () => { calls++; return Response.json({ error: { message: "denied" } }, { status: 401 }); },
@@ -229,15 +226,20 @@ test("stalled uploads time out without an automatic paid retry", async () => {
     assert.equal(calls, 1);
 });
 
-test("old ImgBB and Cloudinary references remain usable with no upload or metadata mutation", async () => {
-    for (const url of ["https://i.ibb.co/example/reference.png", "https://res.cloudinary.com/demo/image/upload/v1/reference.png"]) {
-        const reference = Object.freeze({ dataUrl: url, storageKey: "unchanged-original" });
-        assert.equal(await cloudinaryReferenceSource({ provider: "tudou" }, reference, {
-            readStoredBlob: () => assert.fail("unexpected local write/read"),
-            fetchImpl: () => assert.fail("unexpected upload"),
-        }), url);
-        assert.equal(reference.storageKey, "unchanged-original");
-    }
+test("existing Cloudinary references remain usable with no upload or metadata mutation", async () => {
+    const url = "https://res.cloudinary.com/demo/image/upload/v1/reference.png";
+    const reference = Object.freeze({ dataUrl: url, storageKey: "unchanged-original" });
+    assert.equal(await cloudinaryReferenceSource({ provider: "tudou" }, reference, {
+        readStoredBlob: () => assert.fail("unexpected local write/read"),
+        fetchImpl: () => assert.fail("unexpected upload"),
+    }), url);
+    assert.equal(reference.storageKey, "unchanged-original");
+});
+
+test("non-Cloudinary references are no longer accepted by the Cloudinary uploader", async () => {
+    await assert.rejects(cloudinaryReferenceSource({ provider: "tudou" }, {
+        dataUrl: "https://example.com/reference.png",
+    }, { fetchImpl: async () => new Response(null, { status: 404 }) }), /参考图读取失败/);
 });
 
 test("stored original is preferred and reference metadata never gets overwritten with the upload result", async () => {
@@ -285,24 +287,21 @@ function between(start, end) {
     return bundle.slice(first, last);
 }
 
-test("actual bundle image uploader routes only the two target providers to Cloudinary", async () => {
-    const code = between("imgbbReferenceSource=async function(", ";\nconst TEXT_REFERENCE_MAX_EDGE");
+test("actual bundle image uploader routes target providers to Cloudinary and keeps native uploaders", async () => {
+    const code = between("async function referenceSource(", "function Zq");
     const calls = [];
-    const upload = vm.runInNewContext(`${code};imgbbReferenceSource`, {
+    const upload = vm.runInNewContext(`${code};referenceSource`, {
         usesCloudinaryReferenceHost, cloudinaryReferenceSource: async (...args) => { calls.push(["cloudinary", args[0].provider]); return "cloud"; },
         Sw: async () => input, Xl: async () => "",
-        isImgBbReferenceUrl: isLegacyImgBbImageUrl,
-        isTudouSite: e => e.provider === "tudou", isApilioSite: e => e.provider === "apilio",
+        isPublicImageUrl: value => String(value).startsWith("http"),
+        isApilioSite: e => e.provider === "apilio",
         uploadApilioReferenceBlob: async () => { calls.push(["apilio"]); return "apilio"; },
-        prepareTudouReferenceBlob: async blob => blob, TUDOU_REFERENCE_MAX_BYTES: 14 * 1024 * 1024,
-        FormData, reportImageTaskProgress() {},
-        Ln: { post: async () => { calls.push(["imgbb"]); return { data: { success: true, data: { url: "https://i.ibb.co/test/a.png" } } }; } },
     });
-    for (const provider of ["tudou", "grsai", "apilio", "custom"]) {
-        await upload({ provider, imgbbApiKey: "legacy" }, { storageKey: "key" });
-    }
-    await upload({ provider: "tudou", referenceImageHost: "imgbb", imgbbApiKey: "legacy" }, { storageKey: "key" });
-    assert.deepEqual(calls, [["cloudinary", "tudou"], ["cloudinary", "grsai"], ["apilio"], ["imgbb"], ["cloudinary", "tudou"]]);
+    await upload({ provider: "tudou" }, { storageKey: "key" });
+    await upload({ provider: "grsai" }, { storageKey: "key" });
+    await upload({ provider: "apilio" }, { storageKey: "key" });
+    await assert.rejects(upload({ provider: "custom" }, { storageKey: "key" }), /参考图读取失败/);
+    assert.deepEqual(calls, [["cloudinary", "tudou"], ["cloudinary", "grsai"], ["apilio"]]);
 });
 
 test("settings accept personal Cloudinary credentials instead of shared application access codes", () => {
@@ -317,13 +316,13 @@ test("actual text-reference branch changes only Tudou/GRSAI while keeping native
     const calls = [];
     const prepare = vm.runInNewContext(`${code};prepareTextReferenceDataUrl`, {
         usesCloudinaryReferenceHost,
+        Sw: async () => input, Xl: async () => "",
         cloudinaryReferenceSource: async e => { calls.push(e.provider); return "cloud"; },
         isApilioSite: e => e.provider === "apilio", isRunningHubSite: e => e.provider === "runninghub",
         fetch: async () => new Response(input), throwIfTudouReferenceAborted() {},
         uploadApilioReferenceBlob: async () => "native-apilio",
         uploadRunningHubReferenceBlob: async () => "native-rh",
         prepareTextReferenceBlob: async blob => blob, P$e: async () => "inline",
-        textReferenceImgBbKey: () => "", uploadTextReferenceBlob: () => assert.fail("unexpected fallback"),
     });
     assert.equal(await prepare("blob:test", { provider: "tudou" }, null, 100), "cloud");
     assert.equal(await prepare("blob:test", { provider: "grsai" }, null, 100), "cloud");

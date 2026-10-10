@@ -24,16 +24,6 @@ export function isCloudinaryImageUrl(value) {
     }
 }
 
-export function isLegacyImgBbImageUrl(value) {
-    try {
-        const url = new URL(String(value || ""));
-        return url.protocol === "https:" && !url.username && !url.password && !url.port
-            && (url.hostname === "ibb.co" || url.hostname.endsWith(".ibb.co"));
-    } catch {
-        return false;
-    }
-}
-
 function checkAbort(signal) {
     if (signal?.aborted) throw signal.reason || new DOMException("Aborted", "AbortError");
 }
@@ -207,8 +197,8 @@ export async function cloudinaryReferenceSource(config, reference, options = {})
     if (!usesCloudinaryReferenceHost(config)) throw new Error("当前站点不使用 Cloudinary 图床");
     checkAbort(options.signal);
     const source = reference.dataUrl || reference.url || "";
-    // Preserve old project references. Only local/data/blob sources require a new upload.
-    if (isCloudinaryImageUrl(source) || isLegacyImgBbImageUrl(source)) return source;
+    // Existing Cloudinary references can be sent directly. Local/data/blob sources need an upload.
+    if (isCloudinaryImageUrl(source)) return source;
     let blob = reference.storageKey && options.readStoredBlob
         ? await options.readStoredBlob(reference.storageKey) : null;
     if (!blob) {

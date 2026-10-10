@@ -164,7 +164,7 @@
     const channels = Array.isArray(config?.channels) ? config.channels : [];
     const rows = [];
     const names = { runninghub: "RH", apimart: "Mart", soon: "Soon", tudou: "Tudou", grsai: "Grsai" };
-    const order = ["runninghub", "apimart", "soon", "tudou", "grsai"];
+    const order = ["runninghub", "apimart", "tudou", "grsai", "soon"];
     const resolutions = ["1k", "2k", "4k"];
     channels.slice().sort((a, b) => order.indexOf(a.provider) - order.indexOf(b.provider)).forEach((channel) => {
       const provider = channel.provider;
