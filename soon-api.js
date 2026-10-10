@@ -4,11 +4,10 @@ export const SOON_SITE_NAME = "Soon";
 export const SOON_IMAGE_MODELS = ["nano-banana-pro"];
 export const SOON_TEXT_MODELS = [];
 export const SOON_SITE_MODELS = [...SOON_IMAGE_MODELS];
-export const SOON_UPLOAD_URL = `${SOON_ORIGIN}/v1/files`;
-export const SOON_UPLOAD_MAX_BYTES = 10 * 1024 * 1024;
 export const SOON_MAX_REFERENCES = 14;
 
-const SOON_UPLOAD_TARGET_BYTES = 9 * 1024 * 1024;
+const SOON_IMAGE_GROUP = "default";
+const SOON_IMAGE_BACKEND_MODEL = "gemini-3-pro-image";
 const RATIOS = new Set([
     "auto", "1:1", "2:3", "3:2", "3:4", "4:3",
     "4:5", "5:4", "9:16", "16:9", "21:9",
@@ -16,7 +15,6 @@ const RATIOS = new Set([
 const ORIGINS = new Set([
     SOON_ORIGIN, "https://api-hk.soonstudio.ai", "https://api-us.soonstudio.ai",
 ]);
-const IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "image/gif"]);
 const TASK_TIMEOUT_MS = 10 * 60 * 1000;
 const POLL_INTERVAL_MS = 2500;
 
@@ -25,13 +23,13 @@ export function isSoonSite(config) {
     try { return ORIGINS.has(new URL(config?.baseUrl).origin); } catch { return false; }
 }
 
-function apiRoot(config) {
+function apiOrigin(config) {
     const value = new URL(config?.baseUrl || SOON_ORIGIN);
     if (!ORIGINS.has(value.origin) || value.username || value.password
         || !["", "/", "/v1", "/v1/"].includes(value.pathname)) {
         throw new Error("Soon API 地址无效");
     }
-    return `${value.origin}/v1`;
+    return value.origin;
 }
 
 function apiKey(config) {
@@ -44,8 +42,8 @@ function headers(config, json = true) {
     return {
         Accept: "application/json",
         Authorization: `Bearer ${apiKey(config)}`,
-        "x-studio-channel-group": "default",
-        "x-studio-request-model": "nano-banana-pro",
+        "x-studio-channel-group": SOON_IMAGE_GROUP,
+        "x-studio-request-model": SOON_IMAGE_BACKEND_MODEL,
         ...(json ? { "Content-Type": "application/json" } : {}),
     };
 }
@@ -119,7 +117,7 @@ export function soonImagePrice(config) {
     return soonResolution(config) === "4K" ? 0.33 : 0.24;
 }
 
-export function soonImageRequestSpec(config, prompt, imageUrls = []) {
+export function soonImageRequestSpec(config, prompt, imageParts = []) {
     const model = String(config?.model || config?.imageModel || "nano-banana-pro").split("::").at(-1);
     if (!["nano-banana-pro", "nano-banana-pro-2k", "nano-banana-pro-4k"].includes(model)) {
         throw new Error("Soon 当前只接入 Nano Banana Pro");
@@ -127,24 +125,18 @@ export function soonImageRequestSpec(config, prompt, imageUrls = []) {
     if (!String(prompt || "").trim()) throw new Error("请输入提示词");
     const ratio = String(config?.size || "auto").trim().toLowerCase();
     if (!RATIOS.has(ratio)) throw new Error(`Soon 不支持比例 ${ratio}`);
-    if (imageUrls.length > SOON_MAX_REFERENCES) throw new Error("Soon 最多支持 14 张参考图");
-    for (const imageUrl of imageUrls) {
-        let url;
-        try { url = new URL(imageUrl); } catch {}
-        if (url?.protocol !== "https:" || url.username || url.password) {
-            throw new Error("Soon 参考图需要 HTTPS 地址");
-        }
-    }
+    if (imageParts.length > SOON_MAX_REFERENCES) throw new Error("Soon 最多支持 14 张参考图");
     return {
-        endpoint: "/images/generations?async=true",
+        endpoint: `/v1beta/models/${SOON_IMAGE_BACKEND_MODEL}:generateContent`,
         body: {
-            model: "nano-banana-pro",
-            prompt: String(prompt).trim(),
-            n: 1,
-            aspect_ratio: ratio,
-            image_size: soonResolution(config),
-            response_format: "url",
-            ...(imageUrls.length ? { images: [...imageUrls] } : {}),
+            contents: [{
+                role: "user",
+                parts: [{ text: String(prompt).trim() }, ...imageParts],
+            }],
+            generationConfig: {
+                responseModalities: ["TEXT", "IMAGE"],
+                imageConfig: { aspectRatio: ratio === "auto" ? "1:1" : ratio, imageSize: soonResolution(config) },
+            },
         },
     };
 }
@@ -163,8 +155,13 @@ function outputUrls(payload) {
             return;
         }
         if (typeof value !== "object") return;
-        for (const key of ["url", "image_url", "output", "images", "result", "data"]) {
+        for (const key of ["url", "image_url", "output", "images", "result", "data", "candidates", "content", "parts"]) {
             visit(value[key], depth + 1);
+        }
+        const inline = value.inlineData || value.inline_data;
+        if (inline && typeof inline.data === "string" && inline.data.trim()) {
+            const mimeType = String(inline.mimeType || inline.mime_type || "image/png").trim() || "image/png";
+            urls.add(`data:${mimeType};base64,${inline.data.trim()}`);
         }
         if (typeof value.b64_json === "string" && value.b64_json.trim()) {
             const base64 = value.b64_json.trim();
@@ -202,10 +199,39 @@ export function parseSoonTask(payload, submittedTaskId = "") {
     return { status: "failed", taskId, error: message(record, "Soon 返回了未知任务状态") };
 }
 
+async function referenceToInlineData(reference, signal, fetchImpl = fetch) {
+    checkAbort(signal);
+    if (reference && typeof reference === "object" && reference.inlineData) return { inlineData: reference.inlineData };
+    const source = typeof reference === "string" ? reference : reference?.dataUrl || reference?.url || "";
+    if (!source) throw new Error("Soon 无法读取参考图");
+    let mimeType = "image/png";
+    let base64 = "";
+    const dataMatch = String(source).match(/^data:([^;,]+);base64,(.+)$/s);
+    if (dataMatch) {
+        mimeType = dataMatch[1] || mimeType;
+        base64 = dataMatch[2].replace(/\s+/g, "");
+    } else {
+        const response = await fetchImpl(source, { signal });
+        if (!response.ok) throw new Error(`Soon 参考图读取失败（${response.status}）`);
+        const blob = await response.blob();
+        mimeType = blob.type || mimeType;
+        const bytes = new Uint8Array(await blob.arrayBuffer());
+        let binary = "";
+        const chunkSize = 0x8000;
+        for (let i = 0; i < bytes.length; i += chunkSize) {
+            binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+        }
+        base64 = btoa(binary);
+    }
+    if (!base64) throw new Error("Soon 参考图为空");
+    return { inlineData: { mimeType, data: base64 } };
+}
+
 export async function runSoonImageGeneration(config, prompt, imageUrls = [], options = {}) {
-    const root = apiRoot(config);
+    const origin = apiOrigin(config);
     const requestHeaders = headers(config);
-    const spec = soonImageRequestSpec(config, prompt, imageUrls);
+    const imageParts = await Promise.all(imageUrls.map(reference => referenceToInlineData(reference, options.signal, options.fetchImpl || fetch)));
+    const spec = soonImageRequestSpec(config, prompt, imageParts);
     const fetchImpl = options.fetchImpl || fetch;
     const sleep = options.sleep || wait;
     const now = options.now || Date.now;
@@ -216,10 +242,12 @@ export async function runSoonImageGeneration(config, prompt, imageUrls = [], opt
     try {
         // A billable submission is never retried automatically.
         options.onProgress?.({ stage: "generating", progress: 0 });
-        const submitted = await fetchJson(`${root}${spec.endpoint}`, {
+        const submitted = await fetchJson(`${origin}${spec.endpoint}`, {
             method: "POST", headers: requestHeaders,
             body: JSON.stringify(spec.body), signal: timed.signal,
         }, fetchImpl);
+        const directUrls = outputUrls(submitted);
+        if (directUrls.length) return directUrls;
         let result = parseSoonTask(submitted);
         taskId = result.taskId;
         if (result.status === "completed") return result.urls;
@@ -258,99 +286,4 @@ export async function runSoonImageGeneration(config, prompt, imageUrls = [], opt
     } finally {
         timed.dispose();
     }
-}
-
-export async function compressSoonReferenceBlob(original, targetBytes, options = {}) {
-    checkAbort(options.signal);
-    let image;
-    let objectUrl;
-    if (typeof createImageBitmap === "function") image = await createImageBitmap(original);
-    else {
-        objectUrl = URL.createObjectURL(original);
-        image = new Image();
-        image.src = objectUrl;
-        try { await image.decode(); } catch (error) {
-            URL.revokeObjectURL(objectUrl);
-            throw error;
-        }
-    }
-    try {
-        const width = image.width || image.naturalWidth, height = image.height || image.naturalHeight;
-        const canvas = document.createElement("canvas");
-        try {
-            for (const scale of [1, 0.8, 0.6, 0.4, 0.25]) {
-                canvas.width = Math.max(1, Math.round(width * scale));
-                canvas.height = Math.max(1, Math.round(height * scale));
-                const context = canvas.getContext("2d");
-                if (!context) throw new Error("Soon 无法创建上传副本");
-                context.drawImage(image, 0, 0, canvas.width, canvas.height);
-                for (const quality of [0.92, 0.8, 0.65, 0.45]) {
-                    checkAbort(options.signal);
-                    const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/webp", quality));
-                    if (blob?.size && blob.size <= targetBytes) return blob;
-                }
-            }
-        } finally { canvas.width = 0; canvas.height = 0; }
-        throw new Error("Soon 上传副本压缩失败，本地原图未修改");
-    } finally {
-        image.close?.();
-        if (objectUrl) URL.revokeObjectURL(objectUrl);
-    }
-}
-
-export async function uploadSoonReferenceBlob(config, original, options = {}) {
-    const requestHeaders = headers(config, false);
-    if (!original?.size) throw new Error("Soon 参考图为空");
-    if (!IMAGE_TYPES.has(String(original.type).toLowerCase())) throw new Error("Soon 参考图请使用 PNG、JPG、WebP 或 GIF");
-    const timed = timedSignal(options.signal, options.timeoutMs ?? 180_000, "Soon 参考图上传超时，本地原图未修改");
-    const fetchImpl = options.fetchImpl || fetch;
-    let blob = original;
-    const compressCopy = async targetBytes => {
-        const compressed = await (options.compressImage || compressSoonReferenceBlob)(
-            original, targetBytes, { signal: timed.signal },
-        );
-        if (!compressed?.size || compressed.size > targetBytes || !IMAGE_TYPES.has(compressed.type)) {
-            throw new Error("Soon 上传副本压缩失败，本地原图未修改");
-        }
-        return compressed;
-    };
-    try {
-        if (blob.size > SOON_UPLOAD_MAX_BYTES) {
-            options.onProgress?.({ stage: "uploading", progress: 2 });
-            blob = await compressCopy(SOON_UPLOAD_TARGET_BYTES);
-        }
-        for (let attempt = 0; attempt < 3; attempt += 1) {
-            checkAbort(timed.signal);
-            const form = new FormData();
-            const extension = blob.type === "image/webp" ? "webp"
-                : blob.type === "image/jpeg" ? "jpg" : blob.type === "image/gif" ? "gif" : "png";
-            form.set("file", blob, `reference.${extension}`);
-            options.onProgress?.({ stage: "uploading", progress: 2 });
-            try {
-                const payload = await fetchJson(SOON_UPLOAD_URL, {
-                    method: "POST", headers: requestHeaders, body: form, signal: timed.signal,
-                }, fetchImpl);
-                const url = String(payload?.url || payload?.data?.url || "").trim();
-                let valid = false;
-                try {
-                    const parsed = new URL(url);
-                    valid = parsed.protocol === "https:" && !parsed.username && !parsed.password;
-                } catch {}
-                if (!valid) throw new Error("Soon 上传成功但没有返回有效 HTTPS 地址");
-                options.onProgress?.({ stage: "uploading", progress: 10 });
-                return url;
-            } catch (error) {
-                checkAbort(timed.signal);
-                if (error.status === 401 || error.status === 403) {
-                    throw new Error("Soon 原生上传未授权，请核对 API Key；平台可能需要开放此接口的 API Key 权限");
-                }
-                if (error.status !== 413 || attempt === 2) throw error;
-                const target = Math.min(4 * 1024 * 1024, Math.floor(blob.size / 2));
-                blob = await compressCopy(target);
-            }
-        }
-    } catch (error) {
-        if (timed.signal.aborted) throw timed.signal.reason || error;
-        throw error;
-    } finally { timed.dispose(); }
 }
