@@ -17,7 +17,7 @@
 .canvas-price-table-panel{position:absolute;left:0;bottom:calc(100% + 10px);display:none;width:min(500px,calc(100vw - 24px));max-height:min(72vh,620px);overflow:auto;padding:14px;border:1px solid rgba(148,163,184,.32);border-radius:16px;background:rgba(255,255,255,.98);color:#292524;box-shadow:0 18px 50px rgba(15,23,42,.18);backdrop-filter:blur(14px)}
 .canvas-price-table-host.is-open .canvas-price-table-panel{display:block}
 .canvas-price-table-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:2px;font-size:14px;font-weight:800;letter-spacing:.01em}.canvas-price-table-subtitle{margin-bottom:12px;color:#78716c;font-size:10px;line-height:1.4}.canvas-price-table-fx{display:flex;align-items:center;gap:6px;white-space:nowrap;color:#57534e;font-size:10px;font-weight:600}.canvas-price-table-fx input{width:48px;height:25px;padding:0 6px;border:1px solid rgba(99,102,241,.35);border-radius:7px;background:#fff;color:#292524;text-align:right;font:600 11px inherit}.canvas-price-table-fx button{height:25px;padding:0 7px;border:0;border-radius:7px;background:#eef2ff;color:#4338ca;font:700 10px inherit;cursor:pointer}.canvas-price-table-fx button:hover{background:#e0e7ff}
-.canvas-price-table-group{margin-top:11px;overflow:hidden;border:1px solid rgba(148,163,184,.25);border-radius:12px;background:rgba(248,250,252,.66)}.canvas-price-table-group-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;background:linear-gradient(90deg,rgba(238,242,255,.92),rgba(248,250,252,.72));color:#3730a3;font-size:11px;font-weight:800}.canvas-price-table-group.provider-rh .canvas-price-table-group-head{background:linear-gradient(90deg,#eff6ff,#f8fafc);color:#1d4ed8}.canvas-price-table-group.provider-mart .canvas-price-table-group-head{background:linear-gradient(90deg,#f5f3ff,#fafafa);color:#6d28d9}.canvas-price-table-group.provider-soon .canvas-price-table-group-head{background:linear-gradient(90deg,#fff7ed,#fffbeb);color:#c2410c}.canvas-price-table-group.provider-tudou .canvas-price-table-group-head{background:linear-gradient(90deg,#ecfdf5,#f0fdfa);color:#047857}.canvas-price-table-group.provider-grsai .canvas-price-table-group-head{background:linear-gradient(90deg,#fff1f2,#fff7ed);color:#be123c}.canvas-price-table-count{color:#78716c;font-size:10px;font-weight:500}.canvas-price-table-grid{display:grid;grid-template-columns:minmax(0,1fr) repeat(3,54px);gap:7px;align-items:center}.canvas-price-table-grid-head{padding:7px 10px 5px;color:#a8a29e;font-size:9px;font-weight:700;text-align:right;text-transform:uppercase}.canvas-price-table-grid-head:first-child{text-align:left}.canvas-price-table-row{padding:8px 10px;border-top:1px solid rgba(148,163,184,.18);font-size:11px;line-height:1.3}.canvas-price-table-name{min-width:0}.canvas-price-table-model{display:block;overflow:hidden;font-weight:700;text-overflow:ellipsis;white-space:nowrap}.canvas-price-table-quality{display:block;color:#78716c;font-size:9px}.canvas-price-table-value{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-size:10px;font-weight:700;color:#292524}.canvas-price-table-wide-note{grid-column:2 / span 3;color:#78716c;font-size:10px;text-align:center;white-space:nowrap}.canvas-price-table-note{display:block;color:#a8a29e;font-size:9px;font-weight:500}.canvas-price-table-empty{padding:14px 4px;color:#78716c;font-size:11px;text-align:center}.dark .canvas-price-table-divider{--canvas-price-table-divider:rgba(120,113,108,.5)}.dark .canvas-price-table-toggle{color:#c7d2fe}.dark .canvas-price-table-toggle:hover{background:rgba(99,102,241,.2);color:#e0e7ff}.dark .canvas-price-table-panel{background:rgba(28,25,23,.98);border-color:#44403c;color:#f5f5f4}.dark .canvas-price-table-subtitle,.dark .canvas-price-table-quality,.dark .canvas-price-table-count{color:#a8a29e}.dark .canvas-price-table-fx{color:#d6d3d1}.dark .canvas-price-table-fx input{background:#292524;border-color:#6366f1;color:#f5f5f4}.dark .canvas-price-table-fx button{background:#312e81;color:#e0e7ff}.dark .canvas-price-table-group{border-color:#44403c;background:rgba(41,37,36,.5)}.dark .canvas-price-table-group-head{background:linear-gradient(90deg,rgba(49,46,129,.55),rgba(41,37,36,.5));color:#c7d2fe}.dark .canvas-price-table-grid-head{color:#78716c}.dark .canvas-price-table-row{border-color:rgba(120,113,108,.35)}.dark .canvas-price-table-value{color:#f5f5f4}.dark .canvas-price-table-empty{color:#a8a29e}
+.canvas-price-table-group{margin-top:11px;overflow:hidden;border:1px solid rgba(148,163,184,.25);border-radius:12px;background:rgba(248,250,252,.66)}.canvas-price-table-group-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;background:linear-gradient(90deg,rgba(238,242,255,.92),rgba(248,250,252,.72));color:#3730a3;font-size:11px;font-weight:800}.canvas-price-table-group.provider-rh .canvas-price-table-group-head{background:linear-gradient(90deg,#eff6ff,#f8fafc);color:#1d4ed8}.canvas-price-table-group.provider-mart .canvas-price-table-group-head{background:linear-gradient(90deg,#f5f3ff,#fafafa);color:#6d28d9}.canvas-price-table-group.provider-soon .canvas-price-table-group-head{background:linear-gradient(90deg,#fff7ed,#fffbeb);color:#c2410c}.canvas-price-table-group.provider-tudou .canvas-price-table-group-head{background:linear-gradient(90deg,#ecfdf5,#f0fdfa);color:#047857}.canvas-price-table-group.provider-grsai .canvas-price-table-group-head{background:linear-gradient(90deg,#fff1f2,#fff7ed);color:#be123c}.canvas-price-table-count{color:#78716c;font-size:10px;font-weight:500}.canvas-price-table-grid{display:grid;grid-template-columns:minmax(0,1fr) repeat(3,54px);gap:7px;align-items:center}.canvas-price-table-grid-head{padding:7px 10px 5px;color:#a8a29e;font-size:9px;font-weight:700;text-align:right;text-transform:uppercase}.canvas-price-table-grid-head:first-child{text-align:left}.canvas-price-table-row{padding:8px 10px;border-top:1px solid rgba(148,163,184,.18);font-size:11px;line-height:1.3}.canvas-price-table-name{min-width:0}.canvas-price-table-model{display:inline-block;max-width:calc(100% - 4px);overflow:hidden;font-weight:700;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}.canvas-price-table-thinking-select{margin-left:5px;height:20px;max-width:84px;padding:0 3px;border:1px solid rgba(99,102,241,.3);border-radius:5px;background:#fff;color:#4338ca;font:600 9px inherit;vertical-align:middle}.canvas-price-table-quality{display:block;color:#78716c;font-size:9px}.canvas-price-table-value{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-size:10px;font-weight:700;color:#292524}.canvas-price-table-wide-note{grid-column:2 / span 3;color:#78716c;font-size:10px;text-align:center;white-space:nowrap}.canvas-price-table-note{display:block;color:#a8a29e;font-size:9px;font-weight:500}.canvas-price-table-empty{padding:14px 4px;color:#78716c;font-size:11px;text-align:center}.dark .canvas-price-table-divider{--canvas-price-table-divider:rgba(120,113,108,.5)}.dark .canvas-price-table-toggle{color:#c7d2fe}.dark .canvas-price-table-toggle:hover{background:rgba(99,102,241,.2);color:#e0e7ff}.dark .canvas-price-table-panel{background:rgba(28,25,23,.98);border-color:#44403c;color:#f5f5f4}.dark .canvas-price-table-subtitle,.dark .canvas-price-table-quality,.dark .canvas-price-table-count{color:#a8a29e}.dark .canvas-price-table-fx{color:#d6d3d1}.dark .canvas-price-table-fx input{background:#292524;border-color:#6366f1;color:#f5f5f4}.dark .canvas-price-table-fx button{background:#312e81;color:#e0e7ff}.dark .canvas-price-table-group{border-color:#44403c;background:rgba(41,37,36,.5)}.dark .canvas-price-table-group-head{background:linear-gradient(90deg,rgba(49,46,129,.55),rgba(41,37,36,.5));color:#c7d2fe}.dark .canvas-price-table-grid-head{color:#78716c}.dark .canvas-price-table-row{border-color:rgba(120,113,108,.35)}.dark .canvas-price-table-value{color:#f5f5f4}.dark .canvas-price-table-empty{color:#a8a29e}
 @media(max-width:767px){.canvas-price-table-panel{width:calc(100vw - 16px);max-height:58vh}.canvas-price-table-grid{grid-template-columns:minmax(0,1fr) repeat(3,48px);gap:4px}}
 `;
 
@@ -98,6 +98,8 @@
       priceByQuality: row.priceByQuality,
       note: row.note || row.hint || "",
       fullWidthNote: row.fullWidthNote === true,
+      thinkingOptions: Array.isArray(row.thinkingOptions) ? row.thinkingOptions : undefined,
+      thinkingPrices: row.thinkingPrices && typeof row.thinkingPrices === "object" ? row.thinkingPrices : undefined,
     };
   }
 
@@ -173,18 +175,29 @@
       const site = names[provider];
       const currency = ["runninghub", "apimart"].includes(provider) ? "USD" : "CNY";
       const models = Array.isArray(channel.models) ? channel.models : [];
-      const add = (model, modelLabel, patch = {}, references = false, note = "") => {
+      const add = (model, modelLabel, patch = {}, references = false, note = "", thinkingOptions = null) => {
+        const basePatch = thinkingOptions?.length ? { ...patch, gptImageQuality: "medium" } : patch;
         const priceByQuality = {};
         resolutions.forEach((quality) => {
-          const requestConfig = { ...config, ...channel, ...patch, channels: [channel], model: `${channel.id}::${model}`, imageModel: `${channel.id}::${model}`, quality, count: 1, channelMode: "local" };
+          const requestConfig = { ...config, ...channel, ...basePatch, channels: [channel], model: `${channel.id}::${model}`, imageModel: `${channel.id}::${model}`, quality, count: 1, channelMode: "local" };
           try { priceByQuality[quality.toUpperCase()] = calculate(requestConfig, references); } catch (_) { priceByQuality[quality.toUpperCase()] = null; }
         });
-        const values = Object.values(priceByQuality);
-        const same = values.every((value) => value === values[0]);
+        const thinkingPrices = {};
+        for (const option of thinkingOptions || []) {
+          const values = {};
+          resolutions.forEach((quality) => {
+            const requestConfig = { ...config, ...channel, ...patch, gptImageQuality: option.value, channels: [channel], model: `${channel.id}::${model}`, imageModel: `${channel.id}::${model}`, quality, count: 1, channelMode: "local" };
+            try { values[quality.toUpperCase()] = calculate(requestConfig, references); } catch (_) { values[quality.toUpperCase()] = null; }
+          });
+          thinkingPrices[option.value] = values;
+        }
+        const prices = Object.values(priceByQuality);
+        const same = prices.every((value) => value === prices[0]);
         rows.push({ site, model: modelLabel, quality: same ? "1K / 2K / 4K" : "每张", currency,
-          price: same ? values[0] : null, priceByQuality: same ? undefined : priceByQuality,
-          note: values.every((value) => value == null) ? "按实际用量计费" : note,
-          fullWidthNote: values.every((value) => value == null) });
+          price: same ? prices[0] : null, priceByQuality: same ? undefined : priceByQuality,
+          thinkingOptions: thinkingOptions || undefined, thinkingPrices: thinkingOptions?.length ? thinkingPrices : undefined,
+          note: prices.every((value) => value == null) ? "按实际用量计费" : note,
+          fullWidthNote: prices.every((value) => value == null) });
       };
       const knownModels = [...new Set(models.map((model) => String(model).replace(/^.*::/, "")))];
       knownModels.forEach((model) => {
@@ -206,8 +219,12 @@
           return add(model, `${label} · 官方`, { gptImageQuality: "medium" });
         }
         if (model === "gpt-image-2.5" && provider === "tudou") {
-          add(model, "GPT Image 2.5 · Flare", { tudouGpt25Variant: "flare" });
-          return add(model, "GPT Image 2.5 · Sunburst", { tudouGpt25Variant: "sunburst" });
+          const thinkingOptions = [
+            { value: "low", label: "Low" }, { value: "medium", label: "Medium" },
+            { value: "high", label: "High" }, { value: "xhigh", label: "XHigh" }, { value: "max", label: "Max" },
+          ];
+          add(model, "GPT Image 2.5 · Flare", { tudouGpt25Variant: "flare" }, false, "", thinkingOptions);
+          return add(model, "GPT Image 2.5 · Sunburst", { tudouGpt25Variant: "sunburst" }, false, "", thinkingOptions);
         }
         if (["gpt-image-2", "gpt-image-2-all"].includes(model) && ["tudou", "runninghub"].includes(provider)) {
           ["low", "medium", "high"].forEach((quality) => add(model, `GPT Image 2 · ${quality}`, { gptImageQuality: quality }, false, provider === "runninghub" ? "无参考图" : ""));
@@ -311,12 +328,32 @@
         const model = document.createElement("span");
         model.className = "canvas-price-table-model";
         model.textContent = row.model;
+        name.appendChild(model);
+        if (row.thinkingOptions?.length && row.thinkingPrices) {
+          const thinking = document.createElement("select");
+          thinking.className = "canvas-price-table-thinking-select";
+          thinking.setAttribute("aria-label", `${row.model} 思考程度`);
+          row.thinkingOptions.forEach((option) => {
+            const item = document.createElement("option");
+            item.value = option.value;
+            item.textContent = option.label;
+            thinking.appendChild(item);
+          });
+          thinking.value = "medium";
+          thinking.addEventListener("change", () => {
+            const prices = row.thinkingPrices[thinking.value] || {};
+            itemValues.forEach((value, index) => {
+              value.textContent = formatAmount(prices[["1K", "2K", "4K"][index]], row.currency);
+            });
+          });
+          name.appendChild(thinking);
+        }
             const quality = document.createElement("span");
             quality.className = "canvas-price-table-quality";
             // Resolution is already represented by the three price columns;
             // keep the model cell quiet instead of repeating it inline.
             quality.textContent = row.quality && !/^(1K \/ 2K \/ 4K|每张)$/i.test(row.quality) ? ` · ${row.quality}` : "";
-        name.append(model, quality);
+        name.append(quality);
         if (row.note && !row.fullWidthNote) {
           const note = document.createElement("span");
           note.className = "canvas-price-table-note";
@@ -324,6 +361,7 @@
           name.appendChild(note);
         }
         item.appendChild(name);
+        const itemValues = [];
         if (row.fullWidthNote && row.note) {
           const wideNote = document.createElement("div");
           wideNote.className = "canvas-price-table-wide-note";
@@ -334,6 +372,7 @@
             const value = document.createElement("div");
             value.className = "canvas-price-table-value";
             value.textContent = formatPrice(row, quality);
+            itemValues.push(value);
             item.appendChild(value);
           });
         }
