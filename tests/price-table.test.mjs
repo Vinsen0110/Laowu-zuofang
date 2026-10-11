@@ -18,7 +18,11 @@ test("canvas price table is loaded as a local module and keeps provider currency
   assert.match(script, /表内只显示人民币/);
   assert.match(script, /type = "number"/);
   assert.match(script, /canvas-price-table-wide-note/);
-  assert.match(script, /fullWidthNote: values\.every\(\(value\) => value == null\)/);
+  assert.match(script, /canvas-price-table-thinking-select/);
+  assert.match(script, /thinkingPrices/);
+  assert.match(script, /name\.appendChild\(model\);[\s\S]*name\.appendChild\(thinking\);/);
+  assert.doesNotMatch(script, /name\.append\(model, quality\)/);
+  assert.match(script, /fullWidthNote: prices\.every\(\(value\) => value == null\)/);
   assert.match(script, /RH: "快速稳定"/);
   assert.match(script, /Mart: "需要魔法"/);
   assert.match(script, /Tudou: "经济实惠"/);
