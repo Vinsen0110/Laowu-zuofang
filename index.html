@@ -7,6 +7,12 @@
         <link rel="icon" type="image/png" href="./kitty.png" />
         <link rel="preload" href="./assets/index-DT58oPsm.css" as="style" crossorigin>
         <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261009-route-05" crossorigin>
+        <link rel="preload" href="./icons/gemini.svg" as="image" type="image/svg+xml" />
+        <link rel="preload" href="./icons/openai.svg" as="image" type="image/svg+xml" />
+        <link rel="preload" href="./icons/claude.svg" as="image" type="image/svg+xml" />
+        <link rel="preload" href="./icons/deepseek.svg" as="image" type="image/svg+xml" />
+        <link rel="preload" href="./icons/glm.svg" as="image" type="image/svg+xml" />
+        <link rel="preload" href="./icons/grok.svg" as="image" type="image/svg+xml" />
         <title>老屋作坊</title>
 
 <script>
@@ -92,11 +98,19 @@
                         input.addEventListener("cancel", function () { finish(null); }, { once: true });
                         input.click();
                     });
+                    // Read the FileList before removing the input. Some browsers clear
+                    // the list as soon as the detached input is removed, which used to
+                    // make an otherwise valid project appear to have no project.json.
+                    var selectedFiles = Array.from(input.files || []);
                     input.remove();
                     if (!file) throw new DOMException("AbortError", "AbortError");
-                    var selectedFiles = Array.from(input.files || []);
-                    var rootName = String(selectedFiles[0]?.webkitRelativePath || file.name || "导入工程").split("/")[0] || "导入工程";
-                    return makeDirectory(rootName.replace(/\.json$/i, "") || "导入工程", file.name === "project.json" ? file : null, selectedFiles);
+                    if (!selectedFiles.length) selectedFiles = [file];
+                    var projectFile = selectedFiles.find(function (candidate) {
+                        var path = String(candidate.webkitRelativePath || candidate.name || "");
+                        return path.split("/").pop().toLowerCase() === "project.json";
+                    }) || (String(file.name || "").toLowerCase() === "project.json" ? file : null);
+                    var rootName = String(selectedFiles[0]?.webkitRelativePath || file.webkitRelativePath || file.name || "导入工程").split("/")[0] || "导入工程";
+                    return makeDirectory(rootName.replace(/\.json$/i, "") || "导入工程", projectFile, selectedFiles);
                 };
             })();
         </script>
