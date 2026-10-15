@@ -6,7 +6,7 @@
         <meta name="description" content="老屋作坊创作工具" />
         <link rel="icon" type="image/png" href="./kitty.png" />
         <link rel="preload" href="./assets/index-DT58oPsm.css" as="style" crossorigin>
-        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261015-theme-01" crossorigin>
+        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261015-no-chat-01" crossorigin>
         <link rel="preload" href="./icons/gemini.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/openai.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/claude.svg" as="image" type="image/svg+xml" />
@@ -589,12 +589,12 @@
                 else document.addEventListener("DOMContentLoaded", observe, { once: true });
             })();
         </script>
-        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261015-theme-01"></script>
+        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261015-no-chat-01"></script>
       <script type="module" src="./display-model-names.js?v=20261008-nano21-01"></script>
       <script type="module" src="./canvas-price-table.js?v=20261009-price-01"></script>
       <script src="./prevent-canvas-drag-download.js?v=20260827-01"></script>
       <link rel="stylesheet" crossorigin href="./assets/index-DT58oPsm.css">
-      <link rel="stylesheet" href="./theme.css?v=20261015-theme-01">
+      <link rel="stylesheet" href="./theme.css?v=20261015-no-chat-01">
       <link rel="stylesheet" href="./startup-entry.css?v=20260913-startup-01">
       <style>
         .laowu-canvas-viewport {
@@ -986,11 +986,6 @@
           grid-template-columns: minmax(0, 1fr);
           margin-bottom: 16px;
         }
-        .api-balance-grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 14px;
-        }
         .rh-text-model-empty {
           padding: 14px 16px;
           border: 1px dashed var(--lw-ui-gray-300);
@@ -1089,7 +1084,6 @@
         }
         .api-native-control,
         .api-name-input.ant-input,
-        .api-balance-input.ant-input,
         .api-balance-password.ant-input-affix-wrapper,
         .api-key-input.ant-input-affix-wrapper {
           width: 100%;
@@ -1106,8 +1100,7 @@
         .api-native-control {
           padding: 0 34px 0 12px;
         }
-        .api-name-input.ant-input,
-        .api-balance-input.ant-input {
+        .api-name-input.ant-input {
           padding: 0 13px;
         }
         .api-balance-password.ant-input-affix-wrapper,
@@ -1116,7 +1109,6 @@
         }
         .api-native-control:focus,
         .api-name-input.ant-input:focus,
-        .api-balance-input.ant-input:focus,
         .api-balance-password.ant-input-affix-wrapper-focused,
         .api-key-input.ant-input-affix-wrapper-focused {
           border-color: var(--lw-ui-blue-300) !important;
@@ -1807,7 +1799,6 @@
         .dark .api-key-picker-menu,
         .dark .api-native-control,
         .dark .api-name-input.ant-input,
-        .dark .api-balance-input.ant-input,
         .dark .api-balance-password.ant-input-affix-wrapper,
         .dark .api-key-input.ant-input-affix-wrapper,
         .dark .settings-grid .ant-select-selector,
@@ -1988,7 +1979,6 @@
             align-items: flex-start;
           }
           .api-key-row,
-          .api-balance-grid,
           .settings-grid {
             grid-template-columns: minmax(0, 1fr);
           }

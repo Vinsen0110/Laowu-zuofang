@@ -146,18 +146,17 @@ function imageCleanup(storedKeys) {
     return { cleanup, deleted };
 }
 
-test("asset and chat cleanup keep images that only exist in the unsaved canvas", async () => {
+test("asset cleanup keeps images that only exist in the unsaved canvas", async () => {
     assert.ok(bundle.includes("const unsaved=globalThis.__laowuUnsavedCanvas?.();await cq({assets:t().assets,projects:r.getState().projects,extra:n,unsaved}),await D$e({assets:t().assets,projects:r.getState().projects,extra:n,unsaved})"));
-    assert.ok(bundle.includes("const unsaved=()=>({nodes:vn.current,chatSessions:ne,history:m.current,lastHistory:h.current});globalThis.__laowuUnsavedCanvas=unsaved;"));
+    assert.ok(bundle.includes("const unsaved=()=>({nodes:vn.current,history:m.current,lastHistory:h.current});globalThis.__laowuUnsavedCanvas=unsaved;"));
 
     const { cleanup, deleted } = imageCleanup(["image:saved", "image:unsaved", "image:undo", "image:orphan"]);
     await cleanup({
         assets: [],
         projects: [{ nodes: [{ metadata: { storageKey: "image:saved" } }] }],
-        extra: { sessions: [] },
+        extra: {},
         unsaved: {
             nodes: [{ metadata: { storageKey: "image:unsaved" } }],
-            chatSessions: [],
             history: { past: [{ nodes: [{ metadata: { storageKey: "image:undo" } }] }], future: [] },
             lastHistory: null,
         },

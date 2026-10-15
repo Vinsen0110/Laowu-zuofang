@@ -5,9 +5,6 @@ export const APP_STATE_KEYS = [
     "infinite-canvas:canvas_store",
 ];
 const NATIVE_PREFERENCE_KEYS = [
-    "canvas-agent-panel-width",
-    "canvas-agent-url",
-    "canvas-agent-token",
     "canvas-image-prompt-presets-v1",
     "canvas-image-quick-tools-v7",
 ];
@@ -101,8 +98,6 @@ function validState(key, value) {
 
 function validPreference(key, value) {
     if (typeof value !== "string") return false;
-    if (key === "canvas-agent-panel-width") return Number.isFinite(Number(value)) && Number(value) > 0;
-    if (key === "canvas-agent-token" || key === "canvas-agent-url") return true;
     try {
         const parsed = JSON.parse(value);
         return key === "canvas-image-prompt-presets-v1"

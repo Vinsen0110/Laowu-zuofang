@@ -439,6 +439,5 @@ test("APIMart official output settings survive generation, retry, and project re
         assert.match(body, /apimartBackground:t\??\.metadata\?\.apimartBackground\|\|e\.apimartBackground\|\|an\.apimartBackground/);
         assert.match(body, /apimartGpt25Variant:t\??\.metadata\?\.apimartGpt25Variant\|\|e\.apimartGpt25Variant\|\|an\.apimartGpt25Variant/);
     }
-    assert.match(bundle, /qM=\{[^}]*model:\{type:"string"\}.*apimartOutputFormat:\{type:"string"\},apimartBackground:\{type:"string"\}/);
     assert.match(bundle, /projectImageModelParams\(e\).*apimartOutputFormat:t\.apimartOutputFormat,apimartBackground:t\.apimartBackground/);
 });
