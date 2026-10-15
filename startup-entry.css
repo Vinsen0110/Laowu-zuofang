@@ -1,14 +1,14 @@
 .startup-entry {
-    --entry-bg: #f8f9fb;
-    --entry-text: #20242b;
-    --entry-muted: #616976;
-    --entry-border: #dce0e6;
-    --entry-button: #fff;
-    --entry-hover: #f0f3f7;
-    --entry-primary: #23725a;
-    --entry-primary-hover: #1b5c48;
-    --entry-error-bg: #fff0f0;
-    --entry-error-text: #a52a36;
+    --entry-bg: var(--lw-cool-gray-50);
+    --entry-text: var(--lw-ink-cool-900);
+    --entry-muted: var(--lw-slate-cool-500);
+    --entry-border: var(--lw-cool-gray-180);
+    --entry-button: var(--lw-white);
+    --entry-hover: var(--lw-cool-gray-80);
+    --entry-primary: var(--lw-green-teal-700);
+    --entry-primary-hover: var(--lw-green-teal-800);
+    --entry-error-bg: var(--lw-red-tint-50);
+    --entry-error-text: var(--lw-red-wine-700);
     display: grid;
     align-items: center;
     width: 100%;
@@ -23,16 +23,16 @@
 }
 
 .dark .startup-entry {
-    --entry-bg: #181a1e;
-    --entry-text: #f1f3f5;
-    --entry-muted: #b3bac5;
-    --entry-border: #3b4049;
-    --entry-button: #24272d;
-    --entry-hover: #30343b;
-    --entry-primary: #29795f;
-    --entry-primary-hover: #328c6e;
-    --entry-error-bg: #382329;
-    --entry-error-text: #ffb6be;
+    --entry-bg: var(--lw-ink-cool-950);
+    --entry-text: var(--lw-cool-gray-60);
+    --entry-muted: var(--lw-cool-gray-350);
+    --entry-border: var(--lw-ink-cool-700);
+    --entry-button: var(--lw-ink-cool-850);
+    --entry-hover: var(--lw-ink-cool-800);
+    --entry-primary: var(--lw-green-teal-650);
+    --entry-primary-hover: var(--lw-green-teal-600);
+    --entry-error-bg: var(--lw-red-wine-950);
+    --entry-error-text: var(--lw-red-tint-300);
 }
 
 .startup-entry-content {
@@ -111,13 +111,13 @@
 .startup-entry .startup-entry-primary:disabled {
     background: var(--entry-primary);
     border-color: var(--entry-primary);
-    color: #fff;
+    color: var(--lw-white);
 }
 
 .startup-entry .startup-entry-primary:not(:disabled):hover {
     background: var(--entry-primary-hover);
     border-color: var(--entry-primary-hover);
-    color: #fff;
+    color: var(--lw-white);
 }
 
 .startup-entry .startup-entry-secondary:not(:disabled):hover {
@@ -131,7 +131,7 @@
 }
 
 .startup-entry .startup-entry-action:focus-visible {
-    outline: 3px solid #679bd8;
+    outline: 3px solid var(--lw-blue-focus-400);
     outline-offset: 4px;
 }
 

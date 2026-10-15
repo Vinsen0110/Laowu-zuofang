@@ -329,7 +329,7 @@ export function showStorageError(error) {
         notice = document.createElement("div");
         notice.id = id;
         notice.setAttribute("role", "alert");
-        notice.style.cssText = "position:fixed;z-index:2147483647;bottom:20px;left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100vw - 32px);padding:12px 16px;border:1px solid #dc2626;border-radius:6px;background:#fff;color:#991b1b;font:14px/1.5 system-ui;box-shadow:0 4px 16px #0002";
+        notice.style.cssText = "position:fixed;z-index:2147483647;bottom:20px;left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100vw - 32px);padding:12px 16px;border:1px solid var(--lw-red-600);border-radius:6px;background:var(--lw-white);color:var(--lw-red-800);font:14px/1.5 system-ui;box-shadow:0 4px 16px rgb(var(--lw-black-rgb) / 0.133)";
         (document.body || document.documentElement).appendChild(notice);
     }
     notice.textContent = error?.name === "StorageConflictError"

@@ -40,6 +40,8 @@
   --lw-blue-700-rgb: 29 78 216;
   --lw-blue-800: #1e40af;              /* 蓝 800 */
   --lw-blue-800-rgb: 30 64 175;
+  --lw-blue-focus-400: #679bd8;        /* 启动页焦点描边蓝 */
+  --lw-blue-focus-400-rgb: 103 155 216;
   --lw-blue-tint-100: #eaf2ff;         /* 自定义浅蓝 100 */
   --lw-blue-tint-100-rgb: 234 242 255;
   --lw-blue-tint-200: #cfdcff;         /* 自定义浅蓝 200 */
@@ -66,14 +68,26 @@
   --lw-cool-gray-100-rgb: 240 240 241;
   --lw-cool-gray-150: #e8ebef;         /* 自定义冷灰 150 */
   --lw-cool-gray-150-rgb: 232 235 239;
+  --lw-cool-gray-180: #dce0e6;         /* 启动页冷灰 180 */
+  --lw-cool-gray-180-rgb: 220 224 230;
   --lw-cool-gray-200: #dfe3e8;         /* 自定义冷灰 200 */
   --lw-cool-gray-200-rgb: 223 227 232;
   --lw-cool-gray-25: #fafbfc;          /* 自定义冷灰 25 */
   --lw-cool-gray-25-rgb: 250 251 252;
+  --lw-cool-gray-350: #b3bac5;         /* 启动页冷灰 350 */
+  --lw-cool-gray-350-rgb: 179 186 197;
   --lw-cool-gray-50: #f8f9fb;          /* 自定义冷灰 50 */
   --lw-cool-gray-50-rgb: 248 249 251;
+  --lw-cool-gray-60: #f1f3f5;          /* 启动页冷灰 60 */
+  --lw-cool-gray-60-rgb: 241 243 245;
   --lw-cool-gray-75: #eeeeef;          /* 自定义冷灰 75 */
   --lw-cool-gray-75-rgb: 238 238 239;
+  --lw-cool-gray-80: #f0f3f7;          /* 启动页冷灰 80 */
+  --lw-cool-gray-80-rgb: 240 243 247;
+  --lw-cyan-100: #cffafe;              /* 青 100 */
+  --lw-cyan-100-rgb: 207 250 254;
+  --lw-cyan-900: #164e63;              /* 青 900 */
+  --lw-cyan-900-rgb: 22 78 99;
   --lw-emerald-100: #d1fae5;           /* 翠绿 100 */
   --lw-emerald-100-rgb: 209 250 229;
   --lw-emerald-200: #a7f3d0;           /* 翠绿 200 */
@@ -114,6 +128,14 @@
   --lw-green-600-rgb: 22 163 74;
   --lw-green-800: #166534;             /* 绿 800 */
   --lw-green-800-rgb: 22 101 52;
+  --lw-green-teal-600: #328c6e;        /* 启动页主色 600 */
+  --lw-green-teal-600-rgb: 50 140 110;
+  --lw-green-teal-650: #29795f;        /* 启动页主色 650 */
+  --lw-green-teal-650-rgb: 41 121 95;
+  --lw-green-teal-700: #23725a;        /* 启动页主色 700 */
+  --lw-green-teal-700-rgb: 35 114 90;
+  --lw-green-teal-800: #1b5c48;        /* 启动页主色 800 */
+  --lw-green-teal-800-rgb: 27 92 72;
   --lw-green-tint-25: #fafffc;         /* 自定义浅绿 25 */
   --lw-green-tint-25-rgb: 250 255 252;
   --lw-indigo-100: #e0e7ff;            /* 靛蓝 100 */
@@ -132,6 +154,16 @@
   --lw-indigo-800-rgb: 55 48 163;
   --lw-indigo-900: #312e81;            /* 靛蓝 900 */
   --lw-indigo-900-rgb: 49 46 129;
+  --lw-ink-cool-700: #3b4049;          /* 启动页冷墨 700 */
+  --lw-ink-cool-700-rgb: 59 64 73;
+  --lw-ink-cool-800: #30343b;          /* 启动页冷墨 800 */
+  --lw-ink-cool-800-rgb: 48 52 59;
+  --lw-ink-cool-850: #24272d;          /* 启动页冷墨 850 */
+  --lw-ink-cool-850-rgb: 36 39 45;
+  --lw-ink-cool-900: #20242b;          /* 启动页冷墨 900(文字) */
+  --lw-ink-cool-900-rgb: 32 36 43;
+  --lw-ink-cool-950: #181a1e;          /* 启动页冷墨 950(暗底) */
+  --lw-ink-cool-950-rgb: 24 26 30;
   --lw-link-blue: #2f80ff;             /* 链接蓝 */
   --lw-link-blue-rgb: 47 128 255;
   --lw-neutral-50: #fafafa;            /* 中性灰 50 */
@@ -174,6 +206,16 @@
   --lw-red-500-hex-rgb: 239 68 68;
   --lw-red-600: #dc2626;               /* 红 600 */
   --lw-red-600-rgb: 220 38 38;
+  --lw-red-800: #991b1b;               /* 红 800 */
+  --lw-red-800-rgb: 153 27 27;
+  --lw-red-tint-300: #ffb6be;          /* 启动页报错浅红字 */
+  --lw-red-tint-300-rgb: 255 182 190;
+  --lw-red-tint-50: #fff0f0;           /* 启动页报错浅红底 */
+  --lw-red-tint-50-rgb: 255 240 240;
+  --lw-red-wine-700: #a52a36;          /* 启动页报错红字 */
+  --lw-red-wine-700-rgb: 165 42 54;
+  --lw-red-wine-950: #382329;          /* 启动页报错暗红底 */
+  --lw-red-wine-950-rgb: 56 35 41;
   --lw-rose-300: #fda4af;              /* 玫红 300 */
   --lw-rose-300-rgb: 253 164 175;
   --lw-rose-50: #fff1f2;               /* 玫红 50 */
@@ -196,6 +238,8 @@
   --lw-slate-500-rgb: 100 116 139;
   --lw-slate-900: #0f172a;             /* 蓝灰 900 */
   --lw-slate-900-rgb: 15 23 42;
+  --lw-slate-cool-500: #616976;        /* 启动页冷灰 500 */
+  --lw-slate-cool-500-rgb: 97 105 118;
   --lw-stone-100: #f5f5f4;             /* 暖灰 100 */
   --lw-stone-100-rgb: 245 245 244;
   --lw-stone-200: #e7e5e4;             /* 暖灰 200 */
@@ -391,6 +435,17 @@
   --lw-icon-video-gen: var(--lw-violet-500); /* 新建菜单图标：视频生成（黑暗模式相同） */
   --lw-mention-chip-bg: var(--color-blue-50); /* 提示词里 @ 引用标签的背景 */
   --lw-mention-chip-border: var(--color-blue-200); /* 提示词里 @ 引用标签的描边 */
+  --lw-mention-menu-bg: var(--lw-white);    /* @ 引用菜单背景 */
+  --lw-mention-menu-border: var(--lw-stone-300); /* @ 引用菜单描边 */
+  --lw-mention-menu-text: var(--lw-stone-700); /* @ 引用菜单文字 */
+  --lw-mention-header-text: var(--lw-stone-500); /* @ 引用菜单标题「引用图片」 */
+  --lw-mention-divider: var(--lw-stone-200); /* @ 引用菜单标题下的分隔线 */
+  --lw-mention-option-active-bg: var(--lw-blue-50); /* @ 引用菜单选中/悬停项背景 */
+  --lw-mention-option-active-text: var(--lw-blue-700); /* @ 引用菜单选中/悬停项文字 */
+  --lw-mention-thumb-ring: rgb(var(--lw-stone-900-rgb) / 0.08); /* @ 引用菜单缩略图的细描边 */
+  --lw-menu-shadow: 0 12px 32px rgb(var(--lw-stone-900-rgb) / 0.14), 0 2px 6px rgb(var(--lw-stone-900-rgb) / 0.06); /* 下拉菜单阴影 */
+  --lw-menu-scrollbar-thumb: rgb(var(--lw-stone-400-rgb) / 0.5); /* 下拉菜单滚动条滑块 */
+  --lw-menu-scrollbar-thumb-hover: rgb(var(--lw-stone-500-rgb) / 0.75); /* 下拉菜单滚动条滑块（鼠标悬停） */
 }
 
 /* ---------- 第 2 部分：界面用途（黑暗模式，只列出和浅色不同的） ---------- */
@@ -451,6 +506,17 @@
   --lw-tooltip-text: var(--lw-stone-100);   /* 节点工具条提示气泡文字 */
   --lw-mention-chip-bg: color-mix(in oklab, var(--lw-blue-500) 18%, transparent); /* 提示词里 @ 引用标签的背景 */
   --lw-mention-chip-border: color-mix(in oklab, var(--lw-blue-500) 40%, transparent); /* 提示词里 @ 引用标签的描边 */
+  --lw-mention-menu-bg: var(--lw-stone-800); /* @ 引用菜单背景 */
+  --lw-mention-menu-border: var(--lw-stone-600); /* @ 引用菜单描边 */
+  --lw-mention-menu-text: var(--lw-stone-200); /* @ 引用菜单文字 */
+  --lw-mention-header-text: var(--lw-stone-400); /* @ 引用菜单标题「引用图片」 */
+  --lw-mention-divider: var(--lw-stone-700); /* @ 引用菜单标题下的分隔线 */
+  --lw-mention-option-active-bg: color-mix(in oklab, var(--lw-blue-500) 24%, transparent); /* @ 引用菜单选中/悬停项背景 */
+  --lw-mention-option-active-text: var(--lw-blue-300); /* @ 引用菜单选中/悬停项文字 */
+  --lw-mention-thumb-ring: rgb(var(--lw-white-rgb) / 0.1); /* @ 引用菜单缩略图的细描边 */
+  --lw-menu-shadow: 0 16px 40px rgb(var(--lw-black-rgb) / 0.45); /* 下拉菜单阴影 */
+  --lw-menu-scrollbar-thumb: rgb(var(--lw-stone-500-rgb) / 0.6); /* 下拉菜单滚动条滑块 */
+  --lw-menu-scrollbar-thumb-hover: rgb(var(--lw-stone-400-rgb) / 0.75); /* 下拉菜单滚动条滑块（鼠标悬停） */
 }
 
 /* ---------- 第 3 部分：颜色类（自动生成，放在 Tailwind 的 utilities 层，优先级和原来一致） ---------- */

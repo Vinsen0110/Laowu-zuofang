@@ -2,7 +2,7 @@ import{bindCanvasPanelSize}from"../canvas-panel-size.js";
 import{useCanvasGroups,createCanvasGroupComponents,remapClonedCanvasGroups,moveCanvasGroupFrames,placeCanvasGroupClones,finishCanvasGroupCloneDrag}from"../canvas-groups.js?v=20260923-02";
 import{observeMentionMenu,keepMentionVisible,remapImageMentions,reorderReferenceEdges,installCanvasFlowActivity,observeFlowLine}from"../canvas-reference-ui.js?v=20260922-01";
 installCanvasFlowActivity();
-import{appStateStorage,createDeferredStateWriter,showStorageError}from"../app-state-storage.js?v=20260912-01";
+import{appStateStorage,createDeferredStateWriter,showStorageError}from"../app-state-storage.js?v=20261015-theme-03";
 import{usesCloudinaryReferenceHost,cloudinaryReferenceSource,uploadCloudinaryReferenceBlob}from"../cloudinary-reference-upload.js?v=20260917-personal-01";
 await appStateStorage.ready;
 

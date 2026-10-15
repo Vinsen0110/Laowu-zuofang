@@ -7,7 +7,7 @@
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: thin;
-    scrollbar-color: #a8a29e transparent;
+    scrollbar-color: var(--lw-stone-400) transparent;
     overscroll-behavior: contain;
 }
 .canvas-reference-item {
@@ -32,10 +32,10 @@
     width: 20px;
     height: 20px;
     padding: 2px;
-    border: 1px solid #d6d3d1;
+    border: 1px solid var(--lw-stone-300);
     border-radius: 50%;
-    background: #fff;
-    color: #be123c;
+    background: var(--lw-white);
+    color: var(--lw-rose-700);
     opacity: 0;
     pointer-events: none;
 }
@@ -45,13 +45,14 @@
     pointer-events: auto;
 }
 .dark .canvas-reference-remove {
-    background: #292524;
-    border-color: #78716c;
-    color: #fda4af;
+    background: var(--lw-stone-800);
+    border-color: var(--lw-stone-500);
+    color: var(--lw-rose-300);
 }
 @media (hover: none) {
     .canvas-reference-remove { opacity: 1; pointer-events: auto; }
 }
+/* @ mention menu: colors come from theme.css (--lw-mention-*), motion from canvas-menus.css */
 .canvas-mention-menu {
     position: fixed;
     z-index: 1200;
@@ -60,44 +61,54 @@
     visibility: hidden;
     box-sizing: border-box;
     overflow: hidden;
-    border: 1px solid #d6d3d1;
-    border-radius: 8px;
-    background: #fff;
-    color: #44403c;
-    box-shadow: 0 8px 24px #0002;
+    padding-bottom: 4px;
+    border: 1px solid var(--lw-mention-menu-border);
+    border-radius: 12px;
+    background: var(--lw-mention-menu-bg);
+    color: var(--lw-mention-menu-text);
+    box-shadow: var(--lw-menu-shadow);
 }
 .canvas-mention-header {
     flex: 0 0 auto;
-    padding: 8px 12px;
-    border-bottom: 1px solid #e7e5e4;
+    margin-bottom: 4px;
+    padding: 9px 12px 8px;
+    border-bottom: 1px solid var(--lw-mention-divider);
     font-size: 11px;
-    color: #78716c;
+    font-weight: 600;
+    letter-spacing: .02em;
+    color: var(--lw-mention-header-text);
 }
 .canvas-mention-list {
     position: relative;
     flex: 1 1 auto;
     min-height: 0;
+    padding: 0 4px;
     overflow-y: auto;
     overflow-x: hidden;
     overscroll-behavior: contain;
-    scrollbar-gutter: stable;
 }
 .canvas-mention-option {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     width: 100%;
     min-height: 40px;
-    padding: 6px 12px;
+    margin: 1px 0;
+    padding: 5px 8px;
+    border-radius: 9px;
     text-align: left;
     font-size: 12px;
 }
+.canvas-mention-option img,
+.canvas-mention-option video,
+.canvas-mention-option > span:first-child {
+    box-shadow: 0 0 0 1px var(--lw-mention-thumb-ring);
+}
 .canvas-mention-option[aria-selected="true"],
-.canvas-mention-option:hover { background: #eff6ff; color: #1d4ed8; }
-.dark .canvas-mention-menu { background: #292524; color: #e7e5e4; border-color: #57534e; }
-.dark .canvas-mention-header { color: #a8a29e; border-color: #57534e; }
-.dark .canvas-mention-option[aria-selected="true"],
-.dark .canvas-mention-option:hover { background: #164e63; color: #cffafe; }
+.canvas-mention-option:hover {
+    background: var(--lw-mention-option-active-bg);
+    color: var(--lw-mention-option-active-text);
+}
 
 /* Keep the flow cue without blurring every moving dash three times per frame. */
 .canvas-flow-line {

@@ -1,0 +1,120 @@
+/* =====================================================================
+ * 老屋作坊 · 画布下拉菜单的动效和滚动条（canvas-menus.css）
+ *
+ * 管这 8 种菜单：模型选择、生成参数（比例/分辨率/质量）、预设词、文字模型、
+ * @ 引用图片、连线新建、双击画布新建、站点切换。
+ *
+ * 想调快慢、幅度，改下面 :root 里的参数即可；颜色在 theme.css 里。
+ * 规则尽量用 :where() 写成最低优先级，index.html 里各菜单原有的样式照样生效。
+ * 系统开了「减少动态效果」时，这里的动画和过渡都会关闭。
+ * ===================================================================== */
+
+:root {
+  --lw-menu-open-duration: 160ms;     /* 打开动画时长 */
+  --lw-menu-close-duration: 100ms;    /* 关闭动画时长（Radix 那 4 种菜单） */
+  --lw-menu-item-duration: 140ms;     /* 选项悬停时颜色变化的时长 */
+  --lw-menu-shift: 6px;               /* 打开时滑入的距离 */
+  --lw-menu-scale: .98;               /* 打开时从多大开始放大 */
+  --lw-menu-item-nudge: 2px;          /* 悬停时选项往右挪的距离（自定义菜单） */
+  --lw-menu-ease: cubic-bezier(.16, 1, .3, 1);
+}
+
+/* ---------- 打开 / 关闭动画 ----------
+ * 用 translate / scale 这两个单独的属性，不碰 transform，
+ * 这样不会和菜单本身用来定位、缩放的 transform 打架。 */
+@keyframes lw-menu-in {
+  from { opacity: 0; translate: 0 var(--lw-menu-enter-from, calc(-1 * var(--lw-menu-shift))); scale: var(--lw-menu-scale); }
+  to   { opacity: 1; translate: 0 0; scale: 1; }
+}
+@keyframes lw-menu-out {
+  from { opacity: 1; scale: 1; }
+  to   { opacity: 0; scale: var(--lw-menu-scale); }
+}
+
+/* Radix 下拉（模型、生成参数、预设词、文字模型）：按弹出方向决定从哪边滑入 */
+:where(.canvas-model-menu, .canvas-generation-menu, .canvas-prompt-preset-menu, .canvas-text-model-menu)[data-state="open"] {
+  transform-origin: var(--radix-select-content-transform-origin, top left);
+  animation: lw-menu-in var(--lw-menu-open-duration) var(--lw-menu-ease);
+}
+:where(.canvas-model-menu, .canvas-generation-menu, .canvas-prompt-preset-menu, .canvas-text-model-menu)[data-side="top"] {
+  --lw-menu-enter-from: var(--lw-menu-shift);
+}
+:where(.canvas-model-menu, .canvas-generation-menu, .canvas-prompt-preset-menu, .canvas-text-model-menu)[data-state="closed"] {
+  animation: lw-menu-out var(--lw-menu-close-duration) ease-in forwards;
+}
+
+/* 自定义菜单：出现时播放一次 */
+:where(.canvas-mention-menu, [data-connection-create-menu], [data-canvas-quick-create]) {
+  transform-origin: top left;
+  animation: lw-menu-in var(--lw-menu-open-duration) var(--lw-menu-ease);
+}
+/* 站点切换菜单是往上弹的，从下方滑入 */
+:where(.canvas-site-menu) {
+  --lw-menu-enter-from: var(--lw-menu-shift);
+  transform-origin: bottom left;
+  animation: lw-menu-in var(--lw-menu-open-duration) var(--lw-menu-ease);
+}
+
+/* ---------- 选项：颜色平滑过渡 ---------- */
+/* 只管选项本身；菜单里其他按钮（比如模型菜单左栏）在 index.html 里有自己的过渡，不去覆盖 */
+:where(.canvas-model-menu, .canvas-generation-menu, .canvas-prompt-preset-menu, .canvas-text-model-menu) :where([role="option"]) {
+  transition: background-color var(--lw-menu-item-duration) ease, color var(--lw-menu-item-duration) ease, box-shadow var(--lw-menu-item-duration) ease;
+}
+:where(.canvas-mention-menu, .canvas-site-menu, [data-connection-create-menu], [data-canvas-quick-create]) :where(button, [role="option"], [role="menuitemradio"]) {
+  transition: background-color var(--lw-menu-item-duration) ease, color var(--lw-menu-item-duration) ease, translate var(--lw-menu-item-duration) var(--lw-menu-ease);
+}
+:where(.canvas-mention-menu, .canvas-site-menu, [data-connection-create-menu], [data-canvas-quick-create]) :where(button, [role="option"], [role="menuitemradio"]):hover {
+  translate: var(--lw-menu-item-nudge) 0;
+}
+/* 双击新建菜单的选项原来是整行方块，改成圆角并在两边留一点空隙 */
+:where([data-canvas-quick-create]) > :where(button) {
+  width: calc(100% - 8px);
+  margin-inline: 4px;
+  border-radius: 8px;
+}
+/* @ 引用菜单的缩略图，选中时稍微放大一点 */
+.canvas-mention-option :where(img, video, span:first-child) {
+  transition: scale var(--lw-menu-item-duration) var(--lw-menu-ease);
+}
+.canvas-mention-option[aria-selected="true"] :where(img, video, span:first-child) {
+  scale: 1.06;
+}
+
+/* ---------- 滚动条：细、圆角、轨道透明，滚动平滑 ---------- */
+:where(.canvas-mention-list, .canvas-model-menu, .canvas-generation-menu, .canvas-prompt-preset-menu, .canvas-text-model-menu, .canvas-model-menu *, .canvas-generation-menu *, .canvas-prompt-preset-menu *, .canvas-text-model-menu *) {
+  scroll-behavior: smooth;
+}
+:where(.canvas-mention-list, .canvas-model-menu, .canvas-generation-menu, .canvas-prompt-preset-menu, .canvas-text-model-menu, .canvas-model-menu *, .canvas-generation-menu *, .canvas-prompt-preset-menu *, .canvas-text-model-menu *)::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+:where(.canvas-mention-list, .canvas-model-menu, .canvas-generation-menu, .canvas-prompt-preset-menu, .canvas-text-model-menu, .canvas-model-menu *, .canvas-generation-menu *, .canvas-prompt-preset-menu *, .canvas-text-model-menu *)::-webkit-scrollbar-track {
+  background: transparent;
+}
+:where(.canvas-mention-list, .canvas-model-menu, .canvas-generation-menu, .canvas-prompt-preset-menu, .canvas-text-model-menu, .canvas-model-menu *, .canvas-generation-menu *, .canvas-prompt-preset-menu *, .canvas-text-model-menu *)::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;   /* 透明边框 + padding-box 让滑块看起来只有 4px 宽 */
+  border-radius: 999px;
+  background: var(--lw-menu-scrollbar-thumb) padding-box;
+}
+:where(.canvas-mention-list, .canvas-model-menu, .canvas-generation-menu, .canvas-prompt-preset-menu, .canvas-text-model-menu, .canvas-model-menu *, .canvas-generation-menu *, .canvas-prompt-preset-menu *, .canvas-text-model-menu *)::-webkit-scrollbar-thumb:hover {
+  background-color: var(--lw-menu-scrollbar-thumb-hover);
+}
+/* Firefox 不支持上面的写法，用它自己的细滚动条 */
+@supports (-moz-appearance: none) {
+  :where(.canvas-mention-list, .canvas-model-menu, .canvas-generation-menu, .canvas-prompt-preset-menu, .canvas-text-model-menu, .canvas-model-menu *, .canvas-generation-menu *, .canvas-prompt-preset-menu *, .canvas-text-model-menu *) {
+    scrollbar-width: thin;
+    scrollbar-color: var(--lw-menu-scrollbar-thumb) transparent;
+  }
+}
+
+/* ---------- 系统开了「减少动态效果」：全部关掉 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  :where(.canvas-model-menu, .canvas-generation-menu, .canvas-prompt-preset-menu, .canvas-text-model-menu, .canvas-mention-menu, .canvas-site-menu, [data-connection-create-menu], [data-canvas-quick-create]),
+  :where(.canvas-model-menu, .canvas-generation-menu, .canvas-prompt-preset-menu, .canvas-text-model-menu, .canvas-mention-menu, .canvas-site-menu, [data-connection-create-menu], [data-canvas-quick-create]) * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+    translate: none !important;
+    scale: none !important;
+  }
+}

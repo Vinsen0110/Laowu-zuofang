@@ -123,3 +123,13 @@ test("theme colors are never made transparent by appending hex digits", () => {
     // `${color}66` breaks once colors are var(--lw-...); use color-mix(in srgb, color N%, transparent).
     assert.deepEqual(bundle.match(/\$\{[\w$.]+\}[0-9a-fA-F]{2}(?![0-9a-zA-Z_$])/g), null);
 });
+
+test("stand-alone stylesheets and the storage notice take colors from theme.css", async () => {
+    for (const file of ["startup-entry.css", "canvas-interaction.css", "canvas-groups.css", "canvas-menus.css"]) {
+        const text = await read(file);
+        const values = [...text.matchAll(/:([^;{}]*)(?=[;}])/g)].map(match => match[1]);
+        assert.deepEqual(values.filter(value => /#[0-9a-fA-F]{3,8}\b|rgba?\((?!var\()/.test(value)), [], file);
+    }
+    const storage = await read("app-state-storage.js");
+    assert.match(storage, /border:1px solid var\(--lw-red-600\);border-radius:6px;background:var\(--lw-white\);color:var\(--lw-red-800\)/);
+});
