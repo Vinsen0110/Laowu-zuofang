@@ -11,7 +11,7 @@ test("image viewer scopes its overlay, metadata and controls to the current them
         assert.ok(viewer.includes(name), name);
     }
     assert.doesNotMatch(viewer, /bg-white|text-stone-|border-stone-/);
-    assert.match(html, /\.dark \.canvas-image-viewer\s*\{[^}]*--viewer-overlay:\s*rgba\(15, 16, 18, \.92\)/);
+    assert.match(html, /\.dark \.canvas-image-viewer\s*\{[^}]*--viewer-overlay:\s*rgb\(var\(--lw-charcoal-950-rgb\) \/ \.92\)/);
     for (const token of ["panel", "hover", "border", "text", "muted", "title", "shadow"]) {
         assert.match(html, new RegExp(`\\.dark \\.canvas-image-viewer\\s*\\{[^}]*--viewer-${token}:`));
     }

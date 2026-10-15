@@ -7,9 +7,9 @@ const bundle = await readFile(new URL("../assets/index-B2KJ37fm.js", import.meta
 const api = await readFile(new URL("../apimart-api.js", import.meta.url), "utf8");
 
 test("the dark brand column overrides the exact light-mode container and selected buttons", () => {
-    assert.match(html, /\.dark \.canvas-model-menu > div > div > div:first-child \{[^}]*background: #171717 !important;/);
-    assert.match(html, /\.dark \.canvas-model-menu > div > div > div:first-child > button\.bg-white \{[^}]*background: #292524 !important;/);
-    assert.match(html, /\.dark \.canvas-model-menu > div > div > div:first-child > button \{[^}]*color: #d6d3d1 !important;/);
+    assert.match(html, /\.dark \.canvas-model-menu > div > div > div:first-child \{[^}]*background: var\(--lw-neutral-900\) !important;/);
+    assert.match(html, /\.dark \.canvas-model-menu > div > div > div:first-child > button\.bg-white,\s*[^{]*\{[^}]*background: var\(--lw-stone-800\) !important;/);
+    assert.match(html, /\.dark \.canvas-model-menu > div > div > div:first-child > button \{[^}]*color: var\(--lw-stone-300\) !important;/);
 });
 
 test("parameter triggers size to the complete label instead of their old fixed width", () => {

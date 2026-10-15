@@ -101,23 +101,23 @@ test("generation defaults identify the active site and use a readable select sta
     assert.match(bundle, /popupClassName:"settings-select-dropdown"/);
     assert.match(
         indexHtml,
-        /\.settings-select-dropdown \.ant-select-item-option-selected[^}]*background: #eaf2ff !important;[^}]*color: #175cd3 !important;/s,
+        /\.settings-select-dropdown \.ant-select-item-option-selected[^}]*background: var\(--lw-blue-tint-100\) !important;[^}]*color: var\(--lw-ui-blue-700\) !important;/s,
     );
     assert.match(
         indexHtml,
-        /\.settings-select\.ant-select-open \.ant-select-selector \.ant-select-selection-item[^}]*color: #1f2937 !important;[^}]*-webkit-text-fill-color: #1f2937 !important;[^}]*opacity: 1 !important;/s,
+        /\.settings-select\.ant-select-open \.ant-select-selector \.ant-select-selection-item[^}]*color: var\(--lw-gray-800\) !important;[^}]*-webkit-text-fill-color: var\(--lw-gray-800\) !important;[^}]*opacity: 1 !important;/s,
     );
     assert.match(
         indexHtml,
-        /\.dark \.settings-select-dropdown[^}]*background: #1c1917 !important;[^}]*color: #e7e5e4 !important;/s,
+        /\.dark \.settings-select-dropdown[^}]*background: var\(--lw-stone-900\) !important;[^}]*color: var\(--lw-stone-200\) !important;/s,
     );
     assert.match(bundle, /className:"settings-model-select !h-11/);
     assert.match(
         indexHtml,
-        /\.settings-model-select\[data-state="open"\] \.canvas-model-picker-text[^}]*color: #1f2937 !important;[^}]*-webkit-text-fill-color: #1f2937 !important;/s,
+        /\.settings-model-select\[data-state="open"\] \.canvas-model-picker-text[^}]*color: var\(--lw-gray-800\) !important;[^}]*-webkit-text-fill-color: var\(--lw-gray-800\) !important;/s,
     );
     assert.match(
         indexHtml,
-        /\.dark \.settings-model-select\[data-state="open"\] \.canvas-model-picker-text[^}]*color: #f5f5f4 !important;[^}]*-webkit-text-fill-color: #f5f5f4 !important;/s,
+        /\.dark \.settings-model-select\[data-state="open"\] \.canvas-model-picker-text[^}]*color: var\(--lw-stone-100\) !important;[^}]*-webkit-text-fill-color: var\(--lw-stone-100\) !important;/s,
     );
 });

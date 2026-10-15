@@ -39,12 +39,12 @@ test("text model trigger and portalled menu have explicit dark theme colors", ()
     for (const selector of [".canvas-text-model-picker", ".canvas-text-model-menu"]) {
         const rule = indexHtml.match(new RegExp(`\\.dark \\${selector}\\s*\\{([^}]+)\\}`))?.[1];
         assert.ok(rule, selector);
-        assert.match(rule, /background:\s*#292524\s*!important/);
-        assert.match(rule, /color:\s*#e7e5e4\s*!important/);
-        assert.match(rule, /border-color:\s*#57534e\s*!important/);
+        assert.match(rule, /background:\s*var\(--lw-stone-800\)\s*!important/);
+        assert.match(rule, /color:\s*var\(--lw-stone-200\)\s*!important/);
+        assert.match(rule, /border-color:\s*var\(--lw-stone-600\)\s*!important/);
     }
-    assert.match(indexHtml, /\.dark \.canvas-text-model-picker:hover\s*\{[^}]*background:\s*#3a3634\s*!important/);
-    assert.match(indexHtml, /\.dark \.canvas-text-model-menu \[role="option"\]\[data-highlighted\]\s*\{[^}]*background:\s*#44403c\s*!important/);
+    assert.match(indexHtml, /\.dark \.canvas-text-model-picker:hover\s*\{[^}]*background:\s*var\(--lw-warm-gray-750\)\s*!important/);
+    assert.match(indexHtml, /\.dark \.canvas-text-model-menu \[role="option"\]\[data-highlighted\]\s*\{[^}]*background:\s*var\(--lw-stone-700\)\s*!important/);
 });
 
 test("reverse theme scope is applied only to reverse-prompt nodes", () => {
@@ -72,14 +72,14 @@ test("reverse card light and dark theme colors are explicitly scoped", () => {
     const dark = indexHtml.match(/\.dark \.canvas-reverse-shell\s*\{([^}]+)\}/)?.[1];
     assert.ok(light);
     assert.ok(dark);
-    assert.match(light, /--canvas-reverse-frame:\s*rgba\(255,\s*255,\s*255,\s*\.96\)/);
-    assert.match(light, /--canvas-reverse-surface:\s*#fff;/);
-    assert.match(light, /--canvas-reverse-text:\s*#57534e;/);
-    assert.match(light, /--canvas-reverse-border:\s*rgba\(226,\s*232,\s*240,\s*\.95\)/);
-    assert.match(dark, /--canvas-reverse-frame:\s*#292524;/);
-    assert.match(dark, /--canvas-reverse-surface:\s*#292524;/);
-    assert.match(dark, /--canvas-reverse-text:\s*#f5f5f4;/);
-    assert.match(dark, /--canvas-reverse-border:\s*#44403c;/);
+    assert.match(light, /--canvas-reverse-frame:\s*rgb\(var\(--lw-white-rgb\) \/ \.96\)/);
+    assert.match(light, /--canvas-reverse-surface:\s*var\(--lw-white\);/);
+    assert.match(light, /--canvas-reverse-text:\s*var\(--lw-stone-600\);/);
+    assert.match(light, /--canvas-reverse-border:\s*rgb\(var\(--lw-slate-200-rgb\) \/ \.95\)/);
+    assert.match(dark, /--canvas-reverse-frame:\s*var\(--lw-stone-800\);/);
+    assert.match(dark, /--canvas-reverse-surface:\s*var\(--lw-stone-800\);/);
+    assert.match(dark, /--canvas-reverse-text:\s*var\(--lw-stone-100\);/);
+    assert.match(dark, /--canvas-reverse-border:\s*var\(--lw-stone-700\);/);
     assert.match(
         indexHtml,
         /\.canvas-reverse-card,\s*\.canvas-reverse-content\s*\{[^}]*color:\s*var\(--canvas-reverse-text\);[^}]*background:\s*var\(--canvas-reverse-surface\);/,

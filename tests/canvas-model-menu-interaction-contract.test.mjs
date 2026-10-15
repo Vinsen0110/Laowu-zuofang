@@ -26,19 +26,19 @@ test("model providers preview on mouse hover while model selection stays click-o
 test("model provider column has a neutral background and subtle motion", () => {
     assert.match(
         indexHtml,
-        /\.canvas-model-menu > div > div > div:first-child \{[^}]*background: #f5f5f4 !important;/s,
+        /\.canvas-model-menu > div > div > div:first-child \{[^}]*background: var\(--lw-stone-100\) !important;/s,
     );
     assert.match(
         indexHtml,
-        /\.canvas-model-menu > div > div > div:first-child > button \{[^}]*color: #57534e !important;[^}]*transform 150ms ease/s,
+        /\.canvas-model-menu > div > div > div:first-child > button \{[^}]*color: var\(--lw-stone-600\) !important;[^}]*transform 150ms ease/s,
     );
     assert.match(
         indexHtml,
-        /button\.bg-white \{[^}]*background: #ffffff !important;[^}]*color: #1c1917 !important;[^}]*translateX\(2px\)/s,
+        /button\.bg-white,\s*[^{]*\{[^}]*background: var\(--lw-white\) !important;[^}]*color: var\(--lw-stone-900\) !important;[^}]*translateX\(2px\)/s,
     );
     assert.match(
         indexHtml,
-        /\.dark \.canvas-model-menu button\.bg-white \{[^}]*background: #292524 !important;[^}]*color: #f5f5f4 !important;/s,
+        /\.dark \.canvas-model-menu button\.bg-white,\s*[^{]*\{[^}]*background: var\(--lw-stone-800\) !important;[^}]*color: var\(--lw-stone-100\) !important;/s,
     );
 });
 

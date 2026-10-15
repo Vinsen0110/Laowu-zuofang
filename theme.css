@@ -1,0 +1,477 @@
+/* =====================================================================
+ * 老屋作坊 · 颜色配置（theme.css）
+ *
+ * 网站里所有自定义颜色都集中在这个文件，改颜色只需要改这里：
+ *
+ *   第 1 部分「调色板」：具体的颜色值。改这里会影响所有用到这个颜色的地方。
+ *       --lw-色名      十六进制颜色，例如 var(--lw-stone-800)
+ *       --lw-色名-rgb  同一个颜色的 RGB 数值，用于带透明度的写法：
+ *                      rgb(var(--lw-stone-800-rgb) / 0.5) 表示 50% 透明
+ *
+ *   第 2 部分「界面用途」：画布界面上每一类元素用什么颜色，
+ *       浅色模式写在 :root 里，黑暗模式写在 .dark 里。
+ *       只想改某一类元素（比如"菜单背景"）时，改这里。
+ *
+ *   第 3 部分「颜色类」：自动生成的样式类，一般不需要手动改。
+ *
+ * 注意：浅色值引用的 var(--color-xxx) 来自 Tailwind 的编译样式，
+ *       保证浅色模式和原来完全一致。
+ * ===================================================================== */
+
+/* ---------- 第 1 部分：调色板 ---------- */
+:root {
+  --lw-amber-600: #d97706;             /* 琥珀 600 */
+  --lw-amber-600-rgb: 217 119 6;
+  --lw-black: #000000;                 /* 纯黑 */
+  --lw-black-rgb: 0 0 0;
+  --lw-blue-300: #93c5fd;              /* 蓝 300 */
+  --lw-blue-300-rgb: 147 197 253;
+  --lw-blue-400: #60a5fa;              /* 蓝 400 */
+  --lw-blue-400-rgb: 96 165 250;
+  --lw-blue-50: #eff6ff;               /* 蓝 50 */
+  --lw-blue-50-rgb: 239 246 255;
+  --lw-blue-800: #1e40af;              /* 蓝 800 */
+  --lw-blue-800-rgb: 30 64 175;
+  --lw-blue-tint-100: #eaf2ff;         /* 自定义浅蓝 100 */
+  --lw-blue-tint-100-rgb: 234 242 255;
+  --lw-blue-tint-50: #f2f6ff;          /* 自定义浅蓝 50 */
+  --lw-blue-tint-50-rgb: 242 246 255;
+  --lw-brand-violet-hex: #6157e8;      /* 品牌紫 */
+  --lw-brand-violet-hex-rgb: 97 87 232;
+  --lw-charcoal-300: #c3c5cc;          /* 自定义炭灰 300 */
+  --lw-charcoal-300-rgb: 195 197 204;
+  --lw-charcoal-600: #45474f;          /* 自定义炭灰 600 */
+  --lw-charcoal-600-rgb: 69 71 79;
+  --lw-charcoal-700: #303238;          /* 自定义炭灰 700 */
+  --lw-charcoal-700-rgb: 48 50 56;
+  --lw-charcoal-900: #202125;          /* 自定义炭灰 900 */
+  --lw-charcoal-900-rgb: 32 33 37;
+  --lw-charcoal-950: #0f1012;          /* 自定义炭灰 950 */
+  --lw-charcoal-950-rgb: 15 16 18;
+  --lw-cool-gray-100: #f0f0f1;         /* 自定义冷灰 100 */
+  --lw-cool-gray-100-rgb: 240 240 241;
+  --lw-cool-gray-150: #e8ebef;         /* 自定义冷灰 150 */
+  --lw-cool-gray-150-rgb: 232 235 239;
+  --lw-cool-gray-200: #dfe3e8;         /* 自定义冷灰 200 */
+  --lw-cool-gray-200-rgb: 223 227 232;
+  --lw-cool-gray-25: #fafbfc;          /* 自定义冷灰 25 */
+  --lw-cool-gray-25-rgb: 250 251 252;
+  --lw-cool-gray-50: #f8f9fb;          /* 自定义冷灰 50 */
+  --lw-cool-gray-50-rgb: 248 249 251;
+  --lw-cool-gray-75: #eeeeef;          /* 自定义冷灰 75 */
+  --lw-cool-gray-75-rgb: 238 238 239;
+  --lw-emerald-100: #d1fae5;           /* 翠绿 100 */
+  --lw-emerald-100-rgb: 209 250 229;
+  --lw-emerald-200: #a7f3d0;           /* 翠绿 200 */
+  --lw-emerald-200-rgb: 167 243 208;
+  --lw-emerald-300: #6ee7b7;           /* 翠绿 300 */
+  --lw-emerald-300-rgb: 110 231 183;
+  --lw-emerald-400: #34d399;           /* 翠绿 400 */
+  --lw-emerald-400-rgb: 52 211 153;
+  --lw-emerald-700: #047857;           /* 翠绿 700 */
+  --lw-emerald-700-rgb: 4 120 87;
+  --lw-emerald-800: #065f46;           /* 翠绿 800 */
+  --lw-emerald-800-rgb: 6 95 70;
+  --lw-emerald-900: #064e3b;           /* 翠绿 900 */
+  --lw-emerald-900-rgb: 6 78 59;
+  --lw-gray-100: #f3f4f6;              /* 冷灰 100 */
+  --lw-gray-100-rgb: 243 244 246;
+  --lw-gray-50: #f9fafb;               /* 冷灰 50 */
+  --lw-gray-50-rgb: 249 250 251;
+  --lw-gray-800: #1f2937;              /* 冷灰 800 */
+  --lw-gray-800-rgb: 31 41 55;
+  --lw-green-100: #dcfce7;             /* 绿 100 */
+  --lw-green-100-rgb: 220 252 231;
+  --lw-green-200: #bbf7d0;             /* 绿 200 */
+  --lw-green-200-rgb: 187 247 208;
+  --lw-green-50: #f0fdf4;              /* 绿 50 */
+  --lw-green-50-rgb: 240 253 244;
+  --lw-green-600: #16a34a;             /* 绿 600 */
+  --lw-green-600-rgb: 22 163 74;
+  --lw-green-800: #166534;             /* 绿 800 */
+  --lw-green-800-rgb: 22 101 52;
+  --lw-green-tint-25: #fafffc;         /* 自定义浅绿 25 */
+  --lw-green-tint-25-rgb: 250 255 252;
+  --lw-indigo-300: #a5b4fc;            /* 靛蓝 300 */
+  --lw-indigo-300-rgb: 165 180 252;
+  --lw-indigo-50: #eef2ff;             /* 靛蓝 50 */
+  --lw-indigo-50-rgb: 238 242 255;
+  --lw-indigo-900: #312e81;            /* 靛蓝 900 */
+  --lw-indigo-900-rgb: 49 46 129;
+  --lw-link-blue: #2f80ff;             /* 链接蓝 */
+  --lw-link-blue-rgb: 47 128 255;
+  --lw-neutral-900: #171717;           /* 中性灰 900 */
+  --lw-neutral-900-rgb: 23 23 23;
+  --lw-pink-200: #fbcfe8;              /* 粉 200 */
+  --lw-pink-200-rgb: 251 207 232;
+  --lw-pink-300: #f9a8d4;              /* 粉 300 */
+  --lw-pink-300-rgb: 249 168 212;
+  --lw-pink-400: #f472b6;              /* 粉 400 */
+  --lw-pink-400-rgb: 244 114 182;
+  --lw-pink-500: #ec4899;              /* 粉 500(主题粉) */
+  --lw-pink-500-rgb: 236 72 153;
+  --lw-pink-600-hex: #db2777;          /* 粉 600(旧版色值) */
+  --lw-pink-600-hex-rgb: 219 39 119;
+  --lw-pink-900: #831843;              /* 粉 900 */
+  --lw-pink-900-rgb: 131 24 67;
+  --lw-pink-950: #500724;              /* 粉 950 */
+  --lw-pink-950-rgb: 80 7 36;
+  --lw-pink-tint-50: #fff1f6;          /* 自定义浅粉 50 */
+  --lw-pink-tint-50-rgb: 255 241 246;
+  --lw-popup-ink: #242529;             /* 节点工具条文字墨色 */
+  --lw-popup-ink-rgb: 36 37 41;
+  --lw-red-300: #fca5a5;               /* 红 300 */
+  --lw-red-300-rgb: 252 165 165;
+  --lw-red-400: #f87171;               /* 红 400 */
+  --lw-red-400-rgb: 248 113 113;
+  --lw-red-500-hex: #ef4444;           /* 红 500(旧版色值) */
+  --lw-red-500-hex-rgb: 239 68 68;
+  --lw-red-600: #dc2626;               /* 红 600 */
+  --lw-red-600-rgb: 220 38 38;
+  --lw-scroll-thumb-gray: #8d9498;     /* 滚动条滑块灰 */
+  --lw-scroll-thumb-gray-rgb: 141 148 152;
+  --lw-scroll-track-gray: #bdc4c8;     /* 滚动条轨道灰 */
+  --lw-scroll-track-gray-rgb: 189 196 200;
+  --lw-slate-200: #e2e8f0;             /* 蓝灰 200 */
+  --lw-slate-200-rgb: 226 232 240;
+  --lw-slate-400: #94a3b8;             /* 蓝灰 400 */
+  --lw-slate-400-rgb: 148 163 184;
+  --lw-slate-50: #f8fafc;              /* 蓝灰 50 */
+  --lw-slate-50-rgb: 248 250 252;
+  --lw-slate-900: #0f172a;             /* 蓝灰 900 */
+  --lw-slate-900-rgb: 15 23 42;
+  --lw-stone-100: #f5f5f4;             /* 暖灰 100 */
+  --lw-stone-100-rgb: 245 245 244;
+  --lw-stone-200: #e7e5e4;             /* 暖灰 200 */
+  --lw-stone-200-rgb: 231 229 228;
+  --lw-stone-300: #d6d3d1;             /* 暖灰 300 */
+  --lw-stone-300-rgb: 214 211 209;
+  --lw-stone-400: #a8a29e;             /* 暖灰 400 */
+  --lw-stone-400-rgb: 168 162 158;
+  --lw-stone-50: #fafaf9;              /* 暖灰 50 */
+  --lw-stone-50-rgb: 250 250 249;
+  --lw-stone-500: #78716c;             /* 暖灰 500 */
+  --lw-stone-500-rgb: 120 113 108;
+  --lw-stone-600: #57534e;             /* 暖灰 600 */
+  --lw-stone-600-rgb: 87 83 78;
+  --lw-stone-700: #44403c;             /* 暖灰 700 */
+  --lw-stone-700-rgb: 68 64 60;
+  --lw-stone-800: #292524;             /* 暖灰 800 */
+  --lw-stone-800-rgb: 41 37 36;
+  --lw-stone-900: #1c1917;             /* 暖灰 900 */
+  --lw-stone-900-rgb: 28 25 23;
+  --lw-ui-blue-300: #84adff;           /* 设置页蓝 300 */
+  --lw-ui-blue-300-rgb: 132 173 255;
+  --lw-ui-blue-50: #eef4ff;            /* 设置页蓝 50 */
+  --lw-ui-blue-50-rgb: 238 244 255;
+  --lw-ui-blue-500: #2e90fa;           /* 设置页蓝 500 */
+  --lw-ui-blue-500-rgb: 46 144 250;
+  --lw-ui-blue-700: #175cd3;           /* 设置页蓝 700 */
+  --lw-ui-blue-700-rgb: 23 92 211;
+  --lw-ui-gray-100: #f2f4f7;           /* 设置页灰 100 */
+  --lw-ui-gray-100-rgb: 242 244 247;
+  --lw-ui-gray-200: #eaecf0;           /* 设置页灰 200 */
+  --lw-ui-gray-200-rgb: 234 236 240;
+  --lw-ui-gray-200-alt: #e4e7ec;       /* 设置页灰 200(另一版) */
+  --lw-ui-gray-200-alt-rgb: 228 231 236;
+  --lw-ui-gray-300: #d0d5dd;           /* 设置页灰 300 */
+  --lw-ui-gray-300-rgb: 208 213 221;
+  --lw-ui-gray-400: #98a2b3;           /* 设置页灰 400 */
+  --lw-ui-gray-400-rgb: 152 162 179;
+  --lw-ui-gray-500: #667085;           /* 设置页灰 500 */
+  --lw-ui-gray-500-rgb: 102 112 133;
+  --lw-ui-gray-600: #475467;           /* 设置页灰 600 */
+  --lw-ui-gray-600-rgb: 71 84 103;
+  --lw-ui-gray-700: #344054;           /* 设置页灰 700 */
+  --lw-ui-gray-700-rgb: 52 64 84;
+  --lw-ui-gray-800: #1d2939;           /* 设置页灰 800 */
+  --lw-ui-gray-800-rgb: 29 41 57;
+  --lw-ui-gray-900: #101828;           /* 设置页灰 900 */
+  --lw-ui-gray-900-rgb: 16 24 40;
+  --lw-ui-indigo-700: #3538cd;         /* 设置页靛蓝 700 */
+  --lw-ui-indigo-700-rgb: 53 56 205;
+  --lw-warm-gray-750: #3a3634;         /* 自定义暖深灰 750 */
+  --lw-warm-gray-750-rgb: 58 54 52;
+  --lw-warm-gray-750-alt: #3a3631;     /* 自定义暖深灰 750(另一版) */
+  --lw-warm-gray-750-alt-rgb: 58 54 49;
+  --lw-warm-gray-775: #35302d;         /* 自定义暖深灰 775 */
+  --lw-warm-gray-775-rgb: 53 48 45;
+  --lw-warm-gray-925: #1f1d1a;         /* 自定义暖深灰 925 */
+  --lw-warm-gray-925-rgb: 31 29 26;
+  --lw-white: #ffffff;                 /* 纯白 */
+  --lw-white-rgb: 255 255 255;
+  --lw-zinc-700: #3f3f46;              /* 锌灰 700 */
+  --lw-zinc-700-rgb: 63 63 70;
+}
+
+/* ---------- 第 2 部分：界面用途（浅色模式） ---------- */
+:root {
+  --lw-overlay-bg: var(--color-black);      /* 看图、裁剪、视频等暗色背景（黑暗模式相同） */
+  --lw-on-dark-text: var(--color-white);    /* 深色或彩色背景上的白字（黑暗模式相同） */
+  --lw-overlay-line: var(--color-white);    /* 裁剪框、网格线等白色线条（黑暗模式相同） */
+  --lw-handle-fill: var(--color-white);     /* 裁剪框拖拽手柄的填充（黑暗模式相同） */
+  --lw-handle-border: var(--color-black);   /* 裁剪框拖拽手柄的描边（黑暗模式相同） */
+  --lw-scrim: var(--color-stone-950);       /* 素材卡片悬停时盖在图片上的半透明黑（黑暗模式相同） */
+  --lw-icon-tile-bg: var(--color-stone-950); /* 设置页导航的深色图标底（黑暗模式相同） */
+  --lw-button-dark-bg: var(--color-stone-900); /* 预设词设置里的深色按钮（黑暗模式相同） */
+  --lw-accent: var(--color-pink-500);       /* 主题粉：下载按钮、粉色按钮背景（黑暗模式相同） */
+  --lw-accent-hover: var(--color-pink-400); /* 主题粉按钮悬停（黑暗模式相同） */
+  --lw-accent-border: var(--color-pink-400); /* 主题粉按钮描边（黑暗模式相同） */
+  --lw-accent-border-hover: var(--color-pink-300); /* 主题粉描边悬停 / 输入框聚焦（黑暗模式相同） */
+  --lw-accent-text: var(--color-pink-600);  /* 粉色文字：选中的模型、价格（黑暗模式相同） */
+  --lw-accent-text-soft: var(--color-pink-500); /* 浅一点的粉色文字/图标（黑暗模式相同） */
+  --lw-danger: var(--color-red-500);        /* 删除、错误文字（黑暗模式相同） */
+  --lw-danger-alt: var(--lw-red-500-hex);   /* 重置按钮等红字（黑暗模式相同） */
+  --lw-danger-light: var(--color-red-400);  /* 浅红提示文字（黑暗模式相同） */
+  --lw-danger-muted: var(--color-red-300);  /* 未知节点的淡红文字（黑暗模式相同） */
+  --lw-success: var(--color-emerald-500);   /* 成功/在线的绿色图标（黑暗模式相同） */
+  --lw-success-strong: var(--color-emerald-700); /* 深绿色图标（黑暗模式相同） */
+  --lw-success-fill: var(--color-emerald-600); /* 绿色图标的填充（黑暗模式相同） */
+  --lw-info: var(--color-blue-500);         /* 蓝色图标（黑暗模式相同） */
+  --lw-nav-active-text: var(--color-blue-600); /* 设置页导航选中项文字（黑暗模式相同） */
+  --lw-nav-dot: var(--color-blue-500);      /* 设置页导航的小圆点（黑暗模式相同） */
+  --lw-link: var(--lw-link-blue);           /* 图片组等蓝色链接文字（黑暗模式相同） */
+  --lw-brand-violet: var(--lw-brand-violet-hex); /* 紫色品牌图标（黑暗模式相同） */
+  --lw-scrollbar-thumb: var(--lw-scroll-thumb-gray); /* 图片预览底部滚动条的滑块（黑暗模式相同） */
+  --lw-scrollbar-track: var(--lw-scroll-track-gray); /* 图片预览底部滚动条的轨道（黑暗模式相同） */
+  --lw-text-faint: var(--color-stone-300);  /* 最淡的文字：模型数量（黑暗模式相同） */
+  --lw-text-muted: var(--color-stone-400);  /* 提示、占位、加载图标（黑暗模式相同） */
+  --lw-text-subtle: var(--color-stone-500); /* 次要说明文字（黑暗模式相同） */
+  --lw-viewer-download-text: var(--color-white); /* 看大图时「下载到本地」按钮的文字和图标 */
+  --lw-surface: var(--color-white);         /* 菜单、弹出框、卡片上的小按钮背景 */
+  --lw-surface-muted: var(--color-stone-100); /* 图片编辑器画布区域背景 */
+  --lw-surface-hover: var(--color-stone-100); /* 列表项、菜单项悬停背景 */
+  --lw-surface-hover-alt: var(--lw-cool-gray-100); /* 节点工具条按钮悬停背景 */
+  --lw-accent-soft: var(--color-pink-50);   /* 浅粉底：模型菜单左栏、预设词按钮 */
+  --lw-accent-soft-strong: var(--color-pink-100); /* 稍深的浅粉底：生成按钮上的价格 */
+  --lw-danger-soft: var(--color-red-50);    /* 删除按钮悬停的浅红底 */
+  --lw-text-strong: var(--color-stone-950); /* 图片编辑器标题 */
+  --lw-heading: var(--color-stone-900);     /* 设置页导航标题 */
+  --lw-popup-text: var(--lw-popup-ink);     /* 节点工具条文字 */
+  --lw-text-body: var(--color-stone-700);   /* 菜单正文、悬停文字 */
+  --lw-text-secondary: var(--color-stone-600); /* 预设词、编辑器工具文字 */
+  --lw-border: var(--color-stone-200);      /* 图片编辑器边框 */
+  --lw-border-subtle: var(--color-stone-100); /* 反推结果框分隔线 */
+  --lw-popup-border: var(--color-black);    /* 节点工具条描边(配合 10% 透明度) */
+  --lw-nav-active-bg: var(--color-blue-50); /* 设置页导航选中项背景 */
+  --lw-accent-border-soft: var(--color-pink-100); /* 设置页选中卡片的浅粉描边 */
+  --lw-swatch-selected-border: var(--color-stone-900); /* 图片编辑器选中颜色块的描边 */
+  --lw-surface-active-alt: var(--lw-cool-gray-75); /* 节点工具条按钮激活背景 */
+  --lw-preset-active-bg: var(--lw-pink-tint-50); /* 预设词：已选择时按钮背景、菜单选中项背景 */
+  --lw-preset-active-text: var(--lw-pink-600-hex); /* 预设词：已选择时按钮文字、菜单选中项文字 */
+  --lw-preset-active-border: var(--lw-pink-300); /* 预设词：已选择时按钮描边 */
+  --lw-preset-idle-bg: var(--lw-stone-50);  /* 预设词：未选择时按钮背景 */
+  --lw-preset-idle-text: var(--lw-stone-500); /* 预设词：未选择时按钮文字 */
+  --lw-reverse-btn-bg: var(--color-emerald-50); /* 反推「生成」按钮背景 */
+  --lw-reverse-btn-hover-bg: var(--color-emerald-100); /* 反推「生成」按钮悬停背景 */
+  --lw-reverse-btn-border: var(--color-emerald-200); /* 反推「生成」按钮描边 */
+  --lw-reverse-btn-hover-border: var(--color-emerald-300); /* 反推「生成」按钮悬停描边 */
+  --lw-reverse-btn-text: var(--color-emerald-600); /* 反推「生成」按钮文字 */
+  --lw-reverse-btn-disabled-bg: var(--color-stone-50); /* 反推按钮禁用背景 */
+  --lw-reverse-btn-disabled-border: var(--color-stone-200); /* 反推按钮禁用描边 */
+  --lw-reverse-btn-disabled-text: var(--color-stone-400); /* 反推按钮禁用文字（黑暗模式相同） */
+}
+
+/* ---------- 第 2 部分：界面用途（黑暗模式，只列出和浅色不同的） ---------- */
+.dark {
+  --lw-viewer-download-text: var(--lw-black); /* 看大图时「下载到本地」按钮的文字和图标 */
+  --lw-surface: var(--lw-stone-800);        /* 菜单、弹出框、卡片上的小按钮背景 */
+  --lw-surface-muted: var(--lw-stone-900);  /* 图片编辑器画布区域背景 */
+  --lw-surface-hover: var(--lw-stone-700);  /* 列表项、菜单项悬停背景 */
+  --lw-surface-hover-alt: var(--lw-stone-700); /* 节点工具条按钮悬停背景 */
+  --lw-accent-soft: color-mix(in oklab, var(--color-pink-500) 16%, transparent); /* 浅粉底：模型菜单左栏、预设词按钮 */
+  --lw-accent-soft-strong: color-mix(in oklab, var(--color-pink-500) 26%, transparent); /* 稍深的浅粉底：生成按钮上的价格 */
+  --lw-danger-soft: color-mix(in oklab, var(--lw-red-400) 18%, transparent); /* 删除按钮悬停的浅红底 */
+  --lw-text-strong: var(--lw-stone-100);    /* 图片编辑器标题 */
+  --lw-heading: var(--lw-stone-100);        /* 设置页导航标题 */
+  --lw-popup-text: var(--lw-stone-100);     /* 节点工具条文字 */
+  --lw-text-body: var(--lw-stone-200);      /* 菜单正文、悬停文字 */
+  --lw-text-secondary: var(--lw-stone-300); /* 预设词、编辑器工具文字 */
+  --lw-border: var(--lw-stone-700);         /* 图片编辑器边框 */
+  --lw-border-subtle: var(--lw-stone-700);  /* 反推结果框分隔线 */
+  --lw-popup-border: var(--lw-white);       /* 节点工具条描边(配合 10% 透明度) */
+  --lw-nav-active-bg: color-mix(in oklab, var(--color-blue-500) 18%, transparent); /* 设置页导航选中项背景 */
+  --lw-accent-border-soft: color-mix(in oklab, var(--color-pink-500) 40%, transparent); /* 设置页选中卡片的浅粉描边 */
+  --lw-swatch-selected-border: var(--lw-stone-100); /* 图片编辑器选中颜色块的描边 */
+  --lw-surface-active-alt: var(--lw-stone-700); /* 节点工具条按钮激活背景 */
+  --lw-preset-active-bg: color-mix(in oklab, var(--color-pink-500) 18%, transparent); /* 预设词：已选择时按钮背景、菜单选中项背景 */
+  --lw-preset-active-text: var(--lw-pink-300); /* 预设词：已选择时按钮文字、菜单选中项文字 */
+  --lw-preset-active-border: rgb(var(--lw-pink-400-rgb) / 0.72); /* 预设词：已选择时按钮描边 */
+  --lw-preset-idle-bg: var(--lw-stone-800); /* 预设词：未选择时按钮背景 */
+  --lw-preset-idle-text: var(--lw-stone-200); /* 预设词：未选择时按钮文字 */
+  --lw-reverse-btn-bg: color-mix(in oklab, var(--lw-emerald-400) 14%, transparent); /* 反推「生成」按钮背景 */
+  --lw-reverse-btn-hover-bg: color-mix(in oklab, var(--lw-emerald-400) 22%, transparent); /* 反推「生成」按钮悬停背景 */
+  --lw-reverse-btn-border: var(--lw-emerald-800); /* 反推「生成」按钮描边 */
+  --lw-reverse-btn-hover-border: var(--lw-emerald-700); /* 反推「生成」按钮悬停描边 */
+  --lw-reverse-btn-text: var(--lw-emerald-300); /* 反推「生成」按钮文字 */
+  --lw-reverse-btn-disabled-bg: var(--lw-stone-800); /* 反推按钮禁用背景 */
+  --lw-reverse-btn-disabled-border: var(--lw-stone-700); /* 反推按钮禁用描边 */
+}
+
+/* ---------- 第 3 部分：颜色类（自动生成，放在 Tailwind 的 utilities 层，优先级和原来一致） ---------- */
+@layer utilities {
+.lw-bg-nav-active-bg{background-color:var(--lw-nav-active-bg)}
+.lw-text-nav-active-text{color:var(--lw-nav-active-text)}
+.lw-text-text-subtle{color:var(--lw-text-subtle)}
+@media(hover:hover){.lw-hover-bg-surface:hover{background-color:var(--lw-surface)}}
+@media(hover:hover){.lw-hover-bg-surface\/70:hover{background-color:var(--lw-surface)}}
+@media(hover:hover){@supports (color:color-mix(in lab,red,red)){.lw-hover-bg-surface\/70:hover{background-color:var(--lw-surface)}}}
+@media(hover:hover){.lw-hover-text-text-strong:hover{color:var(--lw-text-strong)}}
+.lw-text-text-muted{color:var(--lw-text-muted)}
+.lw-bg-nav-dot{background-color:var(--lw-nav-dot)}
+.lw-shadow-1{--tw-shadow:0 18px 54px var(--tw-shadow-color,#0f172a0f);box-shadow:var(--tw-inset-shadow),var(--tw-inset-ring-shadow),var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow)}
+.lw-border-accent-border-soft{border-color:var(--lw-accent-border-soft)}
+.lw-bg-accent-soft-a30{background-color:color-mix(in oklab,var(--lw-accent-soft) 30%,transparent)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-accent-soft-a30{background-color:color-mix(in oklab,var(--lw-accent-soft) 30%,transparent)}}
+.lw-border-border{border-color:var(--lw-border)}
+.lw-bg-surface{background-color:var(--lw-surface)}
+.lw-bg-surface\/75{background-color:var(--lw-surface)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-surface\/75{background-color:var(--lw-surface)}}
+.lw-bg-surface\/78{background-color:var(--lw-surface)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-surface\/78{background-color:var(--lw-surface)}}
+.lw-bg-surface\/80{background-color:var(--lw-surface)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-surface\/80{background-color:var(--lw-surface)}}
+.lw-bg-surface\/82{background-color:var(--lw-surface)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-surface\/82{background-color:var(--lw-surface)}}
+.lw-bg-surface\/90{background-color:var(--lw-surface)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-surface\/90{background-color:var(--lw-surface)}}
+.lw-bg-surface\/92{background-color:var(--lw-surface)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-surface\/92{background-color:var(--lw-surface)}}
+.lw-text-heading{color:var(--lw-heading)}
+.lw-bg-icon-tile-bg{background-color:var(--lw-icon-tile-bg)}
+.lw-bg-icon-tile-bg\/0{background-color:var(--lw-icon-tile-bg)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-icon-tile-bg\/0{background-color:var(--lw-icon-tile-bg)}}
+.lw-text-on-dark-text{color:var(--lw-on-dark-text)}
+.lw-text-on-dark-text\/75{color:var(--lw-on-dark-text)}
+@supports (color:color-mix(in lab,red,red)){.lw-text-on-dark-text\/75{color:var(--lw-on-dark-text)}}
+.lw-bg-overlay-bg{background-color:var(--lw-overlay-bg)}
+.lw-bg-overlay-bg\/5{background-color:var(--lw-overlay-bg)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-overlay-bg\/5{background-color:var(--lw-overlay-bg)}}
+.lw-bg-overlay-bg\/10{background-color:var(--lw-overlay-bg)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-overlay-bg\/10{background-color:var(--lw-overlay-bg)}}
+.lw-bg-overlay-bg\/20{background-color:var(--lw-overlay-bg)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-overlay-bg\/20{background-color:var(--lw-overlay-bg)}}
+.lw-bg-overlay-bg\/35{background-color:var(--lw-overlay-bg)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-overlay-bg\/35{background-color:var(--lw-overlay-bg)}}
+.lw-bg-overlay-bg\/55{background-color:var(--lw-overlay-bg)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-overlay-bg\/55{background-color:var(--lw-overlay-bg)}}
+.lw-bg-overlay-bg\/60{background-color:var(--lw-overlay-bg)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-overlay-bg\/60{background-color:var(--lw-overlay-bg)}}
+.lw-bg-overlay-bg-a10{background-color:color-mix(in oklab,var(--lw-overlay-bg) 10%,transparent)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-overlay-bg-a10{background-color:color-mix(in oklab,var(--lw-overlay-bg) 10%,transparent)}}
+.lw-text-danger{color:var(--lw-danger)}
+.lw-bg-button-dark-bg{background-color:var(--lw-button-dark-bg)}
+.lw-bg-overlay-bg-a60{background-color:color-mix(in oklab,var(--lw-overlay-bg) 60%,transparent)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-overlay-bg-a60{background-color:color-mix(in oklab,var(--lw-overlay-bg) 60%,transparent)}}
+.lw-bg-overlay-bg-a20{background-color:color-mix(in oklab,var(--lw-overlay-bg) 20%,transparent)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-overlay-bg-a20{background-color:color-mix(in oklab,var(--lw-overlay-bg) 20%,transparent)}}
+.lw-border-overlay-line{border-color:var(--lw-overlay-line)}
+.lw-border-overlay-line\/50{border-color:var(--lw-overlay-line)}
+@supports (color:color-mix(in lab,red,red)){.lw-border-overlay-line\/50{border-color:var(--lw-overlay-line)}}
+.lw-border-overlay-line\/90{border-color:var(--lw-overlay-line)}
+@supports (color:color-mix(in lab,red,red)){.lw-border-overlay-line\/90{border-color:var(--lw-overlay-line)}}
+.lw-shadow-2{--tw-shadow:0 0 0 1px var(--tw-shadow-color,#0000004d), 0 0 28px var(--tw-shadow-color,#00000047);box-shadow:var(--tw-inset-shadow),var(--tw-inset-ring-shadow),var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow)}
+.lw-border-overlay-line-a50{border-color:color-mix(in oklab,var(--lw-overlay-line) 50%,transparent)}
+@supports (color:color-mix(in lab,red,red)){.lw-border-overlay-line-a50{border-color:color-mix(in oklab,var(--lw-overlay-line) 50%,transparent)}}
+.lw-border-handle-border{border-color:var(--lw-handle-border)}
+.lw-border-handle-border\/10{border-color:var(--lw-handle-border)}
+@supports (color:color-mix(in lab,red,red)){.lw-border-handle-border\/10{border-color:var(--lw-handle-border)}}
+.lw-bg-handle-fill{background-color:var(--lw-handle-fill)}
+.lw-bg-handle-fill\/75{background-color:var(--lw-handle-fill)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-handle-fill\/75{background-color:var(--lw-handle-fill)}}
+.lw-bg-handle-fill\/78{background-color:var(--lw-handle-fill)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-handle-fill\/78{background-color:var(--lw-handle-fill)}}
+.lw-bg-handle-fill\/80{background-color:var(--lw-handle-fill)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-handle-fill\/80{background-color:var(--lw-handle-fill)}}
+.lw-bg-handle-fill\/82{background-color:var(--lw-handle-fill)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-handle-fill\/82{background-color:var(--lw-handle-fill)}}
+.lw-bg-handle-fill\/90{background-color:var(--lw-handle-fill)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-handle-fill\/90{background-color:var(--lw-handle-fill)}}
+.lw-bg-handle-fill\/92{background-color:var(--lw-handle-fill)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-handle-fill\/92{background-color:var(--lw-handle-fill)}}
+.lw-bg-overlay-bg-a55{background-color:color-mix(in oklab,var(--lw-overlay-bg) 55%,transparent)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-overlay-bg-a55{background-color:color-mix(in oklab,var(--lw-overlay-bg) 55%,transparent)}}
+.lw-text-danger-alt{color:var(--lw-danger-alt)}
+.lw-text-text-strong{color:var(--lw-text-strong)}
+.lw-text-text-secondary{color:var(--lw-text-secondary)}
+.lw-border-swatch-selected-border{border-color:var(--lw-swatch-selected-border)}
+.lw-bg-surface-muted{background-color:var(--lw-surface-muted)}
+.lw-bg-overlay-bg-a5{background-color:color-mix(in oklab,var(--lw-overlay-bg) 5%,transparent)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-overlay-bg-a5{background-color:color-mix(in oklab,var(--lw-overlay-bg) 5%,transparent)}}
+.lw-border-overlay-line-a90{border-color:color-mix(in oklab,var(--lw-overlay-line) 90%,transparent)}
+@supports (color:color-mix(in lab,red,red)){.lw-border-overlay-line-a90{border-color:color-mix(in oklab,var(--lw-overlay-line) 90%,transparent)}}
+.lw-shadow-3{--tw-shadow:0 0 0 1px var(--tw-shadow-color,#00000059);box-shadow:var(--tw-inset-shadow),var(--tw-inset-ring-shadow),var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow)}
+.lw-moz-range-thumb-bg-scrollbar-thumb::-moz-range-thumb{background-color:var(--lw-scrollbar-thumb)}
+.lw-moz-range-track-bg-scrollbar-track::-moz-range-track{background-color:var(--lw-scrollbar-track)}
+.lw-webkit-slider-runnable-track-bg-scrollbar-track::-webkit-slider-runnable-track{background-color:var(--lw-scrollbar-track)}
+.lw-webkit-slider-thumb-bg-scrollbar-thumb::-webkit-slider-thumb{background-color:var(--lw-scrollbar-thumb)}
+.lw-border-popup-border-a10{border-color:color-mix(in oklab,var(--lw-popup-border) 10%,transparent)}
+@supports (color:color-mix(in lab,red,red)){.lw-border-popup-border-a10{border-color:color-mix(in oklab,var(--lw-popup-border) 10%,transparent)}}
+.lw-text-popup-text{color:var(--lw-popup-text)}
+.lw-shadow-4{--tw-shadow:0 8px 28px var(--tw-shadow-color,#0f172a1f);box-shadow:var(--tw-inset-shadow),var(--tw-inset-ring-shadow),var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow)}
+.lw-text-danger-light{color:var(--lw-danger-light)}
+@media(hover:hover){.lw-group-hover-bg-surface-hover-alt:is(:where(.group):hover *){background-color:var(--lw-surface-hover-alt)}}
+.lw-bg-surface-active-alt{background-color:var(--lw-surface-active-alt)}
+.lw-empty-before-text-text-muted:empty:before{content:var(--tw-content);color:var(--lw-text-muted)}
+.lw-text-danger-muted{color:var(--lw-danger-muted)}
+.lw-border-border-subtle{border-color:var(--lw-border-subtle)}
+.lw-bg-link{background-color:var(--lw-link)}
+.lw-bg-overlay-bg-a35{background-color:color-mix(in oklab,var(--lw-overlay-bg) 35%,transparent)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-overlay-bg-a35{background-color:color-mix(in oklab,var(--lw-overlay-bg) 35%,transparent)}}
+.lw-text-on-dark-text-a75{color:color-mix(in oklab,var(--lw-on-dark-text) 75%,transparent)}
+@supports (color:color-mix(in lab,red,red)){.lw-text-on-dark-text-a75{color:color-mix(in oklab,var(--lw-on-dark-text) 75%,transparent)}}
+.lw-text-accent-text-soft{color:var(--lw-accent-text-soft)}
+.lw-text-success{color:var(--lw-success)}
+.lw-text-link{color:var(--lw-link)}
+.lw-focus-border-accent-border-hover:focus{border-color:var(--lw-accent-border-hover)}
+.lw-border-reverse-btn-border-i{border-color:var(--lw-reverse-btn-border)!important}
+.lw-bg-reverse-btn-bg-i{background-color:var(--lw-reverse-btn-bg)!important}
+.lw-text-reverse-btn-text-i{color:var(--lw-reverse-btn-text)!important}
+@media(hover:hover){.lw-hover-border-reverse-btn-hover-border-i:hover{border-color:var(--lw-reverse-btn-hover-border)!important}}
+@media(hover:hover){.lw-hover-bg-reverse-btn-hover-bg-i:hover{background-color:var(--lw-reverse-btn-hover-bg)!important}}
+.lw-disabled-border-reverse-btn-disabled-border-i:disabled{border-color:var(--lw-reverse-btn-disabled-border)!important}
+.lw-disabled-bg-reverse-btn-disabled-bg-i:disabled{background-color:var(--lw-reverse-btn-disabled-bg)!important}
+.lw-disabled-text-reverse-btn-disabled-text-i:disabled{color:var(--lw-reverse-btn-disabled-text)!important}
+.lw-bg-accent{background-color:var(--lw-accent)}
+.lw-bg-accent-soft{background-color:var(--lw-accent-soft)}
+.lw-bg-accent-soft\/30{background-color:var(--lw-accent-soft)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-accent-soft\/30{background-color:var(--lw-accent-soft)}}
+.lw-bg-accent-soft\/65{background-color:var(--lw-accent-soft)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-accent-soft\/65{background-color:var(--lw-accent-soft)}}
+.lw-text-accent-text{color:var(--lw-accent-text)}
+.lw-text-accent-text\/85{color:var(--lw-accent-text)}
+@supports (color:color-mix(in lab,red,red)){.lw-text-accent-text\/85{color:var(--lw-accent-text)}}
+.lw-text-info{color:var(--lw-info)}
+.lw-bg-accent-soft-strong{background-color:var(--lw-accent-soft-strong)}
+.lw-text-accent-text-a85{color:color-mix(in oklab,var(--lw-accent-text) 85%,transparent)}
+@supports (color:color-mix(in lab,red,red)){.lw-text-accent-text-a85{color:color-mix(in oklab,var(--lw-accent-text) 85%,transparent)}}
+@media(hover:hover){.lw-hover-bg-surface-a70:hover{background-color:color-mix(in oklab,var(--lw-surface) 70%,transparent)}}
+@media(hover:hover){@supports (color:color-mix(in lab,red,red)){.lw-hover-bg-surface-a70:hover{background-color:color-mix(in oklab,var(--lw-surface) 70%,transparent)}}}
+.lw-text-text-faint{color:var(--lw-text-faint)}
+.lw-bg-scrim-a0{background-color:color-mix(in oklab,var(--lw-scrim) 0%,transparent)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-scrim-a0{background-color:color-mix(in oklab,var(--lw-scrim) 0%,transparent)}}
+@media(hover:hover){.lw-group-hover-bg-scrim-a55:is(:where(.group):hover *){background-color:color-mix(in oklab,var(--lw-scrim) 55%,transparent)}}
+@media(hover:hover){@supports (color:color-mix(in lab,red,red)){.lw-group-hover-bg-scrim-a55:is(:where(.group):hover *){background-color:color-mix(in oklab,var(--lw-scrim) 55%,transparent)}}}
+.lw-bg-surface-a90{background-color:color-mix(in oklab,var(--lw-surface) 90%,transparent)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-surface-a90{background-color:color-mix(in oklab,var(--lw-surface) 90%,transparent)}}
+.lw-bg-surface-a92{background-color:color-mix(in oklab,var(--lw-surface) 92%,transparent)}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-surface-a92{background-color:color-mix(in oklab,var(--lw-surface) 92%,transparent)}}
+@media(hover:hover){.lw-hover-bg-danger-soft:hover{background-color:var(--lw-danger-soft)}}
+@media(hover:hover){.lw-hover-text-danger:hover{color:var(--lw-danger)}}
+.lw-fill-success-fill-a10{fill:color-mix(in oklab,var(--lw-success-fill) 10%,transparent)}
+@supports (color:color-mix(in lab,red,red)){.lw-fill-success-fill-a10{fill:color-mix(in oklab,var(--lw-success-fill) 10%,transparent)}}
+.lw-text-success-strong{color:var(--lw-success-strong)}
+.lw-fill-brand-violet-a10{fill:color-mix(in oklab,var(--lw-brand-violet) 10%,transparent)}
+.lw-text-brand-violet{color:var(--lw-brand-violet)}
+@media(hover:hover){.lw-hover-bg-surface-hover:hover{background-color:var(--lw-surface-hover)}}
+@media(hover:hover){.lw-hover-text-text-body:hover{color:var(--lw-text-body)}}
+.lw-text-text-body{color:var(--lw-text-body)}
+.lw-border-accent-border{border-color:var(--lw-accent-border)}
+.lw-shadow-5{--tw-shadow:0 12px 32px var(--tw-shadow-color,#ec489952);box-shadow:var(--tw-inset-shadow),var(--tw-inset-ring-shadow),var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow)}
+@media(hover:hover){.lw-hover-border-accent-border-hover:hover{border-color:var(--lw-accent-border-hover)}}
+@media(hover:hover){.lw-hover-bg-accent-hover:hover{background-color:var(--lw-accent-hover)}}
+.lw-bg-surface-a85-i{background-color:color-mix(in oklab,var(--lw-surface) 85%,transparent)!important}
+@supports (color:color-mix(in lab,red,red)){.lw-bg-surface-a85-i{background-color:color-mix(in oklab,var(--lw-surface) 85%,transparent)!important}}
+.lw-viewer-download{color:var(--lw-viewer-download-text)!important}
+.lw-viewer-download svg{color:var(--lw-viewer-download-text)!important;stroke:var(--lw-viewer-download-text)!important}
+}

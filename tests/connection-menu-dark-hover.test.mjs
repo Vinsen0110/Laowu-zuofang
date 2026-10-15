@@ -16,8 +16,8 @@ test("connection menu hover and keyboard focus use a scoped dark surface and rea
         const rule = menuRules.find(entry => entry.selectors.some(selector =>
             selector.endsWith(`[data-connection-create-menu] button:${state}`)));
         assert.ok(rule, `the menu must style button:${state}`);
-        assert.match(rule.body, /background(?:-color)?\s*:\s*#3a3631\s*!important\s*;/);
-        assert.match(rule.body, /color\s*:\s*#f5f5f4\s*!important\s*;/);
+        assert.match(rule.body, /background(?:-color)?\s*:\s*var\(--lw-warm-gray-750-alt\)\s*!important\s*;/);
+        assert.match(rule.body, /color\s*:\s*var\(--lw-stone-100\)\s*!important\s*;/);
     }
 });
 
@@ -76,7 +76,7 @@ test("the real eB button keeps its callback identity and semantic icon color", (
     assert.equal(button.props.onClick, onClick);
     assert.equal(button.props.children[0].props.style.color, "#ff4fa3");
     assert.equal(button.props.children[0].props.children, icon);
-    assert.match(button.props.className, /hover:bg-stone-100/);
+    assert.match(button.props.className, /lw-hover-bg-surface-hover/);
     button.props.onClick();
     assert.equal(clicks, 1);
 });
