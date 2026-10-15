@@ -54,7 +54,7 @@ billing limit. Unsupported formats and failed compression stop before model
 submission. No original file, stored blob, canvas image or project metadata is
 replaced by the uploaded copy. There is no persistent upload cache.
 
-RH, Apilio and APIMart retain their native upload implementations and model
+RH and APIMart retain their native upload implementations and model
 parameters. This source change does not build or update Windows installers.
 
 ## Local preview

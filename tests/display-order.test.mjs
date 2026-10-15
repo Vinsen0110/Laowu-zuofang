@@ -13,7 +13,7 @@ const bundle = await readFile(new URL("../assets/index-B2KJ37fm.js", import.meta
 
 test("site displays known providers first without mutating stored channels", () => {
     const channels = [
-        { id: "default", name: "Apilio" },
+        { id: "custom", name: "Custom" },
         { id: "tudou", name: "Tudou" },
         { id: "runninghub", name: "RH" },
         { id: "grsai", name: "Grsai" },
@@ -22,8 +22,8 @@ test("site displays known providers first without mutating stored channels", () 
     ];
 
     assert.deepEqual(SITE_DISPLAY_ORDER, ["runninghub", "apimart", "tudou", "grsai", "soon"]);
-    assert.deepEqual(orderSiteChannels(channels).map(({ name }) => name), ["RH", "Mart", "Tudou", "Grsai", "Soon", "Apilio"]);
-    assert.deepEqual(channels.map(({ name }) => name), ["Apilio", "Tudou", "RH", "Grsai", "Mart", "Soon"]);
+    assert.deepEqual(orderSiteChannels(channels).map(({ name }) => name), ["RH", "Mart", "Tudou", "Grsai", "Soon", "Custom"]);
+    assert.deepEqual(channels.map(({ name }) => name), ["Custom", "Tudou", "RH", "Grsai", "Mart", "Soon"]);
     assert.deepEqual(
         orderModelReferences([
             "tudou::gpt-image-2",

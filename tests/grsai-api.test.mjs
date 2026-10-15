@@ -100,17 +100,16 @@ test("uses the documented API Key and account credit endpoints", async () => {
 test("bundle keeps Grsai generation, balance, and settings branches", () => {
     assert.match(bundle, /isGrsaiSite\(K\).*fetchGrsaiApiKeyCredits/);
     assert.match(bundle, /isGrsaiSite\(le\).*fetchGrsaiAccountCredits/);
-    assert.match(bundle, /g\?\.provider==="apilio"\|\|g\?\.provider==="grsai"/);
-    assert.match(bundle, /g\?\.provider==="grsai"\?"Grsai/);
+    assert.match(bundle, /g\?\.provider==="grsai"\?y\.jsxs\("section",\{key:"balance-section:"/);
+    assert.match(bundle, /children:"Grsai \\u8D26\\u6237\\u4F59\\u989D"/);
     assert.match(bundle, /\["gpt-image-2","gpt-image-2-vip","gpt-image-2\.5"\]/);
     assert.match(bundle, /s&&\(n==="nano-banana-pro"\|\|n==="nano-banana-2\.1"\)\?grsaiImagePrice\(e\)/);
     assert.match(bundle, /s&&\(n==="gpt-image-2"\|\|n==="gpt-image-2-vip"\)\?\.2/);
     assert.match(bundle, /pr\(t\)==="gpt-image-2-vip"\?"gpt-image-2"/);
     assert.match(bundle, /fetchGrsaiApiKeyCredits\(K\).*De\(le\/1e4\)/);
     assert.match(bundle, /fetchGrsaiAccountCredits\(le,K\).*Rt\(Mt\/1e4\)/);
-    assert.match(bundle, /K=\(isGrsaiSite\(le\)\?N\.grsaiTotalBalanceToken\|\|"":N\.totalBalanceToken\|\|""\)\.trim\(\)/);
+    assert.match(bundle, /K=\(N\.grsaiTotalBalanceToken\|\|""\)\.trim\(\)/);
     assert.match(bundle, /value:a\.grsaiTotalBalanceToken\|\|""/);
     assert.match(bundle, /onChange:\$=>i\("grsaiTotalBalanceToken",\$\.target\.value\)/);
-    assert.match(bundle, /value:a\.totalBalanceToken/);
-    assert.match(bundle, /onChange:\$=>i\("totalBalanceToken",\$\.target\.value\)/);
+    assert.doesNotMatch(bundle, /totalBalanceToken|totalBalanceUserId/);
 });

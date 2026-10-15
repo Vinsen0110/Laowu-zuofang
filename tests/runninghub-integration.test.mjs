@@ -451,7 +451,7 @@ test("RH is a fully isolated third site in the compiled app", () => {
     assert.match(bundle, /runningHubImagePrice\(e,t\)/, "RH price must be visible");
     assert.match(bundle, /pke\(h,n\.imageCount>0\)/, "config nodes must use reference pricing");
     assert.match(bundle, /pke\(w,i\.some\(z=>z\.active&&z\.kind==="image"&&z\.previewUrl\)\)/);
-    assert.match(bundle, /\["apilio","tudou","runninghub","grsai","apimart"\]\.includes\(g\?\.provider\)/);
+    assert.match(bundle, /\["tudou","runninghub","grsai","apimart"\]\.includes\(g\?\.provider\)/);
     assert.match(bundle, /u=Array\.isArray\(t\.channels\)\?bd\(t,t\.model\):t/, "the active channel must be resolved");
     assert.match(bundle, /isRunningHubSite\(u\)/, "RH GPT controls must appear on canvas");
     assert.doesNotMatch(bundle, /if\(r\)return null;const o=/);

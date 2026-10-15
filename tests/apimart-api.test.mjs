@@ -375,8 +375,8 @@ test("compiled app keeps APIMart isolated from the four existing sites", () => {
     assert.match(bundle, /provider:"apimart",models:APIMART_SITE_MODELS/);
     assert.match(
         bundle,
-        /e\?\.provider==="apimart"\?"apimart":e\?\.provider==="soon"\?"soon":"apilio"/,
-        "APIMart must survive provider normalization instead of falling back to Apilio",
+        /e\?\.provider==="apimart"\?"apimart":e\?\.provider==="soon"\?"soon":""/,
+        "APIMart must survive provider normalization",
     );
     assert.match(bundle, /apiKey:u\?\.apiKey\|\|"",apiKeys:u\?\.apiKeys,activeKeyId:u\?\.activeKeyId,apiFormat:"openai",provider:"apimart"/);
     assert.match(bundle, /isApiMartSite\(r\).*runApiMartImageGeneration\(r,t,\[\]/);
@@ -393,17 +393,11 @@ test("APIMart settings share multi-key controls without a billing panel", () => 
     assert.match(bundle, /children:siteKeys\.map/);
     assert.doesNotMatch(bundle, /g\?\.provider==="apimart"\?\[/);
     assert.doesNotMatch(bundle, /Nano Banana Pro \\u56FA\\u5B9A\\u6263\\u8D39/);
-    assert.match(
-        bundle,
-        /g\?\.provider==="apilio"\?y\.jsxs\("div",\{className:"api-billing-panel"/,
-        "Apilio keeps its billing-group controls",
-    );
-    assert.match(bundle, /children:"密钥计费组"/);
-    assert.match(bundle, /children:"\u91CD\u65B0\u68C0\u6D4B"/);
+    assert.doesNotMatch(bundle, /api-billing-panel|children:"密钥计费组"/, "no site has a billing-group panel");
     assert.doesNotMatch(
         bundle,
         /g\?\.provider==="apimart"\|\|g\?\.provider==="grsai"/,
-        "APIMart must not share the Apilio or Grsai account-balance credential form",
+        "APIMart must not share the Grsai account-balance credential form",
     );
 });
 

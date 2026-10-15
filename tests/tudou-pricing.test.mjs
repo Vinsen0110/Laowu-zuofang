@@ -35,7 +35,7 @@ const context = vm.createContext({
     bd: (config, model) => config.channels.find(channel => channel.id === model.split("::")[0]),
 });
 for (const name of [
-    "$S", "pr", "jMe", "isTudouNano21Model", "isTudouSite", "isApilioSite",
+    "$S", "pr", "jMe", "isTudouNano21Model", "isTudouSite",
     "tudouResolution", "tudouQuality", "tudouImagePrice", "vX", "pke",
 ]) {
     vm.runInContext(functionSource(name), context);
@@ -110,7 +110,7 @@ test("Nano Banana estimates remain isolated from other providers", () => {
     for (const quality of ["1k", "2k", "4k"]) {
         const config = { model: "nano-banana-pro", quality, count: 1 };
         assert.equal(context.pke({ ...config, provider: "grsai" }), 0.18);
-        assert.equal(context.pke({ ...config, provider: "apilio" }), quality === "4k" ? 0.55 : 0.4);
+        assert.equal(context.pke({ ...config, provider: "custom" }), quality === "4k" ? 0.55 : 0.4);
         assert.equal(context.pke({ ...config, provider: "runninghub" }), quality === "4k" ? 0.07 : 0.06);
         assert.equal(context.pke({ ...config, provider: "apimart" }), apiMartImagePrice(config));
     }

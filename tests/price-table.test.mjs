@@ -61,10 +61,6 @@ test("price table observer mounting is idempotent and cannot loop on its own div
   assert.doesNotMatch(script, /shell\.querySelectorAll\("\.canvas-price-table-divider"\)\.forEach\(\(element\) => element\.remove\(\)\)/);
 });
 
-test("price table does not expose the removed Apilio site", () => {
-  assert.doesNotMatch(script, /site:\s*"Apilio"/);
-});
-
 test("price table keeps Tudou and Grsai Nano Banana 2.1 while omitting Soon 2.1", () => {
   assert.match(script, /if \(provider === "soon"\) return/);
   assert.match(script, /return add\(model, "Nano Banana 2\.1"\)/);

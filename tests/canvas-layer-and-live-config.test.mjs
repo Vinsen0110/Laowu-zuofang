@@ -59,30 +59,3 @@ for (const retry of [false, true]) {
     });
 }
 
-test("a delayed billing lookup cannot restore an old key or active-key selection", async () => {
-    let finish;
-    let writes = [];
-    let site = { id: "default", activeKeyId: "key-1", apiKey: "old-key", apiKeys: [{ id: "key-1", value: "old-key" }] };
-    const scope = {
-        g: { provider: "apilio", baseUrl: "https://example.test" },
-        activeKey: { id: "key-1", value: "old-key" }, v: "default",
-        billingRequestRef: { current: 0 },
-        setBillingDetecting() {}, setBillingError() {},
-        detectApolloKeyBillingGroup: () => new Promise(resolve => { finish = resolve; }),
-        Xr: { getState: () => ({ config: { channels: [site] } }) },
-        normalizeSiteApiKeys: value => value,
-        updateSite: patch => writes.push(patch),
-    };
-    const source = block("detectActiveKeyBilling=async", "\nC=()=>").trim().replace(/,$/, "");
-    const detect = vm.runInNewContext(`(${source.replace("detectActiveKeyBilling=", "")})`, scope);
-    const pending = detect();
-    site = { ...site, apiKey: "new-key", apiKeys: [{ id: "key-1", value: "new-key" }] };
-    finish({ group: "default", source: "test", checkedAt: "now" });
-    await pending;
-    assert.equal(writes.length, 0);
-    const switched = detect();
-    site = { ...site, activeKeyId: "key-2", apiKey: "other-key" };
-    finish({ group: "default" });
-    await switched;
-    assert.equal(writes.length, 0);
-});

@@ -52,7 +52,6 @@ function runtime({ width = 3840, height = 2160, decodeError, sourceError, pendin
         RX: value => value,
         ll: value => value,
         $Me: prompt => prompt,
-        assertApolloNanoBilling() {},
         pr: value => String(value).split("::").at(-1),
         Xl: async (key, fallback) => {
             calls.resolved.push({ key, fallback });
@@ -246,11 +245,11 @@ test("no-reference generation leaves Auto unchanged and does not read image pixe
     assert.equal(Object.hasOwn(spec.body, "aspectRatio"), false);
 });
 
-test("the browser helper does not infer ratios for Mart, Apilio or older RH models", async () => {
+test("the browser helper does not infer ratios for Mart, other sites or older RH models", async () => {
     const { context, calls } = runtime({ decodeError: new Error("must not decode") });
     for (const config of [
         { ...base, provider: "apimart", model: "apimart::gpt-image-2.5" },
-        { ...base, provider: "apilio", model: "apilio::gpt-image-2.5" },
+        { ...base, provider: "custom", model: "custom::gpt-image-2.5" },
         { ...base, model: "runninghub::gpt-image-2" },
         { ...base, model: "runninghub::nano-banana-pro" },
     ]) {

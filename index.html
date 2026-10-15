@@ -6,7 +6,7 @@
         <meta name="description" content="老屋作坊创作工具" />
         <link rel="icon" type="image/png" href="./kitty.png" />
         <link rel="preload" href="./assets/index-DT58oPsm.css" as="style" crossorigin>
-        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261015-manual-save-01" crossorigin>
+        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261015-site-cleanup-01" crossorigin>
         <link rel="preload" href="./icons/gemini.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/openai.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/claude.svg" as="image" type="image/svg+xml" />
@@ -589,7 +589,7 @@
                 else document.addEventListener("DOMContentLoaded", observe, { once: true });
             })();
         </script>
-        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261015-manual-save-01"></script>
+        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261015-site-cleanup-01"></script>
       <script type="module" src="./display-model-names.js?v=20261008-nano21-01"></script>
       <script type="module" src="./canvas-price-table.js?v=20261009-price-01"></script>
       <script src="./prevent-canvas-drag-download.js?v=20260827-01"></script>
@@ -979,54 +979,6 @@
           grid-template-columns: minmax(150px, 190px) minmax(0, 1fr);
           align-items: end;
           gap: 14px;
-        }
-        .api-billing-panel {
-          display: grid;
-          gap: 12px;
-          margin-top: 16px;
-          padding: 14px 16px;
-          border: 1px solid #e4e7ec;
-          border-radius: 8px;
-          background: #f8fafc;
-        }
-        .api-billing-heading,
-        .api-billing-status-row {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-        }
-        .api-billing-current {
-          margin-top: 3px;
-          color: #101828;
-          font-size: 13px;
-          font-weight: 700;
-          line-height: 20px;
-        }
-        .api-billing-select {
-          width: 230px;
-        }
-        .api-billing-price {
-          font-size: 12px;
-          font-weight: 700;
-          line-height: 20px;
-        }
-        .api-billing-price.is-ready {
-          color: #067647;
-        }
-        .api-billing-price.is-pending {
-          color: #b54708;
-        }
-        .api-billing-source {
-          flex: 1;
-          color: #667085;
-          font-size: 12px;
-          line-height: 20px;
-        }
-        .api-billing-error {
-          color: #b42318;
-          font-size: 12px;
-          line-height: 18px;
         }
         .api-key-row.reference-host-row {
           max-width: 540px;
@@ -1880,25 +1832,6 @@
           border-color: #57534e;
           background: #292524;
           color: #e7e5e4;
-        }
-        .dark .api-billing-panel {
-          border-color: #44403c;
-          background: #1c1917;
-        }
-        .dark .api-billing-current {
-          color: #f5f5f4;
-        }
-        .dark .api-billing-source {
-          color: #a8a29e;
-        }
-        .dark .api-billing-price.is-ready {
-          color: #6ee7b7;
-        }
-        .dark .api-billing-price.is-pending {
-          color: #fbbf24;
-        }
-        .dark .api-billing-error {
-          color: #fca5a5;
         }
         .dark .rh-text-model-empty {
           border-color: #44403c;

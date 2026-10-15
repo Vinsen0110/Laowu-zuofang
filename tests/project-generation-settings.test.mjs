@@ -23,7 +23,7 @@ function functionSource(name) {
 }
 
 const channels = [
-    { id: "default", name: "Apilio", provider: "apilio", baseUrl: "https://api.apilio.ai", apiKey: "apilio-latest", models: ["nano-banana-pro", "gpt-image-2", "gpt-image-2.5"] },
+    { id: "default", name: "Custom", provider: "custom", baseUrl: "https://custom.example", apiKey: "custom-latest", models: ["nano-banana-pro", "gpt-image-2", "gpt-image-2.5"] },
     { id: "tudou", name: "Tudou", provider: "tudou", baseUrl: "https://api.ai-tudou.net", apiKey: "tudou-latest", models: ["nano-banana-pro", "gpt-image-2"] },
     { id: "apimart", name: "Mart", provider: "apimart", baseUrl: "https://api.apimart.ai", apiKey: "mart-latest", models: ["nano-banana-pro", "gpt-image-2", "gpt-image-2.5"] },
     { id: "runninghub", name: "RH", provider: "runninghub", baseUrl: "https://www.runninghub.ai", apiKey: "rh-latest", models: ["nano-banana-pro", "gpt-image-2", "gpt-image-2.5"] },
@@ -160,7 +160,7 @@ test("duplicated generated image panels follow the active site while originals k
     const scope = runtime();
     const original = {
         ...node,
-        metadata: { ...metadata, model: "default::gpt-image-2.5", content: "blob:apilio-history" },
+        metadata: { ...metadata, model: "default::gpt-image-2.5", content: "blob:custom-history" },
     };
     const duplicate = {
         ...original,
@@ -177,21 +177,21 @@ test("duplicated generated image panels follow the active site while originals k
 
     const routedOriginal = scope.Q0(config("apimart"), original, "image");
     assert.equal(routedOriginal.activeSiteId, "default");
-    assert.equal(routedOriginal.provider, "apilio");
-    assert.equal(routedOriginal.apiKey, "apilio-latest");
+    assert.equal(routedOriginal.provider, "custom");
+    assert.equal(routedOriginal.apiKey, "custom-latest");
     assert.equal(routedOriginal.model, "default::gpt-image-2.5");
     assert.equal(original.metadata.followActiveImageSite, undefined);
 });
 
-test("ungenerated Mart image panels switch to Apilio controls with the active site", () => {
+test("ungenerated Mart image panels switch to the active site controls with the active site", () => {
     const scope = runtime();
     const ungenerated = { ...node, metadata: { ...metadata, model: "apimart::gpt-image-2.5", generationStartedAt: "2026-09-20T13:00:00Z" } };
     for (const name of ["vke", "cPe", "Q0"]) {
         const routed = scope[name](config("default"), plain(ungenerated), "image");
         assert.equal(routed.model, "default::gpt-image-2.5", name);
-        assert.equal(routed.provider, "apilio", name);
+        assert.equal(routed.provider, "custom", name);
         assert.equal(routed.activeSiteId, "default", name);
-        assert.equal(routed.apiKey, "apilio-latest", name);
+        assert.equal(routed.apiKey, "custom-latest", name);
     }
 });
 
@@ -341,7 +341,7 @@ test("local project save and reopen preserve actual generated model and paramete
     const save = callback("zs", ",Th=c.useCallback");
     assert.equal(await save(false), true);
     const json = files.get("project.json");
-    assert.doesNotMatch(json, /apiKey|apiKeys|cloudinary|rh-latest|apilio-latest/);
+    assert.doesNotMatch(json, /apiKey|apiKeys|cloudinary|rh-latest|custom-latest/);
     const project = JSON.parse(json);
     for (const [key, value] of Object.entries(metadata)) assert.equal(project.nodes[0].metadata[key], value);
     const open = callback("Ep", ",sv=c.useCallback");

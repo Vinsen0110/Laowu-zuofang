@@ -8,39 +8,6 @@ import { usesCloudinaryReferenceHost } from "../cloudinary-reference-upload.js";
 
 const bundle = await readFile(new URL("../assets/index-B2KJ37fm.js", import.meta.url), "utf8");
 
-test("supported text models stay isolated by site", () => {
-    assert.match(bundle, /APOLLO_TEXT_MODELS=\["gemini-3\.8-flash"\]/);
-    assert.match(bundle, /TUDOU_TEXT_MODELS=\[\]/);
-    assert.match(
-        bundle,
-        /function siteTextModelNames\(e\)\{return e===RUNNINGHUB_SITE_ID\?RUNNINGHUB_TEXT_MODELS:e===TUDOU_SITE_ID\?TUDOU_TEXT_MODELS:e===GRSAI_SITE_ID\?GRSAI_TEXT_MODELS:e===APIMART_SITE_ID\?APIMART_TEXT_MODELS:e==="soon"\?\[\]:APOLLO_TEXT_MODELS\}/,
-    );
-    assert.deepEqual(APIMART_TEXT_MODELS, ["gemini-3.8-flash"]);
-    assert.match(bundle, /textModels:siteModelRefs\(t,siteTextModelNames\(t\)\)/);
-    assert.match(
-        bundle,
-        /const f=Array\.from\(new Set\(e\.textModels\|\|\[\]\)\),m=f\.includes\(e\.model\)/,
-    );
-    assert.doesNotMatch(bundle, /gpt-5\.6-sol/);
-    assert.doesNotMatch(bundle, /filter\(g=>!pr\(g\)\.toLowerCase\(\)\.includes\("gemini"\)\)/);
-});
-
-test("text model labels keep model names with only the RH display prefix omitted", () => {
-    assert.match(bundle, /r===RUNNINGHUB_SITE_ID&&n\.startsWith\("google\/"\)\?n\.slice\(7\):n/);
-    assert.doesNotMatch(bundle, /UNIFIED_TEXT_MODEL_NAME|APILIO_TEXT_MODEL_NAME/);
-    assert.match(bundle, /r==="text"\?displayTextModelName\(e,v\):r==="image"\?displayImageModelName\(v\):pr\(v\)/);
-    assert.match(bundle, /textValue:r==="text"\?displayTextModelName\(e,w\):r==="image"\?displayImageModelName\(w\):pr\(w\)/);
-    assert.match(bundle, /children:n==="text"\?displayTextModelName\(e,t\):n==="image"\?displayImageModelName\(t\):pr\(t\)/);
-    assert.match(bundle, /APOLLO_TEXT_MODELS=\["gemini-3\.8-flash"\]/);
-    assert.match(bundle, /APOLLO_SITE_MODELS=\[[^\]]*gemini-3\.8-flash/);
-    assert.doesNotMatch(bundle, /APOLLO_TEXT_MODELS=\["gemini-3\.7-flash"\]/);
-    assert.match(bundle, /l7=\["default::gemini-3\.8-flash"\]/);
-    assert.match(bundle, /textModel:"default::gemini-3\.8-flash"/);
-    assert.doesNotMatch(bundle, /APOLLO_TEXT_MODELS=\["gemini-3\.6-flash"\]/);
-    assert.match(bundle, /TUDOU_TEXT_MODELS=\[\]/);
-    assert.match(bundle, /RUNNINGHUB_TEXT_MODELS/);
-});
-
 test("settings expose an independent global text site and model", () => {
     assert.match(bundle, /className:"generation-settings-sections"/);
     assert.match(bundle, /children:"\\u751F\\u56FE\\u6A21\\u578B\\u8BBE\\u7F6E"/);
@@ -54,7 +21,7 @@ test("settings expose an independent global text site and model", () => {
     assert.match(bundle, /onChange:\$=>h\(\{textModel:\$\}\)/);
 });
 
-test("Apilio, Tudou, RH, and Mart text generation use Chat Completions messages", async () => {
+test("Tudou, RH, and Mart text generation use Chat Completions messages", async () => {
     const start = bundle.indexOf("function chatCompletionMessages");
     const end = bundle.indexOf("function SA", start);
     assert.ok(start >= 0 && end > start, "Chat Completions adapter should exist");
@@ -98,7 +65,7 @@ test("Apilio, Tudou, RH, and Mart text generation use Chat Completions messages"
 
     const progress = [];
     const result = await request(
-        { baseUrl: "https://api.apilio.ai", apiKey: "test-key", model: "gemini-3.8-flash" },
+        { baseUrl: "https://custom.example", apiKey: "test-key", model: "gemini-3.8-flash" },
         [{
             role: "user",
             content: [
@@ -110,7 +77,7 @@ test("Apilio, Tudou, RH, and Mart text generation use Chat Completions messages"
     );
 
     assert.equal(requests.length, 1);
-    assert.equal(requests[0].url, "https://api.apilio.ai/v1/chat/completions");
+    assert.equal(requests[0].url, "https://custom.example/v1/chat/completions");
     const body = JSON.parse(requests[0].init.body);
     assert.equal(body.model, "gemini-3.8-flash");
     assert.deepEqual(body.messages, [{
@@ -183,116 +150,6 @@ test("text routing has no Responses endpoint", () => {
     assert.doesNotMatch(bundle, /if\(isRunningHubSite\(i\)\)throw new Error/);
     assert.doesNotMatch(bundle, /xA\(e,"\/responses"\)/);
     assert.doesNotMatch(bundle, /fetch\([^)]*"\/responses"/);
-});
-
-test("large text reference images are compressed only in the request copy", async () => {
-    const start = bundle.indexOf("const TEXT_REFERENCE_MAX_EDGE");
-    assert.ok(start >= 0, "temporary text reference compressor should exist");
-    const compressor = bundle.slice(start, bundle.indexOf("function imageNodeConfig", start));
-    let disposed = false;
-    let fetchedBlob = new Blob([new Uint8Array(8 * 1024 * 1024)], { type: "image/png" });
-    const encodeCalls = [];
-    const uploads = [];
-    const makeCompressor = new Function(
-        "fetch",
-        "P$e",
-        "throwIfTudouReferenceAborted",
-        "decodeTudouReferenceBlob",
-        "encodeTudouReferenceWebp",
-        "Ln",
-        "isImgBbReferenceUrl",
-        "isTudouSite",
-        "isApilioSite",
-        "isRunningHubSite",
-        "isApiMartSite",
-        "uploadApiMartReferenceBlob",
-        "usesCloudinaryReferenceHost",
-        "cloudinaryReferenceSource",
-        `${compressor};return prepareTextChatMessages;`,
-    );
-    const compressMessages = makeCompressor(
-        async () => ({
-            ok: true,
-            blob: async () => fetchedBlob,
-        }),
-        async (blob) => `data:image/webp;base64,${"A".repeat(Math.ceil(blob.size * 4 / 3))}`,
-        (signal) => {
-            if (signal?.aborted) throw new Error("aborted");
-        },
-        async () => ({
-            image: {},
-            width: 4096,
-            height: 3072,
-            dispose: () => { disposed = true; },
-        }),
-        async (_image, width, height, quality) => {
-            encodeCalls.push({ width, height, quality });
-            const size = Math.ceil(width * height * quality * 0.48);
-            return new Blob([new Uint8Array(size)], { type: "image/webp" });
-        },
-        {
-            post: async (url, form) => {
-                uploads.push({ url, form });
-                return {
-                    data: {
-                        success: true,
-                        data: { url: "https://i.ibb.co/example/text-reference.webp" },
-                    },
-                };
-            },
-        },
-        (url) => String(url).startsWith("https://i.ibb.co/"),
-        (config) => config?.provider === "tudou",
-        (config) => config?.provider === "apilio",
-        (config) => config?.provider === "runninghub",
-        (config) => config?.provider === "apimart",
-        async () => "https://cdn.example/apimart-text-reference.png",
-        usesCloudinaryReferenceHost,
-        async () => "https://res.cloudinary.com/test/image/upload/v1/reference.webp",
-    );
-    const originalUrl = `data:application/octet-stream;base64,${"A".repeat(8 * 1024 * 1024)}`;
-    const source = [{
-        role: "user",
-        content: [
-            { type: "text", text: "反推这张图" },
-            { type: "image_url", image_url: { url: originalUrl } },
-        ],
-    }];
-
-    const prepared = await compressMessages(source);
-    const preparedUrl = prepared[0].content[1].image_url.url;
-    assert.equal(source[0].content[1].image_url.url, originalUrl);
-    assert.match(preparedUrl, /^data:image\/webp;base64,/);
-    assert.ok(preparedUrl.length < originalUrl.length / 3);
-    assert.ok(new Blob([JSON.stringify({ messages: prepared })]).size < 3 * 1024 * 1024);
-    assert.ok(encodeCalls.every(({ width, height }) => Math.max(width, height) <= 2048));
-    assert.equal(disposed, true);
-
-    const hosted = await compressMessages(source, { imgbbApiKey: "test-imgbb-key" });
-    assert.equal(hosted[0].content[1].image_url.url, "https://i.ibb.co/example/text-reference.webp");
-    assert.equal(source[0].content[1].image_url.url, originalUrl);
-    assert.equal(uploads.length, 1);
-    assert.equal(uploads[0].url, "https://api.imgbb.com/1/upload");
-    assert.ok(uploads[0].form.get("image").size <= 2 * 1024 * 1024);
-    assert.ok(new Blob([JSON.stringify({ messages: hosted })]).size < 1024);
-
-    fetchedBlob = new Blob([new Uint8Array(512 * 1024)], { type: "image/webp" });
-    const tudouHosted = await compressMessages(source, {
-        provider: "tudou",
-        referenceImageHost: "imgbb",
-        imgbbApiKey: "test-imgbb-key",
-    });
-    assert.equal(tudouHosted[0].content[1].image_url.url, "https://res.cloudinary.com/test/image/upload/v1/reference.webp");
-    assert.equal(uploads.length, 1, "Tudou must not use ImgBB, including when old settings select it");
-
-    fetchedBlob = new Blob([new Uint8Array(256 * 1024)], { type: "image/png" });
-    const apiMartHosted = await compressMessages(source, {
-        provider: "apimart",
-        baseUrl: "https://api.apimart.ai",
-        apiKey: "test-apimart-key",
-    });
-    assert.equal(apiMartHosted[0].content[1].image_url.url, "https://cdn.example/apimart-text-reference.png");
-    assert.equal(source[0].content[1].image_url.url, originalUrl);
 });
 
 test("oversized Tudou text requests no longer tell web users to switch apps", () => {

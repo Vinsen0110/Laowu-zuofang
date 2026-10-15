@@ -56,7 +56,6 @@ const context = vm.createContext({
     kP: "GenerateIcon",
     isRunningHubSite,
     isApiMartSite: site("apimart"),
-    isApilioSite: site("apilio"),
     isTudouSite: site("tudou"),
     isGrsaiSite: site("grsai"),
     runningHubGpt25Mode,
@@ -69,13 +68,12 @@ const context = vm.createContext({
     apiMartGptOutputFormat,
     tudouQuality: config => config.gptImageQuality || "medium",
     activeSiteApiKey: () => null,
-    apolloBillingGroupLabel: () => "default",
     hX: [{ value: "auto" }, { value: "1k" }, { value: "2k" }, { value: "4k" }],
     orderRatioPresets: values => values,
     jMe: () => false,
     VR: "::",
     v5: value => value,
-    DP: "apilio",
+    DP: "fallback-site",
     an: {},
     Ne: { Image: "image", Config: "config" },
     activeSiteChannel: config => config.channels.find(channel => channel.id === config.activeSiteId),
@@ -288,8 +286,8 @@ test("reopening a generated node restores its RH settings instead of the current
     assert.equal(view.select(formats).props.value, "webp");
 });
 
-test("Mart and Apilio variant callbacks remain on their preexisting independent settings", () => {
-    for (const provider of ["apimart", "apilio"]) {
+test("Mart variant callback stays on its independent setting and other sites have no variant control", () => {
+    for (const provider of ["apimart"]) {
         const view = render({
             ...rh,
             provider,
@@ -298,13 +296,14 @@ test("Mart and Apilio variant callbacks remain on their preexisting independent 
         });
         view.select(variants).props.onChange("sunburst");
         assert.deepEqual(view.changes[0].patch, { apimartGpt25Variant: "sunburst" });
-        if (provider === "apilio") assert.equal(view.select(modes), undefined);
     }
+    const other = render({ ...rh, provider: "custom", model: "custom::gpt-image-2.5", apimartGpt25Variant: "flare" });
+    assert.equal(other.select(variants), undefined);
 });
 
 test("existing GPT2.5 panel, rendered mode controls and request route all switch together", () => {
     const channels = [
-        { id: "default", provider: "apilio", apiKey: "apilio-test", models: ["gpt-image-2.5"] },
+        { id: "default", provider: "custom", apiKey: "custom-test", models: ["gpt-image-2.5"] },
         { id: "apimart", provider: "apimart", apiKey: "mart-test", models: ["gpt-image-2.5"] },
     ];
     const original = {
@@ -370,7 +369,7 @@ test("switching RH Official to Fixed resets only an incompatible ratio", () => {
 
 test("RH fixed ratio filtering does not remove extended ratios from other providers or RH GPT2", () => {
     for (const [provider, model] of [
-        ["apilio", "gpt-image-2.5"], ["apimart", "gpt-image-2.5"],
+        ["apimart", "gpt-image-2.5"],
         ["runninghub", "gpt-image-2"],
     ]) {
         const view = render({ ...rh, provider, model: `${provider}::${model}`, size: "2:1" });

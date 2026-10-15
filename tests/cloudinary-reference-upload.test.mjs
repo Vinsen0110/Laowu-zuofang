@@ -30,13 +30,13 @@ test("only Tudou and GRSAI use Cloudinary", () => {
     for (const provider of ["tudou", "grsai"]) {
         assert.equal(usesCloudinaryReferenceHost({ provider }), true);
     }
-    for (const provider of ["apilio", "runninghub", "apimart", "default", "custom"]) {
+    for (const provider of ["runninghub", "apimart", "default", "custom"]) {
         assert.equal(usesCloudinaryReferenceHost({ provider }), false);
     }
     assert.equal(usesCloudinaryReferenceHost({ baseUrl: "https://api.ai-tudou.net/v1" }), true);
     assert.equal(usesCloudinaryReferenceHost({ baseUrl: "https://grsaiapi.com/v1" }), true);
     assert.equal(usesCloudinaryReferenceHost({ baseUrl: "https://evil.test/api.ai-tudou.net" }), false);
-    assert.equal(usesCloudinaryReferenceHost({ provider: "apilio", baseUrl: "https://api.ai-tudou.net" }), false);
+    assert.equal(usesCloudinaryReferenceHost({ provider: "runninghub", baseUrl: "https://api.ai-tudou.net" }), false);
 });
 
 test("host validators reject insecure, credentialed, non-image and lookalike URLs", () => {
@@ -287,21 +287,18 @@ function between(start, end) {
     return bundle.slice(first, last);
 }
 
-test("actual bundle image uploader routes target providers to Cloudinary and keeps native uploaders", async () => {
+test("actual bundle image uploader routes Tudou/GRSAI references to Cloudinary", async () => {
     const code = between("async function referenceSource(", "function Zq");
     const calls = [];
     const upload = vm.runInNewContext(`${code};referenceSource`, {
         usesCloudinaryReferenceHost, cloudinaryReferenceSource: async (...args) => { calls.push(["cloudinary", args[0].provider]); return "cloud"; },
         Sw: async () => input, Xl: async () => "",
         isPublicImageUrl: value => String(value).startsWith("http"),
-        isApilioSite: e => e.provider === "apilio",
-        uploadApilioReferenceBlob: async () => { calls.push(["apilio"]); return "apilio"; },
     });
     await upload({ provider: "tudou" }, { storageKey: "key" });
     await upload({ provider: "grsai" }, { storageKey: "key" });
-    await upload({ provider: "apilio" }, { storageKey: "key" });
     await assert.rejects(upload({ provider: "custom" }, { storageKey: "key" }), /参考图读取失败/);
-    assert.deepEqual(calls, [["cloudinary", "tudou"], ["cloudinary", "grsai"], ["apilio"]]);
+    assert.deepEqual(calls, [["cloudinary", "tudou"], ["cloudinary", "grsai"]]);
 });
 
 test("settings accept personal Cloudinary credentials instead of shared application access codes", () => {
@@ -318,15 +315,13 @@ test("actual text-reference branch changes only Tudou/GRSAI while keeping native
         usesCloudinaryReferenceHost,
         Sw: async () => input, Xl: async () => "",
         cloudinaryReferenceSource: async e => { calls.push(e.provider); return "cloud"; },
-        isApilioSite: e => e.provider === "apilio", isRunningHubSite: e => e.provider === "runninghub",
+        isRunningHubSite: e => e.provider === "runninghub",
         fetch: async () => new Response(input), throwIfTudouReferenceAborted() {},
-        uploadApilioReferenceBlob: async () => "native-apilio",
         uploadRunningHubReferenceBlob: async () => "native-rh",
         prepareTextReferenceBlob: async blob => blob, P$e: async () => "inline",
     });
     assert.equal(await prepare("blob:test", { provider: "tudou" }, null, 100), "cloud");
     assert.equal(await prepare("blob:test", { provider: "grsai" }, null, 100), "cloud");
-    assert.equal(await prepare("blob:test", { provider: "apilio" }, null, 100), "native-apilio");
     assert.equal(await prepare("blob:test", { provider: "runninghub" }, null, 100), "native-rh");
     assert.equal(await prepare("blob:test", { provider: "custom" }, null, 100), "inline");
     assert.deepEqual(calls, ["tudou", "grsai"]);
