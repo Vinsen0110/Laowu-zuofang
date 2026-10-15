@@ -28,7 +28,7 @@ function functionSource(name) {
     throw new Error(`Cannot extract ${name}`);
 }
 function runtime(extra = {}) {
-    const scope = vm.createContext({ VR: '::', TextDecoder,
+    const scope = vm.createContext({ VR: '::', TextDecoder, URL, inlineTudouGeminiReferences,
         cn: () => 'image-id',
         Tm: value => Boolean(value) && typeof value === 'object' && !Array.isArray(value),
         aW: async response => (await response.json()).error.message,

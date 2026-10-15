@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { inlineTudouGeminiReferences } from "../tudou-reference-images.js";
 
 const bundle = await readFile(new URL("../assets/index-B2KJ37fm.js", import.meta.url), "utf8");
 const vercelConfig = JSON.parse(await readFile(new URL("../vercel.json", import.meta.url), "utf8"));
@@ -21,7 +22,7 @@ const extracted = [
     bundleBlock("function WMe", "function imageTaskIdentifier"),
 ].join("");
 
-const makeRuntime = new Function("fetch", "Jq", "eW", "aW", "cn", "Tm", "isTudouNano21Model", `${extracted};return tudouGeminiStreamImages;`);
+const makeRuntime = new Function("fetch", "Jq", "eW", "aW", "cn", "Tm", "isTudouNano21Model", "URL", "inlineTudouGeminiReferences", `${extracted};return tudouGeminiStreamImages;`);
 
 function sseResponse(blocks, headers = {}) {
     return new Response(blocks.join("\n\n") + "\n\n", {
@@ -46,6 +47,8 @@ async function runBundleStream(response) {
         () => "image-id",
         (value) => Boolean(value) && typeof value === "object" && !Array.isArray(value),
         () => false,
+        URL,
+        inlineTudouGeminiReferences,
     );
     const result = await stream({ model: "test" }, { contents: [] });
     return { requests, result };

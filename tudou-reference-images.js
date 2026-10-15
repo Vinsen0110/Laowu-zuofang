@@ -20,14 +20,28 @@ function imageMimeType(response) {
     return type.startsWith("image/") ? type : "";
 }
 
-async function inlineHostedImage(fileUri, signal, fetchImpl) {
+// Works in Node (Vercel proxy, local preview) and in the browser (direct Tudou requests).
+function bytesToBase64(chunks, total) {
+    if (typeof Buffer !== "undefined") return Buffer.concat(chunks, total).toString("base64");
+    const bytes = new Uint8Array(total);
+    let offset = 0;
+    for (const chunk of chunks) {
+        bytes.set(chunk, offset);
+        offset += chunk.byteLength;
+    }
+    let binary = "";
+    for (let i = 0; i < total; i += 0x8000) binary += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(binary);
+}
+
+async function inlineHostedImage(fileUri, signal, fetchImpl, redirect = "manual") {
     let target = fileUri;
     let response;
     for (let redirects = 0; redirects <= 3; redirects += 1) {
         if (!isHostedReferenceImageUrl(target)) throw new Error("Reference redirected to an unsupported host");
         response = await fetchImpl(target, {
             headers: { Accept: "image/*", "Accept-Encoding": "identity" },
-            redirect: "manual", signal,
+            redirect, signal,
         });
         if (![301, 302, 303, 307, 308].includes(response.status)) break;
         const location = response.headers.get("location");
@@ -70,7 +84,7 @@ async function inlineHostedImage(fileUri, signal, fetchImpl) {
         reader.releaseLock();
     }
     if (!total) throw new Error("Reference download returned an empty image");
-    return { mimeType, data: Buffer.concat(chunks, total).toString("base64") };
+    return { mimeType, data: bytesToBase64(chunks, total) };
 }
 
 export async function inlineTudouGeminiReferences(target, payload, options = {}) {
@@ -78,7 +92,8 @@ export async function inlineTudouGeminiReferences(target, payload, options = {})
         return { payload, converted: 0 };
     }
 
-    const fetchImpl = options.fetchImpl || fetch;
+    // Wrap fetch: browsers throw "Illegal invocation" when fetch is called detached from window.
+    const fetchImpl = options.fetchImpl || ((...args) => fetch(...args));
     let converted = 0;
     for (const content of Array.isArray(payload.contents) ? payload.contents : []) {
         for (const part of Array.isArray(content?.parts) ? content.parts : []) {
@@ -86,7 +101,7 @@ export async function inlineTudouGeminiReferences(target, payload, options = {})
             const fileUri = fileData?.fileUri || fileData?.file_uri;
             if (!isHostedReferenceImageUrl(fileUri)) continue;
 
-            part.inlineData = await inlineHostedImage(fileUri, options.signal, fetchImpl);
+            part.inlineData = await inlineHostedImage(fileUri, options.signal, fetchImpl, options.redirect);
             delete part.fileData;
             delete part.file_data;
             converted += 1;
