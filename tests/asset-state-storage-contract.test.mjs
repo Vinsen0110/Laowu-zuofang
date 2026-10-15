@@ -107,14 +107,60 @@ test("asset cleanup reports persistence failure and preserves every blob", async
     assert.deepEqual(events, ["flush", error]);
 });
 
-test("canvas node autosave waits for both hydration and an opened project directory", () => {
-    assert.ok(bundle.includes(
+test("canvas edits are not autosaved to browser storage", () => {
+    assert.ok(!bundle.includes(
         "c.useEffect(()=>{!We||!Me||x.current||I(a,{nodes:B,connections:X,chatSessions:ne,activeChatId:te,backgroundMode:Te,showImageInfo:It})},[te,Te,ne,X,B,a,We,Me,It,I])",
     ));
 });
 
-test("canvas viewport autosave does not schedule writes before a project directory opens", () => {
-    assert.ok(bundle.includes(
+test("canvas edits are not autosaved to the local project directory", () => {
+    assert.ok(!bundle.includes("Zi.current=setTimeout(()=>{Zi.current=null,zs(!1,!0)},700)"));
+});
+
+test("canvas viewport changes are not autosaved", () => {
+    assert.ok(!bundle.includes(
         "c.useEffect(()=>{if(We&&Me)return v.current&&clearTimeout(v.current),v.current=setTimeout(()=>{I(a,{viewport:Ao.current}),v.current=null},500),()=>{v.current&&clearTimeout(v.current)}},[a,We,Me,I,oe])",
     ));
+});
+
+test("manual save persists the canvas and marks it saved", () => {
+    assert.ok(bundle.includes("Th=c.useCallback(async(O=!0)=>{const K=$.current;I(a,{nodes:vn.current,connections:Jr.current,"));
+    assert.ok(bundle.includes('if(le&&!K.altKey&&Q==="s"){K.preventDefault(),Th(!0);return}'));
+    assert.ok(bundle.includes("onSave:()=>Th(!0)"));
+});
+
+test("leaving with unsaved canvas changes asks for confirmation", () => {
+    assert.ok(bundle.includes('const O=K=>{$.current!==j.current&&(K.preventDefault(),K.returnValue="")};return window.addEventListener("beforeunload",O)'));
+});
+
+function imageCleanup(storedKeys) {
+    const start = bundle.indexOf("async function cq(");
+    const end = bundle.indexOf("function P$e(", start);
+    assert.ok(start >= 0 && end > start);
+    const deleted = [];
+    const context = {
+        yh: { iterate: async visit => { for (const key of storedKeys) visit(null, key); } },
+        lq: async keys => { deleted.push(...keys); },
+    };
+    const cleanup = vm.runInNewContext(`${bundle.slice(start, end)};cq`, context);
+    return { cleanup, deleted };
+}
+
+test("asset and chat cleanup keep images that only exist in the unsaved canvas", async () => {
+    assert.ok(bundle.includes("const unsaved=globalThis.__laowuUnsavedCanvas?.();await cq({assets:t().assets,projects:r.getState().projects,extra:n,unsaved}),await D$e({assets:t().assets,projects:r.getState().projects,extra:n,unsaved})"));
+    assert.ok(bundle.includes("const unsaved=()=>({nodes:vn.current,chatSessions:ne,history:m.current,lastHistory:h.current});globalThis.__laowuUnsavedCanvas=unsaved;"));
+
+    const { cleanup, deleted } = imageCleanup(["image:saved", "image:unsaved", "image:undo", "image:orphan"]);
+    await cleanup({
+        assets: [],
+        projects: [{ nodes: [{ metadata: { storageKey: "image:saved" } }] }],
+        extra: { sessions: [] },
+        unsaved: {
+            nodes: [{ metadata: { storageKey: "image:unsaved" } }],
+            chatSessions: [],
+            history: { past: [{ nodes: [{ metadata: { storageKey: "image:undo" } }] }], future: [] },
+            lastHistory: null,
+        },
+    });
+    assert.deepEqual(deleted, ["image:orphan"]);
 });
