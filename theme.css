@@ -20,6 +20,10 @@
 
 /* ---------- 第 1 部分：调色板 ---------- */
 :root {
+  --lw-amber-50: #fffbeb;              /* 琥珀 50 */
+  --lw-amber-50-rgb: 255 251 235;
+  --lw-amber-500: #f59e0b;             /* 琥珀 500 */
+  --lw-amber-500-rgb: 245 158 11;
   --lw-amber-600: #d97706;             /* 琥珀 600 */
   --lw-amber-600-rgb: 217 119 6;
   --lw-black: #000000;                 /* 纯黑 */
@@ -30,12 +34,22 @@
   --lw-blue-400-rgb: 96 165 250;
   --lw-blue-50: #eff6ff;               /* 蓝 50 */
   --lw-blue-50-rgb: 239 246 255;
+  --lw-blue-500: #3b82f6;              /* 蓝 500 */
+  --lw-blue-500-rgb: 59 130 246;
+  --lw-blue-700: #1d4ed8;              /* 蓝 700 */
+  --lw-blue-700-rgb: 29 78 216;
   --lw-blue-800: #1e40af;              /* 蓝 800 */
   --lw-blue-800-rgb: 30 64 175;
   --lw-blue-tint-100: #eaf2ff;         /* 自定义浅蓝 100 */
   --lw-blue-tint-100-rgb: 234 242 255;
+  --lw-blue-tint-200: #cfdcff;         /* 自定义浅蓝 200 */
+  --lw-blue-tint-200-rgb: 207 220 255;
   --lw-blue-tint-50: #f2f6ff;          /* 自定义浅蓝 50 */
   --lw-blue-tint-50-rgb: 242 246 255;
+  --lw-blue-tint-75: #e7efff;          /* 自定义浅蓝 75 */
+  --lw-blue-tint-75-rgb: 231 239 255;
+  --lw-blue-violet-600: #4459cb;       /* 自定义蓝紫 600 */
+  --lw-blue-violet-600-rgb: 68 89 203;
   --lw-brand-violet-hex: #6157e8;      /* 品牌紫 */
   --lw-brand-violet-hex-rgb: 97 87 232;
   --lw-charcoal-300: #c3c5cc;          /* 自定义炭灰 300 */
@@ -68,6 +82,10 @@
   --lw-emerald-300-rgb: 110 231 183;
   --lw-emerald-400: #34d399;           /* 翠绿 400 */
   --lw-emerald-400-rgb: 52 211 153;
+  --lw-emerald-50: #ecfdf5;            /* 翠绿 50 */
+  --lw-emerald-50-rgb: 236 253 245;
+  --lw-emerald-500: #10b981;           /* 翠绿 500 */
+  --lw-emerald-500-rgb: 16 185 129;
   --lw-emerald-700: #047857;           /* 翠绿 700 */
   --lw-emerald-700-rgb: 4 120 87;
   --lw-emerald-800: #065f46;           /* 翠绿 800 */
@@ -76,32 +94,58 @@
   --lw-emerald-900-rgb: 6 78 59;
   --lw-gray-100: #f3f4f6;              /* 冷灰 100 */
   --lw-gray-100-rgb: 243 244 246;
+  --lw-gray-200: #e5e7eb;              /* 冷灰 200 */
+  --lw-gray-200-rgb: 229 231 235;
   --lw-gray-50: #f9fafb;               /* 冷灰 50 */
   --lw-gray-50-rgb: 249 250 251;
   --lw-gray-800: #1f2937;              /* 冷灰 800 */
   --lw-gray-800-rgb: 31 41 55;
+  --lw-gray-900: #111827;              /* 冷灰 900 */
+  --lw-gray-900-rgb: 17 24 39;
   --lw-green-100: #dcfce7;             /* 绿 100 */
   --lw-green-100-rgb: 220 252 231;
   --lw-green-200: #bbf7d0;             /* 绿 200 */
   --lw-green-200-rgb: 187 247 208;
   --lw-green-50: #f0fdf4;              /* 绿 50 */
   --lw-green-50-rgb: 240 253 244;
+  --lw-green-500: #22c55e;             /* 绿 500 */
+  --lw-green-500-rgb: 34 197 94;
   --lw-green-600: #16a34a;             /* 绿 600 */
   --lw-green-600-rgb: 22 163 74;
   --lw-green-800: #166534;             /* 绿 800 */
   --lw-green-800-rgb: 22 101 52;
   --lw-green-tint-25: #fafffc;         /* 自定义浅绿 25 */
   --lw-green-tint-25-rgb: 250 255 252;
+  --lw-indigo-100: #e0e7ff;            /* 靛蓝 100 */
+  --lw-indigo-100-rgb: 224 231 255;
+  --lw-indigo-200: #c7d2fe;            /* 靛蓝 200 */
+  --lw-indigo-200-rgb: 199 210 254;
   --lw-indigo-300: #a5b4fc;            /* 靛蓝 300 */
   --lw-indigo-300-rgb: 165 180 252;
   --lw-indigo-50: #eef2ff;             /* 靛蓝 50 */
   --lw-indigo-50-rgb: 238 242 255;
+  --lw-indigo-500: #6366f1;            /* 靛蓝 500 */
+  --lw-indigo-500-rgb: 99 102 241;
+  --lw-indigo-700: #4338ca;            /* 靛蓝 700 */
+  --lw-indigo-700-rgb: 67 56 202;
+  --lw-indigo-800: #3730a3;            /* 靛蓝 800 */
+  --lw-indigo-800-rgb: 55 48 163;
   --lw-indigo-900: #312e81;            /* 靛蓝 900 */
   --lw-indigo-900-rgb: 49 46 129;
   --lw-link-blue: #2f80ff;             /* 链接蓝 */
   --lw-link-blue-rgb: 47 128 255;
+  --lw-neutral-50: #fafafa;            /* 中性灰 50 */
+  --lw-neutral-50-rgb: 250 250 250;
   --lw-neutral-900: #171717;           /* 中性灰 900 */
   --lw-neutral-900-rgb: 23 23 23;
+  --lw-orange-300: #fdba74;            /* 橙 300 */
+  --lw-orange-300-rgb: 253 186 116;
+  --lw-orange-50: #fff7ed;             /* 橙 50 */
+  --lw-orange-50-rgb: 255 247 237;
+  --lw-orange-500: #f97316;            /* 橙 500 */
+  --lw-orange-500-rgb: 249 115 22;
+  --lw-orange-700: #c2410c;            /* 橙 700 */
+  --lw-orange-700-rgb: 194 65 12;
   --lw-pink-200: #fbcfe8;              /* 粉 200 */
   --lw-pink-200-rgb: 251 207 232;
   --lw-pink-300: #f9a8d4;              /* 粉 300 */
@@ -116,6 +160,8 @@
   --lw-pink-900-rgb: 131 24 67;
   --lw-pink-950: #500724;              /* 粉 950 */
   --lw-pink-950-rgb: 80 7 36;
+  --lw-pink-brand: #ff4fa3;            /* 自定义品牌粉(生图节点) */
+  --lw-pink-brand-rgb: 255 79 163;
   --lw-pink-tint-50: #fff1f6;          /* 自定义浅粉 50 */
   --lw-pink-tint-50-rgb: 255 241 246;
   --lw-popup-ink: #242529;             /* 节点工具条文字墨色 */
@@ -128,16 +174,26 @@
   --lw-red-500-hex-rgb: 239 68 68;
   --lw-red-600: #dc2626;               /* 红 600 */
   --lw-red-600-rgb: 220 38 38;
+  --lw-rose-300: #fda4af;              /* 玫红 300 */
+  --lw-rose-300-rgb: 253 164 175;
+  --lw-rose-50: #fff1f2;               /* 玫红 50 */
+  --lw-rose-50-rgb: 255 241 242;
+  --lw-rose-700: #be123c;              /* 玫红 700 */
+  --lw-rose-700-rgb: 190 18 60;
   --lw-scroll-thumb-gray: #8d9498;     /* 滚动条滑块灰 */
   --lw-scroll-thumb-gray-rgb: 141 148 152;
   --lw-scroll-track-gray: #bdc4c8;     /* 滚动条轨道灰 */
   --lw-scroll-track-gray-rgb: 189 196 200;
+  --lw-sky-500: #0ea5e9;               /* 天蓝 500 */
+  --lw-sky-500-rgb: 14 165 233;
   --lw-slate-200: #e2e8f0;             /* 蓝灰 200 */
   --lw-slate-200-rgb: 226 232 240;
   --lw-slate-400: #94a3b8;             /* 蓝灰 400 */
   --lw-slate-400-rgb: 148 163 184;
   --lw-slate-50: #f8fafc;              /* 蓝灰 50 */
   --lw-slate-50-rgb: 248 250 252;
+  --lw-slate-500: #64748b;             /* 蓝灰 500 */
+  --lw-slate-500-rgb: 100 116 139;
   --lw-slate-900: #0f172a;             /* 蓝灰 900 */
   --lw-slate-900-rgb: 15 23 42;
   --lw-stone-100: #f5f5f4;             /* 暖灰 100 */
@@ -160,6 +216,10 @@
   --lw-stone-800-rgb: 41 37 36;
   --lw-stone-900: #1c1917;             /* 暖灰 900 */
   --lw-stone-900-rgb: 28 25 23;
+  --lw-teal-50: #f0fdfa;               /* 青绿 50 */
+  --lw-teal-50-rgb: 240 253 250;
+  --lw-teal-500: #14b8a6;              /* 青绿 500 */
+  --lw-teal-500-rgb: 20 184 166;
   --lw-ui-blue-300: #84adff;           /* 设置页蓝 300 */
   --lw-ui-blue-300-rgb: 132 173 255;
   --lw-ui-blue-50: #eef4ff;            /* 设置页蓝 50 */
@@ -190,6 +250,20 @@
   --lw-ui-gray-900-rgb: 16 24 40;
   --lw-ui-indigo-700: #3538cd;         /* 设置页靛蓝 700 */
   --lw-ui-indigo-700-rgb: 53 56 205;
+  --lw-violet-300: #c4b5fd;            /* 紫 300 */
+  --lw-violet-300-rgb: 196 181 253;
+  --lw-violet-50: #f5f3ff;             /* 紫 50 */
+  --lw-violet-50-rgb: 245 243 255;
+  --lw-violet-500: #8b5cf6;            /* 紫 500 */
+  --lw-violet-500-rgb: 139 92 246;
+  --lw-violet-600: #7c3aed;            /* 紫 600 */
+  --lw-violet-600-rgb: 124 58 237;
+  --lw-violet-700: #6d28d9;            /* 紫 700 */
+  --lw-violet-700-rgb: 109 40 217;
+  --lw-warm-gray-400: #9f9690;         /* 自定义暖灰 400(连线) */
+  --lw-warm-gray-400-rgb: 159 150 144;
+  --lw-warm-gray-450: #8a8479;         /* 自定义暖灰 450 */
+  --lw-warm-gray-450-rgb: 138 132 121;
   --lw-warm-gray-750: #3a3634;         /* 自定义暖深灰 750 */
   --lw-warm-gray-750-rgb: 58 54 52;
   --lw-warm-gray-750-alt: #3a3631;     /* 自定义暖深灰 750(另一版) */
@@ -198,10 +272,14 @@
   --lw-warm-gray-775-rgb: 53 48 45;
   --lw-warm-gray-925: #1f1d1a;         /* 自定义暖深灰 925 */
   --lw-warm-gray-925-rgb: 31 29 26;
+  --lw-warm-gray-950: #181715;         /* 自定义暖深灰 950(画布黑底) */
+  --lw-warm-gray-950-rgb: 24 23 21;
   --lw-white: #ffffff;                 /* 纯白 */
   --lw-white-rgb: 255 255 255;
   --lw-zinc-700: #3f3f46;              /* 锌灰 700 */
   --lw-zinc-700-rgb: 63 63 70;
+  --lw-zinc-800: #27272a;              /* 锌灰 800 */
+  --lw-zinc-800-rgb: 39 39 42;
 }
 
 /* ---------- 第 2 部分：界面用途（浅色模式） ---------- */
@@ -270,6 +348,49 @@
   --lw-reverse-btn-disabled-bg: var(--color-stone-50); /* 反推按钮禁用背景 */
   --lw-reverse-btn-disabled-border: var(--color-stone-200); /* 反推按钮禁用描边 */
   --lw-reverse-btn-disabled-text: var(--color-stone-400); /* 反推按钮禁用文字（黑暗模式相同） */
+  --lw-theme-canvas-background: var(--lw-white); /* 画布主题：画布 background */
+  --lw-theme-canvas-dot: rgb(var(--lw-slate-900-rgb) / .18); /* 画布主题：画布 dot */
+  --lw-theme-canvas-line: rgb(var(--lw-slate-900-rgb) / .08); /* 画布主题：画布 line */
+  --lw-theme-canvas-selection-stroke: var(--lw-stone-900); /* 画布主题：画布 selection-stroke */
+  --lw-theme-canvas-selection-fill: rgb(var(--lw-stone-900-rgb) / .06); /* 画布主题：画布 selection-fill */
+  --lw-theme-node-label: var(--lw-stone-600); /* 画布主题：节点 label */
+  --lw-theme-node-fill: var(--lw-white);    /* 画布主题：节点 fill */
+  --lw-theme-node-panel: var(--lw-white);   /* 画布主题：节点 panel */
+  --lw-theme-node-stroke: var(--lw-gray-200); /* 画布主题：节点 stroke */
+  --lw-theme-node-active-stroke: var(--lw-stone-900); /* 画布主题：节点 active-stroke */
+  --lw-theme-node-placeholder: var(--lw-warm-gray-450); /* 画布主题：节点 placeholder */
+  --lw-theme-node-text: var(--lw-stone-800); /* 画布主题：节点 text */
+  --lw-theme-node-muted: var(--lw-stone-500); /* 画布主题：节点 muted */
+  --lw-theme-node-faint: var(--lw-stone-400); /* 画布主题：节点 faint */
+  --lw-theme-toolbar-panel: rgb(var(--lw-white-rgb) / .96); /* 画布主题：工具栏 panel */
+  --lw-theme-toolbar-border: var(--lw-gray-200); /* 画布主题：工具栏 border */
+  --lw-theme-toolbar-item: var(--lw-stone-600); /* 画布主题：工具栏 item */
+  --lw-theme-toolbar-item-hover: var(--lw-gray-100); /* 画布主题：工具栏 item-hover */
+  --lw-theme-toolbar-active-bg: var(--lw-gray-100); /* 画布主题：工具栏 active-bg */
+  --lw-theme-toolbar-active-text: var(--lw-stone-800); /* 画布主题：工具栏 active-text */
+  --lw-site-runninghub: var(--lw-orange-500); /* 站点色：RunningHub（黑暗模式相同） */
+  --lw-site-tudou: var(--lw-green-600);     /* 站点色：土豆（黑暗模式相同） */
+  --lw-site-apimart: var(--lw-sky-500);     /* 站点色：APIMart（黑暗模式相同） */
+  --lw-site-other: var(--lw-brand-violet-hex); /* 站点色：其他站点（黑暗模式相同） */
+  --lw-connection-line: var(--lw-warm-gray-400); /* 节点连线（黑暗模式相同） */
+  --lw-connection-flow: var(--lw-pink-300); /* 节点连线流动动画（黑暗模式相同） */
+  --lw-connection-draft: var(--lw-slate-500); /* 正在拖出的连线（黑暗模式相同） */
+  --lw-tooltip-bg: var(--color-white);      /* 节点工具条提示气泡背景 */
+  --lw-tooltip-text: var(--lw-popup-ink);   /* 节点工具条提示气泡文字 */
+  --lw-node-image-gen: var(--lw-pink-brand); /* 节点色：图片生成（黑暗模式相同） */
+  --lw-node-image-input: var(--lw-link-blue); /* 节点色：图片输入（黑暗模式相同） */
+  --lw-node-text: var(--lw-green-500);      /* 节点色：文本（黑暗模式相同） */
+  --lw-node-config: var(--lw-violet-500);   /* 节点色：配置（黑暗模式相同） */
+  --lw-node-audio: var(--lw-amber-500);     /* 节点色：音频（黑暗模式相同） */
+  --lw-node-video: var(--lw-teal-500);      /* 节点色：视频（黑暗模式相同） */
+  --lw-prompt-caret: var(--lw-pink-brand);  /* 提示词输入框光标（黑暗模式相同） */
+  --lw-icon-video: var(--lw-violet-600);    /* 新建菜单图标：视频输入（黑暗模式相同） */
+  --lw-icon-audio: var(--lw-amber-500);     /* 新建菜单图标：音频（黑暗模式相同） */
+  --lw-icon-image-gen: var(--lw-pink-500);  /* 新建菜单图标：图片生成（黑暗模式相同） */
+  --lw-icon-image: var(--lw-blue-500);      /* 新建菜单图标：图片输入（黑暗模式相同） */
+  --lw-icon-video-gen: var(--lw-violet-500); /* 新建菜单图标：视频生成（黑暗模式相同） */
+  --lw-mention-chip-bg: var(--color-blue-50); /* 提示词里 @ 引用标签的背景 */
+  --lw-mention-chip-border: var(--color-blue-200); /* 提示词里 @ 引用标签的描边 */
 }
 
 /* ---------- 第 2 部分：界面用途（黑暗模式，只列出和浅色不同的） ---------- */
@@ -306,6 +427,30 @@
   --lw-reverse-btn-text: var(--lw-emerald-300); /* 反推「生成」按钮文字 */
   --lw-reverse-btn-disabled-bg: var(--lw-stone-800); /* 反推按钮禁用背景 */
   --lw-reverse-btn-disabled-border: var(--lw-stone-700); /* 反推按钮禁用描边 */
+  --lw-theme-canvas-background: var(--lw-warm-gray-950); /* 画布主题：画布 background */
+  --lw-theme-canvas-dot: rgb(var(--lw-stone-100-rgb) / .24); /* 画布主题：画布 dot */
+  --lw-theme-canvas-line: rgb(var(--lw-stone-100-rgb) / .10); /* 画布主题：画布 line */
+  --lw-theme-canvas-selection-stroke: var(--lw-stone-50); /* 画布主题：画布 selection-stroke */
+  --lw-theme-canvas-selection-fill: rgb(var(--lw-stone-50-rgb) / .10); /* 画布主题：画布 selection-fill */
+  --lw-theme-node-label: var(--lw-stone-300); /* 画布主题：节点 label */
+  --lw-theme-node-fill: var(--lw-stone-800); /* 画布主题：节点 fill */
+  --lw-theme-node-panel: var(--lw-warm-gray-925); /* 画布主题：节点 panel */
+  --lw-theme-node-stroke: var(--lw-stone-700); /* 画布主题：节点 stroke */
+  --lw-theme-node-active-stroke: var(--lw-stone-50); /* 画布主题：节点 active-stroke */
+  --lw-theme-node-placeholder: var(--lw-stone-400); /* 画布主题：节点 placeholder */
+  --lw-theme-node-text: var(--lw-stone-100); /* 画布主题：节点 text */
+  --lw-theme-node-muted: var(--lw-stone-300); /* 画布主题：节点 muted */
+  --lw-theme-node-faint: var(--lw-stone-500); /* 画布主题：节点 faint */
+  --lw-theme-toolbar-panel: rgb(var(--lw-warm-gray-925-rgb) / .96); /* 画布主题：工具栏 panel */
+  --lw-theme-toolbar-border: var(--lw-stone-700); /* 画布主题：工具栏 border */
+  --lw-theme-toolbar-item: var(--lw-stone-300); /* 画布主题：工具栏 item */
+  --lw-theme-toolbar-item-hover: var(--lw-stone-800); /* 画布主题：工具栏 item-hover */
+  --lw-theme-toolbar-active-bg: var(--lw-warm-gray-750-alt); /* 画布主题：工具栏 active-bg */
+  --lw-theme-toolbar-active-text: var(--lw-stone-100); /* 画布主题：工具栏 active-text */
+  --lw-tooltip-bg: var(--lw-stone-800);     /* 节点工具条提示气泡背景 */
+  --lw-tooltip-text: var(--lw-stone-100);   /* 节点工具条提示气泡文字 */
+  --lw-mention-chip-bg: color-mix(in oklab, var(--lw-blue-500) 18%, transparent); /* 提示词里 @ 引用标签的背景 */
+  --lw-mention-chip-border: color-mix(in oklab, var(--lw-blue-500) 40%, transparent); /* 提示词里 @ 引用标签的描边 */
 }
 
 /* ---------- 第 3 部分：颜色类（自动生成，放在 Tailwind 的 utilities 层，优先级和原来一致） ---------- */
@@ -474,4 +619,12 @@
 @supports (color:color-mix(in lab,red,red)){.lw-bg-surface-a85-i{background-color:color-mix(in oklab,var(--lw-surface) 85%,transparent)!important}}
 .lw-viewer-download{color:var(--lw-viewer-download-text)!important}
 .lw-viewer-download svg{color:var(--lw-viewer-download-text)!important;stroke:var(--lw-viewer-download-text)!important}
+.lw-border-blue-200-mention-chip-border{border-color:var(--lw-mention-chip-border)}
+.lw-bg-blue-50-mention-chip-bg{background-color:var(--lw-mention-chip-bg)}
+.lw-text-link{color:var(--lw-link)}
+.lw-before-text-stone-text-secondary:before{content:var(--tw-content);color:var(--lw-text-secondary)}
+.lw-arb-1{border-color:var(--lw-blue-tint-200)}
+.lw-arb-2{background-color:rgb(var(--lw-ui-blue-50-rgb) / 0.949)}
+.lw-arb-3{color:var(--lw-brand-violet-hex)}
+@media(hover:hover){.lw-arb-4:hover{background-color:var(--lw-blue-tint-75)}}
 }

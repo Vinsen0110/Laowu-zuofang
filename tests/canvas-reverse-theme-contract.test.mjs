@@ -61,7 +61,7 @@ test("reverse theme scope is applied only to reverse-prompt nodes", () => {
 
 test("both reverse frame layers use variables while selected borders stay green", () => {
     assert.equal((shell.match(/background:oe\?"var\(--canvas-reverse-frame\)"/g) || []).length, 2);
-    assert.match(shell, /ge="#22c55e"/);
+    assert.match(shell, /ge="var\(--lw-node-text\)"/);
     assert.match(shell, /borderColor:oe\?Pe\?ge:"var\(--canvas-reverse-border\)"/);
     assert.doesNotMatch(shell, /background:oe\?"rgba\(255,255,255/);
     assert.match(shell, /oe\?null:y\.jsx\(Yze,\{node:e\}\)/);

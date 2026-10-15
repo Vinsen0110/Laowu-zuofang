@@ -101,6 +101,6 @@ test("the real connection menu keeps all create, close and canvas propagation ca
     assert.equal(stopped, 2);
     assert.deepEqual(
         buttons.slice(1).map(button => button.props.children[0].props.style.color),
-        ["#2f80ff", "#22c55e", "#ff4fa3"],
+        ["var(--lw-node-image-input)", "var(--lw-node-text)", "var(--lw-node-image-gen)"],
     );
 });

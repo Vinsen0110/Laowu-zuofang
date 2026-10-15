@@ -84,3 +84,42 @@ test("theme.css color variables never reference themselves or form a cycle", () 
         }
     }
 });
+
+test("node and site identity colors keep their original values in theme.css", () => {
+    const value = name => theme.match(new RegExp(`--lw-${name}:\\s*([^;]+);`))?.[1];
+    const resolve = name => { let v = value(name); while (v?.startsWith("var(--lw-")) v = value(v.slice(9, -1)); return v; };
+    assert.equal(resolve("node-image-gen"), "#ff4fa3");
+    assert.equal(resolve("node-image-input"), "#2f80ff");
+    assert.equal(resolve("node-text"), "#22c55e");
+    assert.equal(resolve("site-runninghub"), "#f97316");
+    assert.equal(resolve("site-tudou"), "#16a34a");
+    assert.equal(resolve("site-apimart"), "#0ea5e9");
+});
+
+test("canvas-price-table.js takes every color from theme.css and has dark provider headers", async () => {
+    const table = await read("canvas-price-table.js");
+    const styleText = table.slice(table.indexOf("const css = `"), table.indexOf("`;", table.indexOf("const css = `")));
+    const values = [...styleText.matchAll(/:([^;{}]*)(?=[;}])/g)].map(match => match[1]);
+    assert.deepEqual(values.filter(value => /#[0-9a-fA-F]{3,8}\b|rgba?\((?!var\()/.test(value)), []);
+    for (const site of ["rh", "mart", "soon", "tudou", "grsai"])
+        assert.match(styleText, new RegExp(`\\.dark \\.canvas-price-table-group\\.provider-${site} \\.canvas-price-table-group-head\\{`));
+    assert.match(styleText, /\.dark \.canvas-price-table-thinking-select\{/);
+});
+
+test("app code keeps colors in theme.css except antd tokens and drawing colors", () => {
+    // Allowed on purpose: the CSS named-color table of a color library, antd's theme table
+    // (antd derives colors itself) and canvas drawing / pen colors.
+    const allowed = ["const zR={", "const qp={", "const j6=100,QDe=", "function drawSketchOperation(", "function drawSketchSelection(", "function DoodleEditor(", "function JDe(", "function tze(", "function rze("];
+    const start = bundle.indexOf('const yxe="infinite-canvas:ai_config_store"') - 60000;
+    const ranges = allowed.map(head => { const at = bundle.indexOf(head); assert.ok(at > 0, head); return [at, bundle.indexOf("\nfunction ", at + 10) > 0 ? Math.min(bundle.indexOf("function ", at + 10), at + 40000) : at + 40000]; });
+    const offenders = [...bundle.slice(start).matchAll(/"(#[0-9a-fA-F]{3,8}|rgba?\((?!var)[^"]*)"/g)]
+        .map(match => start + match.index)
+        .filter(at => !ranges.some(([a, b]) => at >= a && at < b))
+        .map(at => bundle.slice(at - 40, at + 40));
+    assert.deepEqual(offenders, []);
+});
+
+test("theme colors are never made transparent by appending hex digits", () => {
+    // `${color}66` breaks once colors are var(--lw-...); use color-mix(in srgb, color N%, transparent).
+    assert.deepEqual(bundle.match(/\$\{[\w$.]+\}[0-9a-fA-F]{2}(?![0-9a-zA-Z_$])/g), null);
+});
