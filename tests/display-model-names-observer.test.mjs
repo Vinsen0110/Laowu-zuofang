@@ -123,7 +123,7 @@ test("repeated updates coalesce and normalize a model container itself", () => {
   })));
   assert.equal(app.frames.length, 1);
   app.flush();
-  assert.equal(picker.textContent, " gpt-image-2 ");
+  assert.equal(picker.textContent, " GPT image 2 ");
   assert.equal(picker.scans, 2);
   assert.equal(app.documentScans(), 2);
 });
@@ -136,12 +136,12 @@ test("new model subtrees are processed without modifying neighboring prompt text
   app.notify([{ type: "childList", target: new ElementStub(), addedNodes: [wrapper] }]);
   assert.equal(app.frames.length, 1);
   app.flush();
-  assert.equal(picker.textContent, "gpt-image-2");
+  assert.equal(picker.textContent, "GPT image 2");
   assert.equal(prompt.textContent, "gpt-image-2-vip");
   assert.equal(app.documentScans(), 2);
 });
 
-test("Mart 2.1 model labels normalize without changing prompts or Nano Banana Pro", () => {
+test("Mart 2.1 and Nano Banana Pro model labels normalize without changing prompts", () => {
   const app = runtime();
   const wrapper = new ElementStub();
   const picker = wrapper.append(new ElementStub([".canvas-model-picker"], " nano-banana-2.1 "));
@@ -152,7 +152,7 @@ test("Mart 2.1 model labels normalize without changing prompts or Nano Banana Pr
   app.flush();
   assert.equal(picker.textContent, " Nano Banana 2.1 ");
   assert.equal(settings.textContent, "Nano Banana 2.1");
-  assert.equal(pro.textContent, "nano-banana-pro");
+  assert.equal(pro.textContent, "Nano Banana Pro");
   assert.equal(prompt.textContent, "nano-banana-2.1");
 });
 
@@ -167,7 +167,7 @@ test("queued ancestors subsume their descendants regardless of insertion order",
     assert.equal(app.frames.length, 1);
     assert.equal(vm.runInContext("pendingModelRoots.size", app.context), 1);
     app.flush();
-    assert.equal(child.textContent, "gpt-image-2");
+    assert.equal(child.textContent, "GPT image 2");
   }
 });
 

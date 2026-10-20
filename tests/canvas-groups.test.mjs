@@ -391,6 +391,9 @@ test("actual project.json writer persists names, colors and membership together 
         Ao: { current: { x: 100, y: 80, k: 0.8 } },
         Y: { title: "Group project" }, Te: "blank", It: false, ne: [], te: null,
         e: { success() {}, error(message) { throw new Error(message); } },
+        saveQueueRef: { current: Promise.resolve() },
+        saveAutoPendingRef: { current: false },
+        saveAutoActiveRef: { current: false },
     };
     const save = vm.runInNewContext(bundle.slice(start, end), scope);
     assert.equal(await save(false), true);

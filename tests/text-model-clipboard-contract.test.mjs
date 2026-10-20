@@ -154,7 +154,9 @@ test("text routing has no Responses endpoint", () => {
 
 test("oversized Tudou text requests no longer tell web users to switch apps", () => {
     assert.match(bundle, /assertTudouWebRequestSize=\(e,t\)=>/);
-    assert.match(bundle, /ImgBB API Key/);
+    // The size guard now points users at their image-host (Cloudinary) setup, not a specific provider key.
+    assert.match(bundle, /\\u53c2\\u8003\\u56fe\\u5904\\u7406\\u540e\\u4ecd\\u8d85\\u8fc7\\u7f51\\u9875\\u8bf7\\u6c42\\u9650\\u5236.*\\u56fe\\u5e8a\\u4e0a\\u4f20\\u914d\\u7f6e/);
+    assert.doesNotMatch(bundle, /ImgBB/);
 });
 
 test("Tudou proxy forwards Chat Completions unchanged", async () => {
