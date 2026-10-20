@@ -67,11 +67,11 @@ test("APIMart keeps the shared canvas name but requests the standard backend mod
     );
 });
 
-test("APIMart converts 0.3 and 0.4 Credits to the displayed dollar balance unit", () => {
+test("APIMart Nano Banana Pro uses the discounted displayed dollar prices", () => {
     for (const quality of ["auto", "1k", "2k"]) {
-        assert.equal(apiMartImagePrice({ quality }), 0.03);
+        assert.equal(apiMartImagePrice({ quality }), 0.02);
     }
-    assert.equal(apiMartImagePrice({ quality: "4k" }), 0.04);
+    assert.equal(apiMartImagePrice({ quality: "4k" }), 0.03);
 });
 
 test("APIMart Nano Banana 2.1 uses only the Ext contract and remains distinct from Pro", () => {
@@ -96,12 +96,12 @@ test("APIMart Nano Banana 2.1 uses only the Ext contract and remains distinct fr
     for (const [size, expected] of [["16x9", "16:9"], ["1024x1024", "1:1"], ["4096x3072", "4:3"]]) {
         assert.equal(apiMartImageRequestSpec({ model: "nano-banana-2.1", size }, "draw").body.size, expected);
     }
-    for (const [quality, price] of [["auto", 0.02], ["1k", 0.02], ["2k", 0.025], ["4k", 0.03]]) {
+    for (const [quality, price] of [["auto", 0.012], ["1k", 0.012], ["2k", 0.014], ["4k", 0.018]]) {
         assert.equal(apiMartImagePrice({ model: "apimart::nano-banana-2.1", quality }), price);
     }
-    assert.equal(apiMartImagePrice({ model: "nano-banana-pro", quality: "1k" }), 0.03);
-    assert.equal(apiMartImagePrice({ model: "nano-banana-pro", quality: "2k" }), 0.03);
-    assert.equal(apiMartImagePrice({ model: "nano-banana-pro", quality: "4k" }), 0.04);
+    assert.equal(apiMartImagePrice({ model: "nano-banana-pro", quality: "1k" }), 0.02);
+    assert.equal(apiMartImagePrice({ model: "nano-banana-pro", quality: "2k" }), 0.02);
+    assert.equal(apiMartImagePrice({ model: "nano-banana-pro", quality: "4k" }), 0.03);
 });
 
 test("APIMart Nano Banana 2.1 rejects unsupported inputs before submission", () => {

@@ -53,9 +53,9 @@ const GPT25_FIXED_PRICE_USD = {
 // Public paid-resolution rates, matching the estimates used for Pro and GPT 2.5:
 // https://api.apimart.ai/api/pricing/model?model=gemini-nano-banana-2.1-ext
 const NANO21_FIXED_PRICE_USD = {
-    "1k": 0.02,
-    "2k": 0.025,
-    "4k": 0.03,
+    "1k": 0.012,
+    "2k": 0.014,
+    "4k": 0.018,
 };
 
 function abortError(signal) {
@@ -189,7 +189,7 @@ export function apiMartImagePrice(config) {
             : null;
     }
     if (model !== "gpt-image-2") {
-        return apiMartResolution(config) === "4K" ? 0.04 : 0.03;
+        return apiMartResolution(config) === "4K" ? 0.03 : 0.02;
     }
     const resolution = apiMartResolutionKey(config);
     const quality = apiMartGptImageQuality(config);
