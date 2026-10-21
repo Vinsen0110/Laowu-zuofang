@@ -81,7 +81,8 @@ function publicUser(row) {
         email: row.username,
         emailVerified: Boolean(row.email_verified),
         username: row.username,
-        displayName: String(row.username).split("@")[0],
+        displayName: String(row.display_name || "").trim() || String(row.username).split("@")[0],
+        customName: String(row.display_name || ""),
         role: row.role,
         balance: milliToYuan(row.balance_milli),
         balanceMilli: Number(row.balance_milli),
@@ -297,7 +298,7 @@ export async function listUsers(db, { search = "", limit = 100 } = {}) {
         `SELECT u.*,
             COALESCE((SELECT -SUM(delta_milli) FROM lw_ledger WHERE user_id = u.id AND delta_milli < 0 AND kind = 'usage'), 0) AS spent_milli
          FROM lw_users u
-         WHERE $1 = '' OR u.username ILIKE '%' || $1 || '%'
+         WHERE $1 = '' OR u.username ILIKE '%' || $1 || '%' OR u.display_name ILIKE '%' || $1 || '%'
          ORDER BY u.id DESC LIMIT $2`,
         [String(search).trim(), Math.min(Math.max(Number(limit) || 100, 1), 500)],
     );
@@ -313,6 +314,14 @@ export async function deleteUser(db, userId) {
     if (user.role === "admin") throw new AccountError(400, "is_admin", "不能删除管理员账号");
     if (Number(user.balance_milli) > 0) throw new AccountError(400, "has_balance", "这个账号还有余额，先把余额调整为 0 再删除");
     await db.query("DELETE FROM lw_users WHERE id = $1", [userId]);
+}
+
+// Users pick the name shown in the canvas and in the admin page.
+export async function setDisplayName(db, userId, raw) {
+    const name = String(raw ?? "").replace(/[\u0000-\u001f<>]/g, "").trim().slice(0, 20);
+    const rows = await db.query("UPDATE lw_users SET display_name = $2 WHERE id = $1 RETURNING *", [userId, name]);
+    if (!rows[0]) throw new AccountError(404, "not_found", "账号不存在");
+    return publicUser(rows[0]);
 }
 
 export async function setUserDisabled(db, userId, disabled) {

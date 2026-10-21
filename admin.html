@@ -278,14 +278,15 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
         <h2>用户</h2>
         <form class="row" id="search-form" style="margin-bottom:12px">
           <label for="user-q" class="muted">搜索</label>
-          <input id="user-q" placeholder="邮箱" value="${esc(q)}">
+          <input id="user-q" placeholder="邮箱或昵称" value="${esc(q)}">
           <button class="ghost" type="submit">搜索</button>
         </form>
         <div class="table-box"><table>
-          <thead><tr><th>ID</th><th>邮箱</th><th>状态</th><th class="num">余额</th><th class="num">已消费</th><th>注册时间</th><th>调整余额（元，负数为扣减）</th><th></th></tr></thead>
+          <thead><tr><th>ID</th><th>昵称</th><th>邮箱</th><th>状态</th><th class="num">余额</th><th class="num">已消费</th><th>注册时间</th><th>调整余额（元，负数为扣减）</th><th></th></tr></thead>
           <tbody>${users.map((u) => `
             <tr>
               <td>${u.id}</td>
+              <td>${u.customName ? esc(u.customName) : '<span class="muted">未设置</span>'}</td>
               <td>${esc(u.username)} ${u.role === "admin" ? '<span class="tag ok">管理员</span>' : ""}</td>
               <td>${u.disabled ? '<span class="tag off">已停用</span>' : '<span class="tag">正常</span>'}</td>
               <td class="num">${money(u.balance)}</td>
@@ -301,7 +302,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
                 ${u.id === me.id ? "" : `<button class="${u.disabled ? "ghost" : "danger"} small" type="button" data-disable="${u.id}" data-to="${!u.disabled}">${u.disabled ? "启用" : "停用"}</button>`}
                 ${u.id === me.id || u.role === "admin" ? "" : `<button class="danger small" type="button" data-delete-user="${u.id}">删除</button>`}
               </td>
-            </tr>`).join("") || `<tr><td colspan="8" class="muted">没有用户</td></tr>`}</tbody>
+            </tr>`).join("") || `<tr><td colspan="9" class="muted">没有用户</td></tr>`}</tbody>
         </table></div>
         ${msg(flash.users)}
       </section>

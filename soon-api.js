@@ -56,9 +56,10 @@ function wait(ms, signal) {
     return new Promise((resolve, reject) => {
         checkAbort(signal);
         const cleanup = () => signal?.removeEventListener("abort", abort);
-        const timer = setTimeout(() => { cleanup(); resolve(); }, ms);
+        // Background tabs throttle setTimeout; index.html provides a worker timer.
+        const timer = (globalThis.__lwSetTimeout || setTimeout)(() => { cleanup(); resolve(); }, ms);
         const abort = () => {
-            clearTimeout(timer);
+            (globalThis.__lwClearTimeout || clearTimeout)(timer);
             cleanup();
             reject(signal.reason || new DOMException("Aborted", "AbortError"));
         };

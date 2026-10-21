@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS lw_sessions (
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS lw_sessions_user ON lw_sessions(user_id);
+ALTER TABLE lw_users ADD COLUMN IF NOT EXISTS display_name TEXT NOT NULL DEFAULT '';
 CREATE TABLE IF NOT EXISTS lw_ledger (
     id            BIGSERIAL PRIMARY KEY,
     user_id       BIGINT NOT NULL REFERENCES lw_users(id) ON DELETE CASCADE,

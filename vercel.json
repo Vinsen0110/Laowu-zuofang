@@ -75,5 +75,8 @@
       "path": "/api/account/cron/balances",
       "schedule": "0 1 * * *"
     }
+  ],
+  "regions": [
+    "hkg1"
   ]
 }
