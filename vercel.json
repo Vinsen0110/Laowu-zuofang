@@ -69,5 +69,11 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/account/cron/balances",
+      "schedule": "0 1 * * *"
+    }
   ]
 }

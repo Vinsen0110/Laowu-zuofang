@@ -67,7 +67,7 @@ function sha256(value) {
     return createHash("sha256").update(value).digest("hex");
 }
 
-function adminNames() {
+export function adminNames() {
     return String(process.env.LW_ADMIN_EMAILS || process.env.LW_ADMIN_USERNAMES || "")
         .split(/[,\s]+/)
         .map((s) => s.trim().toLowerCase())
@@ -167,11 +167,17 @@ export async function userFromSession(db, token) {
     );
     const user = rows[0];
     if (!user || user.disabled) return null;
-    // LW_ADMIN_EMAILS is the source of truth, so an existing account becomes
-    // admin as soon as its email is added there.
-    if (user.role !== "admin" && adminNames().includes(String(user.username).toLowerCase())) {
+    // LW_ADMIN_EMAILS is the source of truth: accounts gain or lose admin as
+    // soon as their email is added to or removed from it.
+    const admins = adminNames();
+    const listed = admins.includes(String(user.username).toLowerCase());
+    if (user.role !== "admin" && listed) {
         await db.query("UPDATE lw_users SET role = 'admin' WHERE id = $1", [user.id]);
         user.role = "admin";
+    } else if (user.role === "admin" && !listed && admins.length) {
+        // Removed from LW_ADMIN_EMAILS (an empty list never demotes, to avoid lockouts).
+        await db.query("UPDATE lw_users SET role = 'user' WHERE id = $1", [user.id]);
+        user.role = "user";
     }
     return publicUser(user);
 }
