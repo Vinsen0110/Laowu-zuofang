@@ -8,6 +8,8 @@
 // drivers without needing interactive transactions.
 
 import { CHANNEL_SCHEMA } from "./channels.js";
+import { ALERT_SCHEMA } from "./alerts.js";
+import { TASK_SCHEMA } from "./tasks.js";
 import { VERIFY_SCHEMA } from "./verify.js";
 
 const SCHEMA = `
@@ -105,6 +107,8 @@ export async function openDatabase(options = {}) {
     await db.exec(SCHEMA);
     await db.exec(CHANNEL_SCHEMA);
     await db.exec(VERIFY_SCHEMA);
+    await db.exec(TASK_SCHEMA);
+    await db.exec(ALERT_SCHEMA);
     return db;
 }
 

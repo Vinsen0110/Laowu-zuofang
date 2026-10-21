@@ -281,3 +281,97 @@ test("a synchronous Gemini answer without an image is refunded", async () => {
     await withImage.text();
     assert.equal(await balance(), before - 200);
 });
+
+test("async tasks: a failed status check refunds once; success keeps the charge", async () => {
+    const { taskOutcome, findTaskId } = await import("../account/tasks.js");
+    assert.equal(findTaskId({ code: 200, data: [{ status: "submitted", task_id: "t-1" }] }), "t-1");
+    assert.equal(findTaskId({ data: { taskId: "rh-1" } }), "rh-1");
+    assert.equal(taskOutcome({ data: { status: "FAILURE", fail_reason: "x" } }), "failed");
+    assert.equal(taskOutcome({ data: { status: "FAILED" } }), "failed");
+    assert.equal(taskOutcome({ data: { status: "violation" } }), "failed");
+    assert.equal(taskOutcome({ data: { status: "completed", result: { images: [{ url: ["https://cdn/x.png"] }] } } }), "succeeded");
+    assert.equal(taskOutcome({ data: { status: "completed", result: {} } }), "failed");
+    assert.equal(taskOutcome({ data: { status: "processing" } }), "pending");
+
+    const asUser = { ...user, role: "user" };
+    await savePrice(db, { channel: "apimart", model: "async-model", spec: "", price: "0.3" });
+    await adjustBalance(db, user.id, 3000, { kind: "admin", note: "t" });
+    const json = (body, status = 200) => async () => new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
+
+    // submit → charged and recorded
+    let before = await balance();
+    await (await relay(db, asUser, relayRequest(GEN_URL, { body: { model: "async-model" } }), { fetchImpl: json({ code: 200, data: [{ status: "submitted", task_id: "job-fail" }] }) })).text();
+    assert.equal(await balance(), before - 300);
+    // still running → nothing
+    await (await relay(db, asUser, relayRequest("https://api.apimart.ai/v1/tasks/job-fail", { method: "GET" }), { fetchImpl: json({ data: { status: "processing" } }) })).text();
+    assert.equal(await balance(), before - 300);
+    // failed → refunded, and only once
+    await (await relay(db, asUser, relayRequest("https://api.apimart.ai/v1/tasks/job-fail", { method: "GET" }), { fetchImpl: json({ data: { status: "failed", error: { message: "x" } } }) })).text();
+    assert.equal(await balance(), before);
+    await (await relay(db, asUser, relayRequest("https://api.apimart.ai/v1/tasks/job-fail", { method: "GET" }), { fetchImpl: json({ data: { status: "failed" } }) })).text();
+    assert.equal(await balance(), before);
+    const [last] = await ledger(db, user.id, 1);
+    assert.match(last.note, /任务失败自动退回/);
+
+    // success keeps the charge
+    before = await balance();
+    await (await relay(db, asUser, relayRequest(GEN_URL, { body: { model: "async-model" } }), { fetchImpl: json({ data: { task_id: "job-ok" } }) })).text();
+    await (await relay(db, asUser, relayRequest("https://api.apimart.ai/v1/tasks/job-ok", { method: "GET" }), { fetchImpl: json({ data: { status: "completed", result: { images: [{ url: "https://cdn/a.png" }] } } }) })).text();
+    assert.equal(await balance(), before - 300);
+
+    // a submit that already says it failed is refunded right away
+    before = await balance();
+    await (await relay(db, asUser, relayRequest(GEN_URL, { body: { model: "async-model" } }), { fetchImpl: json({ code: 500, error: { message: "busy" } }) })).text();
+    assert.equal(await balance(), before);
+});
+
+test("RunningHub status checks send the task id in the POST body", async () => {
+    await saveChannel(db, { id: "runninghub", apiKey: "rh-key" });
+    await savePrice(db, { channel: "runninghub", model: "rhart-image-n-pro", spec: "", price: "0.5" });
+    const asUser = { ...user, role: "user" };
+    const json = (body) => async () => new Response(JSON.stringify(body), { headers: { "Content-Type": "application/json" } });
+    const before = await balance();
+    await (await relay(db, asUser, relayRequest("https://www.runninghub.ai/openapi/v2/rhart-image-n-pro/text-to-image", { body: { prompt: "x" } }), { fetchImpl: json({ taskId: "rh-77", status: "QUEUED" }) })).text();
+    assert.equal(await balance(), before - 500);
+    await (await relay(db, asUser, relayRequest("https://www.runninghub.ai/openapi/v2/query", { body: { taskId: "rh-77" } }), { fetchImpl: json({ status: "FAILED", errorCode: "E1" }) })).text();
+    assert.equal(await balance(), before);
+});
+
+test("low supplier balance emails the admins once, then again only after recovery", async () => {
+    const { checkLowBalances } = await import("../account/alerts.js");
+    const prev = process.env.LW_ADMIN_EMAILS;
+    process.env.LW_ADMIN_EMAILS = "owner@qq.com";
+    await saveChannel(db, { id: "apimart", apiKey: "sk-site-key", alertThreshold: 5 });
+    const sent = [];
+    const send = async (to, mail) => { sent.push({ to, subject: mail.subject }); };
+    const balanceOf = (v) => async () => new Response(JSON.stringify({ data: { remain_balance: v } }), { headers: { "Content-Type": "application/json" } });
+    try {
+        await checkLowBalances(db, { ids: ["apimart"], minIntervalMs: 0, fetchImpl: balanceOf(1), send });
+        assert.equal(sent.length, 1);
+        assert.deepEqual(sent[0].to, ["owner@qq.com"]);
+        assert.match(sent[0].subject, /APIMart.*余额不足/);
+        await checkLowBalances(db, { ids: ["apimart"], minIntervalMs: 0, fetchImpl: balanceOf(1), send });
+        assert.equal(sent.length, 1, "no repeat within 12 hours");
+        await checkLowBalances(db, { ids: ["apimart"], minIntervalMs: 0, fetchImpl: balanceOf(50), send });
+        await checkLowBalances(db, { ids: ["apimart"], minIntervalMs: 0, fetchImpl: balanceOf(2), send });
+        assert.equal(sent.length, 2, "alerts again after the balance recovered and dropped");
+        const throttled = await checkLowBalances(db, { ids: ["apimart"], fetchImpl: balanceOf(2), send });
+        assert.deepEqual(throttled.checked, [], "per-site checks are throttled");
+    } finally {
+        process.env.LW_ADMIN_EMAILS = prev ?? "";
+    }
+});
+
+test("removing an email from LW_ADMIN_EMAILS takes admin away (but an empty list never does)", async () => {
+    const prev = process.env.LW_ADMIN_EMAILS;
+    try {
+        process.env.LW_ADMIN_EMAILS = "payer@test.com";
+        assert.equal((await userFromSession(db, token)).role, "admin");
+        process.env.LW_ADMIN_EMAILS = "";
+        assert.equal((await userFromSession(db, token)).role, "admin");
+        process.env.LW_ADMIN_EMAILS = "someone@else.com";
+        assert.equal((await userFromSession(db, token)).role, "user");
+    } finally {
+        process.env.LW_ADMIN_EMAILS = prev ?? "";
+    }
+});

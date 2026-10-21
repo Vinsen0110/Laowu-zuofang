@@ -4,6 +4,7 @@
 import { USD_TO_CNY, priceCatalog } from "./catalog.js";
 import { channelBalances, deletePrice, getCloudinary, listChannels, listPrices, saveChannel, saveCloudinary, savePrice, savePrices } from "./channels.js";
 import { getDatabase } from "./db.js";
+import { checkLowBalances } from "./alerts.js";
 import { relay } from "./relay.js";
 import { verifyImageToken } from "./mask.js";
 import { consumeCode, markVerified, requestCode, resetPassword } from "./verify.js";
@@ -91,6 +92,11 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
         }
         const db = injectedDb || (await getDatabase());
         const token = readCookie(request, COOKIE);
+
+        // ---- daily cron (vercel.json): supplier balance alerts ----
+        if (path === "/cron/balances" && method === "GET") {
+            return json(200, await checkLowBalances(db, { minIntervalMs: 0 }));
+        }
 
         // ---- public ----
         if (path === "/send-code" && method === "POST") {

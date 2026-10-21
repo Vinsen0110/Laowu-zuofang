@@ -7,10 +7,12 @@
 
 import { randomBytes } from "node:crypto";
 
+import { background, checkLowBalances } from "./alerts.js";
 import { channelConfig } from "./channels.js";
 import { describeRequest } from "./describe.js";
 import { CHANNEL_LABELS, rewriteUrls, scrubText, unmaskTarget } from "./mask.js";
 import { AccountError, adjustBalance } from "./service.js";
+import { findTaskId, recordTask, settleTask, taskOutcome } from "./tasks.js";
 
 export { describeRequest };
 
@@ -82,7 +84,7 @@ function passThrough(upstream) {
 
 // Users never see supplier names or URLs: errors are scrubbed and result URLs
 // in small JSON bodies are pointed at the image proxy.
-async function forUser(upstream, request) {
+async function forUser(upstream, request, onJson) {
     const type = upstream.headers.get("content-type") || "";
     const length = Number(upstream.headers.get("content-length") || 0);
     if (upstream.status >= 400) {
@@ -99,6 +101,7 @@ async function forUser(upstream, request) {
         const text = await upstream.text();
         let data;
         try { data = JSON.parse(text); } catch { return new Response(text, { status: upstream.status, headers: copyHeaders(upstream) }); }
+        if (onJson) await onJson(data).catch((error) => console.error("Relay task tracking failed:", error));
         const origin = new URL(request.url).origin;
         return new Response(JSON.stringify(rewriteUrls(data, origin)), { status: upstream.status, headers: copyHeaders(upstream) });
     }
@@ -202,5 +205,33 @@ export async function relay(db, user, request, { fetchImpl = fetch } = {}) {
     if (charge && upstream.status < 300 && upstream.body && /:generateContent$/.test(target.pathname)) {
         return refundIfNoImage(upstream, refund);
     }
-    return user.role === "admin" ? passThrough(upstream) : forUser(upstream, request);
+    // After a charged generation, check that site's balance (throttled) and email the admin if low.
+    if (charge && upstream.status < 300) background(checkLowBalances(db, { ids: [channel] }));
+    if (user.role === "admin") return passThrough(upstream);
+
+    // Async tasks: remember charged submissions, settle them when a status check comes back.
+    const isChat = /\/chat\/completions$/.test(target.pathname);
+    const onJson = isChat ? null : async (data) => {
+        if (charge) {
+            const taskId = findTaskId(data);
+            const failedNow = taskOutcome(data) === "failed" || (!taskId && (data?.error || (typeof data?.code === "number" && data.code !== 0 && data.code !== 200)));
+            if (failedNow) {
+                await refund("平台返回失败");
+            } else if (taskId) {
+                await recordTask(db, { channel, taskId, userId: user.id, ref: charge.ref, amount: charge.amount, note: charge.note });
+            }
+            return;
+        }
+        if (FREE_PATH.test(target.pathname)) {
+            let taskId = findTaskId(data)
+                || target.pathname.match(/\/tasks\/([^/]+)$/)?.[1]
+                || target.searchParams.get("id")
+                || "";
+            if (!taskId && raw) {
+                try { taskId = String(JSON.parse(new TextDecoder().decode(raw))?.taskId || ""); } catch { /* not JSON */ }
+            }
+            await settleTask(db, channel, decodeURIComponent(taskId), taskOutcome(data));
+        }
+    };
+    return forUser(upstream, request, onJson);
 }
