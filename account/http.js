@@ -24,6 +24,7 @@ import {
     logout,
     redeemCode,
     register,
+    renumberUsers,
     setDisplayName,
     setUserDisabled,
     stats,
@@ -205,6 +206,9 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
                 if (Number(userId) === me.id) throw new AccountError(400, "self", "不能停用自己的账号");
                 await setUserDisabled(db, Number(userId), disabled);
                 return json(200, { ok: true });
+            }
+            if (path === "/admin/renumber-users" && method === "POST") {
+                return json(200, await renumberUsers(db));
             }
             if (path === "/admin/delete-user" && method === "POST") {
                 const { userId } = await body(request);

@@ -385,3 +385,33 @@ test("users can set a nickname that the admin user list shows and searches", asy
     assert.equal(found.email, "payer@test.com");
     assert.equal((await setDisplayName(db, user.id, "")).displayName, "payer");
 });
+
+test("renumbering users keeps balances, ledgers, sessions, codes and tasks attached", async () => {
+    const { renumberUsers, createCodes, redeemCode, register, login, userFromSession, deleteUser } = await import("../account/service.js");
+    const { recordTask } = await import("../account/tasks.js");
+    const a = await register(db, { email: "renum-a@test.com", password: "password123" });
+    const gone = await register(db, { email: "renum-gone@test.com", password: "password123" });
+    const b = await register(db, { email: "renum-b@test.com", password: "password123" });
+    await deleteUser(db, gone.id);
+    const { codes } = await createCodes(db, { count: 1, amountYuan: 3, batch: "renum" });
+    await redeemCode(db, b.id, codes[0]);
+    await recordTask(db, { channel: "apimart", taskId: "renum-task", userId: b.id, ref: "r", amount: 1, note: "n" });
+    const { token: bToken } = await login(db, { email: "renum-b@test.com", password: "password123" });
+
+    const before = (await db.query("SELECT username FROM lw_users ORDER BY id")).map((r) => r.username);
+    const result = await renumberUsers(db);
+    const after = await db.query("SELECT id, username FROM lw_users ORDER BY id");
+    assert.deepEqual(after.map((r) => r.username), before, "sign-up order kept");
+    assert.deepEqual(after.map((r) => Number(r.id)), after.map((_, i) => i + 1), "ids are 1..n with no gaps");
+    assert.equal(result.users, after.length);
+
+    const me = await userFromSession(db, bToken);
+    assert.equal(me.email, "renum-b@test.com", "still signed in");
+    assert.equal(me.balance, 3);
+    assert.equal((await db.query("SELECT count(*)::int AS n FROM lw_ledger WHERE user_id = $1", [me.id]))[0].n, 1);
+    assert.equal(Number((await db.query("SELECT used_by FROM lw_codes WHERE code = $1", [codes[0]]))[0].used_by), me.id);
+    assert.equal(Number((await db.query("SELECT user_id FROM lw_tasks WHERE task_id = 'renum-task'"))[0].user_id), me.id);
+    const next = await register(db, { email: "renum-next@test.com", password: "password123" });
+    assert.equal(next.id, after.length + 1, "new sign-ups continue after the highest id");
+    assert.ok(a);
+});

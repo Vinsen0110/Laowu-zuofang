@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS lw_users (
 );
 CREATE TABLE IF NOT EXISTS lw_sessions (
     token_hash  TEXT PRIMARY KEY,
-    user_id     BIGINT NOT NULL REFERENCES lw_users(id) ON DELETE CASCADE,
+    user_id     BIGINT NOT NULL REFERENCES lw_users(id) ON DELETE CASCADE ON UPDATE CASCADE,
     expires_at  TIMESTAMPTZ NOT NULL,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -32,7 +32,7 @@ CREATE INDEX IF NOT EXISTS lw_sessions_user ON lw_sessions(user_id);
 ALTER TABLE lw_users ADD COLUMN IF NOT EXISTS display_name TEXT NOT NULL DEFAULT '';
 CREATE TABLE IF NOT EXISTS lw_ledger (
     id            BIGSERIAL PRIMARY KEY,
-    user_id       BIGINT NOT NULL REFERENCES lw_users(id) ON DELETE CASCADE,
+    user_id       BIGINT NOT NULL REFERENCES lw_users(id) ON DELETE CASCADE ON UPDATE CASCADE,
     delta_milli   BIGINT NOT NULL,
     balance_after BIGINT NOT NULL,
     kind          TEXT NOT NULL,
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS lw_codes (
     amount_milli BIGINT NOT NULL CHECK (amount_milli > 0),
     batch        TEXT NOT NULL DEFAULT '',
     created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
-    used_by      BIGINT REFERENCES lw_users(id) ON DELETE SET NULL,
+    used_by      BIGINT REFERENCES lw_users(id) ON DELETE SET NULL ON UPDATE CASCADE,
     used_at      TIMESTAMPTZ
 );
 CREATE INDEX IF NOT EXISTS lw_codes_batch ON lw_codes(batch);
