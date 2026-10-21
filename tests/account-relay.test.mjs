@@ -123,3 +123,55 @@ test("channels without a site key are refused", async () => {
         /暂时不能用余额生成/,
     );
 });
+
+test("every catalog row can be priced and charged through the relay", async () => {
+    const { priceCatalog } = await import("../account/catalog.js");
+    const { savePrices } = await import("../account/channels.js");
+    const rows = priceCatalog();
+    assert.ok(rows.length > 50);
+    const keys = new Set(rows.map((r) => `${r.channel}|${r.model}|${r.spec}`));
+    assert.equal(keys.size, rows.length);
+    await savePrices(db, rows.map((r, i) => ({ channel: r.channel, model: r.model, spec: r.spec, price: (i + 1) / 1000 })));
+    const { findPrice } = await import("../account/relay.js");
+    for (const [i, r] of rows.entries()) assert.equal(await findPrice(db, r.channel, r.model, r.spec), i + 1, `${r.label} ${r.spec}`);
+    // Tudou GPT 2.5 request as the canvas sends it → its catalog row
+    const body = { model: "gpt-image-2.5-sunburst-async", resolution: "4k", quality: "xhigh", prompt: "x" };
+    const d = describeRequest(new URL("https://api.ai-tudou.net/v1/images/generations/async"), body);
+    assert.ok(keys.has(`tudou|${d.model}|${d.spec}`));
+    // clearing a price removes it
+    await savePrices(db, [{ channel: rows[0].channel, model: rows[0].model, spec: rows[0].spec, price: "" }]);
+    assert.equal(await findPrice(db, rows[0].channel, rows[0].model, rows[0].spec), null);
+});
+
+test("quality-specific prices fall back to the resolution price", async () => {
+    const { findPrice } = await import("../account/relay.js");
+    await savePrice(db, { channel: "tudou", model: "fallback-model", spec: "2k", price: "0.3" });
+    assert.equal(await findPrice(db, "tudou", "fallback-model", "2k/high"), 300);
+    await savePrice(db, { channel: "tudou", model: "fallback-model", spec: "2k/high", price: "0.4" });
+    assert.equal(await findPrice(db, "tudou", "fallback-model", "2k/high"), 400);
+});
+
+test("adding an email to LW_ADMIN_EMAILS promotes the existing account", async () => {
+    const before = process.env.LW_ADMIN_EMAILS;
+    assert.equal((await userFromSession(db, token)).role, "user");
+    process.env.LW_ADMIN_EMAILS = "someone@else.com, PAYER@test.com";
+    assert.equal((await userFromSession(db, token)).role, "admin");
+    process.env.LW_ADMIN_EMAILS = before ?? "";
+});
+
+test("Grsai keeps an optional second key and uses it for the account balance", async () => {
+    const { channelBalances, listChannels } = await import("../account/channels.js");
+    await saveChannel(db, { id: "grsai", apiKey: "sk-grsai", apiKey2: "account-token" });
+    const grsai = (await listChannels(db)).find((c) => c.id === "grsai");
+    assert.equal(grsai.hasKey2, true);
+    assert.ok(grsai.extraKey);
+    assert.equal(grsai.baseUrl, "");
+    const seen = [];
+    await channelBalances(db, { fetchImpl: async (url, init) => {
+        seen.push({ url: String(url), body: init?.body });
+        return new Response(JSON.stringify({ code: 0, data: { credits: 12345 } }), { headers: { "Content-Type": "application/json" } });
+    } });
+    const call = seen.find((s) => s.url.includes("grsai"));
+    assert.match(call.url, /getCredits$/);
+    assert.match(call.body, /account-token/);
+});

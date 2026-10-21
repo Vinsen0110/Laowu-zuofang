@@ -3,7 +3,7 @@
 // or in environment variables LW_KEY_<CHANNEL>, which take priority.
 
 import { APIMART_IMAGE_MODELS, APIMART_TEXT_MODELS, fetchApiMartTokenBalance, fetchApiMartUserBalance } from "../apimart-api.js";
-import { GRSAI_IMAGE_MODELS, fetchGrsaiApiKeyCredits } from "../grsai-api.js";
+import { GRSAI_IMAGE_MODELS, fetchGrsaiAccountCredits, fetchGrsaiApiKeyCredits } from "../grsai-api.js";
 import { RUNNINGHUB_IMAGE_MODELS, RUNNINGHUB_TEXT_MODELS, fetchRunningHubAccount } from "../runninghub-api.js";
 import { SOON_IMAGE_MODELS } from "../soon-api.js";
 import { AccountError, milliToYuan, yuanToMilli } from "./service.js";
@@ -13,7 +13,7 @@ const TUDOU_ORIGIN = "https://api.ai-tudou.net";
 export const CHANNELS = [
     { id: "tudou", name: "土豆", unit: "$", models: ["nano-banana-2.1", "nano-banana-pro", "gpt-image-2.5", "gemini-3.8-flash"] },
     { id: "apimart", name: "APIMart", unit: "$", models: [...APIMART_IMAGE_MODELS, ...APIMART_TEXT_MODELS] },
-    { id: "grsai", name: "Grsai", unit: "$", models: [...GRSAI_IMAGE_MODELS] },
+    { id: "grsai", name: "Grsai", unit: "$", models: [...GRSAI_IMAGE_MODELS], extraKey: "账户 Token（查账户总余额用，可选）" },
     { id: "runninghub", name: "RunningHub", unit: "$", models: [...RUNNINGHUB_IMAGE_MODELS, ...RUNNINGHUB_TEXT_MODELS] },
     { id: "soon", name: "Soon", unit: "$", models: [...SOON_IMAGE_MODELS] },
 ];
@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS lw_channels (
     last_checked_at TIMESTAMPTZ,
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+ALTER TABLE lw_channels ADD COLUMN IF NOT EXISTS api_key2 TEXT NOT NULL DEFAULT '';
 CREATE TABLE IF NOT EXISTS lw_prices (
     id          BIGSERIAL PRIMARY KEY,
     channel     TEXT NOT NULL,
@@ -68,8 +69,9 @@ function resolve(def, row) {
     const fromEnv = envKey(def.id);
     return {
         apiKey: fromEnv || row?.api_key || "",
+        apiKey2: row?.api_key2 || "",
         keySource: fromEnv ? "env" : row?.api_key ? "admin" : "",
-        baseUrl: row?.base_url || "",
+        baseUrl: "", // provider URLs are built in
         alertThreshold: row ? Number(row.alert_threshold) : 5,
         enabled: row ? Boolean(row.enabled) : true,
     };
@@ -88,6 +90,9 @@ export async function listChannels(db) {
             hasKey: Boolean(c.apiKey),
             keyPreview: maskKey(c.apiKey),
             keySource: c.keySource,
+            extraKey: def.extraKey || "",
+            hasKey2: Boolean(c.apiKey2),
+            key2Preview: maskKey(c.apiKey2),
             baseUrl: c.baseUrl,
             alertThreshold: c.alertThreshold,
             enabled: c.enabled,
@@ -112,18 +117,20 @@ export async function saveChannel(db, input) {
     }
     const baseUrl = String(input?.baseUrl ?? "").trim();
     if (baseUrl && !/^https:\/\/[^\s]+$/i.test(baseUrl)) throw new AccountError(400, "bad_url", "接口地址需以 https:// 开头");
-    // apiKey: undefined = keep, "" = clear, otherwise replace
+    // apiKey / apiKey2: undefined = keep, "" = clear, otherwise replace
     const key = input?.apiKey === undefined ? null : String(input.apiKey).trim();
+    const key2 = input?.apiKey2 === undefined ? null : String(input.apiKey2).trim();
     await db.query(
-        `INSERT INTO lw_channels (id, api_key, base_url, alert_threshold, enabled)
-         VALUES ($1, COALESCE($2, ''), $3, COALESCE($4, 5), COALESCE($5, TRUE))
+        `INSERT INTO lw_channels (id, api_key, api_key2, base_url, alert_threshold, enabled)
+         VALUES ($1, COALESCE($2, ''), COALESCE($3, ''), $4, COALESCE($5, 5), COALESCE($6, TRUE))
          ON CONFLICT (id) DO UPDATE SET
            api_key = COALESCE($2, lw_channels.api_key),
-           base_url = $3,
-           alert_threshold = COALESCE($4, lw_channels.alert_threshold),
-           enabled = COALESCE($5, lw_channels.enabled),
+           api_key2 = COALESCE($3, lw_channels.api_key2),
+           base_url = $4,
+           alert_threshold = COALESCE($5, lw_channels.alert_threshold),
+           enabled = COALESCE($6, lw_channels.enabled),
            updated_at = now()`,
-        [id, key, baseUrl, input?.alertThreshold === undefined ? null : threshold, input?.enabled === undefined ? null : Boolean(input.enabled)],
+        [id, key, key2, baseUrl, input?.alertThreshold === undefined ? null : threshold, input?.enabled === undefined ? null : Boolean(input.enabled)],
     );
     return (await listChannels(db)).find((c) => c.id === id);
 }
@@ -146,7 +153,9 @@ async function queryBalance(id, cfg, fetchImpl, signal) {
         }
     }
     if (id === "grsai") {
-        const credits = await fetchGrsaiApiKeyCredits(config, { fetchImpl, signal });
+        const credits = cfg.apiKey2
+            ? await fetchGrsaiAccountCredits(config, cfg.apiKey2, { fetchImpl, signal })
+            : await fetchGrsaiApiKeyCredits(config, { fetchImpl, signal });
         const value = credits / 1e4;
         return { balance: value < 1000 ? value : value / 5e5, detail: `${credits.toLocaleString()} 积分` };
     }
@@ -241,4 +250,21 @@ export async function savePrice(db, input) {
 
 export async function deletePrice(db, id) {
     await db.query("DELETE FROM lw_prices WHERE id = $1", [Number(id)]);
+}
+
+// Saves many catalog prices at once. An empty price removes that row.
+export async function savePrices(db, items) {
+    if (!Array.isArray(items) || items.length > 500) throw new AccountError(400, "bad_items", "价格数据不正确");
+    for (const item of items) {
+        const channel = checkChannel(String(item?.channel || ""));
+        const model = String(item?.model || "").trim();
+        const spec = String(item?.spec || "").trim();
+        if (!model) continue;
+        if (item.price === "" || item.price == null) {
+            await db.query("DELETE FROM lw_prices WHERE channel = $1 AND model = $2 AND spec = $3", [channel, model, spec]);
+        } else {
+            await savePrice(db, { channel, model, spec, price: item.price, cost: item.cost, note: item.note });
+        }
+    }
+    return listPrices(db);
 }
