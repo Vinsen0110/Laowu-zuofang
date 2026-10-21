@@ -170,7 +170,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
       const key = priceKey(r);
       const saved = savedPrice(r);
       const value = draft.has(key) ? draft.get(key) : saved ? String(saved.price) : "";
-      return `<td><input type="number" step="0.001" min="0" placeholder="售价" aria-label="${esc(SITE_NAME[r.channel] + " " + r.label + " " + r.spec)} 售价" data-price-key="${esc(key)}" value="${esc(value)}" class="${draft.has(key) ? "is-dirty" : ""}"></td>`;
+      return `<td><input type="number" step="0.001" min="0" placeholder="客户价" aria-label="${esc(SITE_NAME[r.channel] + " " + r.label + " " + r.spec)} 客户价" data-price-key="${esc(key)}" value="${esc(value)}" class="${draft.has(key) ? "is-dirty" : ""}"></td>`;
     };
     return SITE_ORDER.map((ch) => {
       const rows = catalog.filter((r) => r.channel === ch);
@@ -178,7 +178,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
       const labels = [...new Set(rows.map((r) => r.label))];
       return `<div class="pt-group"><h3>${esc(SITE_NAME[ch])}</h3><div class="table-box"><table class="pt">
         <thead>
-          <tr><th rowspan="2">模型</th><th colspan="3" class="cost-head">成本（元/张）</th><th colspan="3" class="price-head">售价（元/张）</th></tr>
+          <tr><th rowspan="2">模型</th><th colspan="3" class="cost-head">原价（元/张）</th><th colspan="3" class="price-head">客户价（元/张）</th></tr>
           <tr><th class="num">1K</th><th class="num">2K</th><th class="num">4K</th><th>1K</th><th>2K</th><th>4K</th></tr>
         </thead>
         <tbody>${labels.map((label) => {
@@ -262,12 +262,12 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
       </section>
 
       <section class="card">
-        <h2>价格表 <span class="muted" style="font-weight:400;font-size:13px">（用户用余额生成时，每张按售价扣费；留空 = 不开放这个规格）</span></h2>
+        <h2>价格表 <span class="muted" style="font-weight:400;font-size:13px">（原价 = 上游成本；客户价 = 用户每张扣的钱，留空 = 不开放这个规格）</span></h2>
         <div class="pt-tools">
-          <span class="muted">成本已按 1 美元 = ${fx} 元换算</span>
+          <span class="muted">原价已按 1 美元 = ${fx} 元换算</span>
           <label class="muted" for="pt-markup">倍率</label>
           <input id="pt-markup" type="number" step="0.1" min="1" value="${markup}" style="width:80px">
-          <button class="ghost" type="button" id="pt-fill">按 成本 × 倍率 填入空白售价</button>
+          <button class="ghost" type="button" id="pt-fill">按 原价 × 倍率 填入空白客户价</button>
           <button type="button" id="pt-save">保存价格表${draft.size ? `（${draft.size} 处修改）` : ""}</button>
         </div>
         ${priceTables()}
@@ -404,7 +404,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
           draft.set(key, String(Math.ceil(r.cost * markup * 100) / 100));
           n++;
         }
-        flash.prices = { text: n ? `已填入 ${n} 个售价（按量计费的规格没有成本，需要手动填），确认后点"保存价格表"` : "没有需要填的空白售价" };
+        flash.prices = { text: n ? `已填入 ${n} 个客户价（按量计费的规格没有原价，需要手动填），确认后点"保存价格表"` : "没有需要填的空白客户价" };
         render(); return;
       }
       if (b.id === "pt-save") {
