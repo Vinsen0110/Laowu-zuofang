@@ -298,6 +298,17 @@ export async function listUsers(db, { search = "", limit = 100 } = {}) {
     return rows.map((r) => ({ ...publicUser(r), spent: milliToYuan(r.spent_milli) }));
 }
 
+// Removes an account with its sessions and ledger. Accounts that still hold a
+// balance must be zeroed first so paid money is never deleted by accident.
+export async function deleteUser(db, userId) {
+    const rows = await db.query("SELECT role, balance_milli FROM lw_users WHERE id = $1", [userId]);
+    const user = rows[0];
+    if (!user) throw new AccountError(404, "not_found", "这个用户不存在");
+    if (user.role === "admin") throw new AccountError(400, "is_admin", "不能删除管理员账号");
+    if (Number(user.balance_milli) > 0) throw new AccountError(400, "has_balance", "这个账号还有余额，先把余额调整为 0 再删除");
+    await db.query("DELETE FROM lw_users WHERE id = $1", [userId]);
+}
+
 export async function setUserDisabled(db, userId, disabled) {
     await db.query("UPDATE lw_users SET disabled = $2 WHERE id = $1", [userId, Boolean(disabled)]);
     if (disabled) await db.query("DELETE FROM lw_sessions WHERE user_id = $1", [userId]);

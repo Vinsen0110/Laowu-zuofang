@@ -14,6 +14,7 @@ import {
     normalizeEmail,
     changePassword,
     createCodes,
+    deleteUser,
     ledger,
     listCodes,
     listUsers,
@@ -172,6 +173,12 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
                 const { userId, disabled } = await body(request);
                 if (Number(userId) === me.id) throw new AccountError(400, "self", "不能停用自己的账号");
                 await setUserDisabled(db, Number(userId), disabled);
+                return json(200, { ok: true });
+            }
+            if (path === "/admin/delete-user" && method === "POST") {
+                const { userId } = await body(request);
+                if (Number(userId) === me.id) throw new AccountError(400, "self", "不能删除自己的账号");
+                await deleteUser(db, Number(userId));
                 return json(200, { ok: true });
             }
             if (path === "/admin/codes" && method === "POST") {
