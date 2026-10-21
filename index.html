@@ -6,7 +6,7 @@
         <meta name="description" content="老屋作坊创作工具" />
         <link rel="icon" type="image/png" href="./kitty.png" />
         <link rel="preload" href="./assets/index-DT58oPsm.css" as="style" crossorigin>
-        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261021-defaults-01" crossorigin>
+        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261021-hide-01" crossorigin>
         <link rel="preload" href="./icons/gemini.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/openai.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/claude.svg" as="image" type="image/svg+xml" />
@@ -132,9 +132,21 @@
                         return false;
                     }
                 };
-                var relayUrl = function (rawUrl) {
-                    return "/api/account/relay?url=" + encodeURIComponent(new URL(rawUrl, location.href).href);
+                // The supplier address travels as an opaque token so it never shows
+                // in the browser's network panel (decoded by account/mask.js).
+                var maskKey = new TextEncoder().encode("laowu-zuofang");
+                var maskTarget = function (url) {
+                    var bytes = new TextEncoder().encode(url), out = "";
+                    for (var i = 0; i < bytes.length; i++) out += String.fromCharCode(bytes[i] ^ maskKey[i % maskKey.length]);
+                    return btoa(out).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
                 };
+                var relayUrl = function (rawUrl) {
+                    return "/api/account/relay?t=" + maskTarget(new URL(rawUrl, location.href).href);
+                };
+                // Generations in progress, so logging out mid-run can warn first.
+                window.__lwRelay = { inflight: 0, last: 0 };
+                var relayStart = function () { window.__lwRelay.inflight++; window.__lwRelay.last = Date.now(); };
+                var relayEnd = function () { window.__lwRelay.inflight = Math.max(0, window.__lwRelay.inflight - 1); window.__lwRelay.last = Date.now(); };
                 var proxiedFetch = function (input, init) {
                     var method = String((init && init.method) || (input && input.method) || "GET").toUpperCase();
                     var rawUrl = typeof input === "string" || input instanceof URL ? String(input) : input && input.url;
@@ -149,11 +161,13 @@
                                 if (relayInit.body === undefined && method !== "GET" && method !== "HEAD") {
                                     return input.clone().arrayBuffer().then(function (buffer) {
                                         relayInit.body = buffer;
-                                        return nativeFetch(relayUrl(rawUrl), relayInit);
+                                        relayStart();
+                                        return nativeFetch(relayUrl(rawUrl), relayInit).finally(relayEnd);
                                     });
                                 }
                             }
-                            return nativeFetch(relayUrl(rawUrl), relayInit).then(function (response) {
+                            relayStart();
+                            return nativeFetch(relayUrl(rawUrl), relayInit).finally(relayEnd).then(function (response) {
                                 if (method === "POST") window.dispatchEvent(new CustomEvent("lw-balance-changed", { detail: { url: String(rawUrl) } }));
                                 return response;
                             });
@@ -211,6 +225,8 @@
                 XMLHttpRequest.prototype.send = function () {
                     var state = this.__lwBalance;
                     if (state && state.relay) {
+                        relayStart();
+                        this.addEventListener("loadend", relayEnd, { once: true });
                         if (String(state.method).toUpperCase() === "POST") {
                             var doneUrl = state.url;
                             this.addEventListener("loadend", function () { window.dispatchEvent(new CustomEvent("lw-balance-changed", { detail: { url: doneUrl } })); }, { once: true });
@@ -652,11 +668,11 @@
                 else document.addEventListener("DOMContentLoaded", observe, { once: true });
             })();
         </script>
-        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261021-defaults-01"></script>
+        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261021-hide-01"></script>
       <script type="module" src="./display-model-names.js?v=20261008-nano21-01"></script>
-      <script type="module" src="./canvas-price-table.js?v=20261021-channels-01"></script>
+      <script type="module" src="./canvas-price-table.js?v=20261021-hide-01"></script>
       <script src="./prevent-canvas-drag-download.js?v=20260827-01"></script>
-      <script src="./account-ui.js?v=20261021-account-09"></script>
+      <script src="./account-ui.js?v=20261021-account-10"></script>
       <link rel="stylesheet" crossorigin href="./assets/index-DT58oPsm.css">
       <link rel="stylesheet" href="./theme.css?v=20261015-direct-01">
       <link rel="stylesheet" href="./startup-entry.css?v=20261015-theme-03">
@@ -666,6 +682,7 @@
         .api-hosting-page details > summary { pointer-events: none; }
         .canvas-site-menu-label { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; }
         .canvas-site-menu-note { font-size: 11px; font-weight: 500; opacity: .6; }
+        .canvas-refund-hint { margin-top: -4px; color: var(--lw-stone-500); font-size: 11px; line-height: 1.5; }
         .api-hosting-tip { margin: 4px 0 12px; color: var(--lw-stone-500); font-size: 13px; line-height: 1.6; }
         .api-hosting-tip a { color: var(--lw-indigo-700); }
         .dark .api-hosting-tip a { color: var(--lw-indigo-300); }

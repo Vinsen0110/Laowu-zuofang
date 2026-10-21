@@ -99,7 +99,7 @@ test("rejects unpriced models and insufficient balance without calling upstream"
     const seen = [];
     await assert.rejects(
         relay(db, user, relayRequest(GEN_URL, { body: { model: "unknown-model" } }), { fetchImpl: upstream(200, seen) }),
-        /还没开放余额生成（apimart \/ unknown-model）/,
+        /还没开放余额生成（渠道 2 \/ unknown-model）/,
     );
     await savePrice(db, { channel: "apimart", model: "pricey", price: "100" });
     await assert.rejects(
@@ -241,4 +241,43 @@ test("balance refresh can target a single site", async () => {
     assert.deepEqual(result.items.map((i) => i.id), ["apimart"]);
     assert.ok(seen.every((u) => u.includes("apimart")));
     assert.equal((await listChannels(db)).find((c) => c.id === "runninghub").channelLabel, "渠道 4");
+});
+
+test("users never see supplier hosts: masked targets, scrubbed errors, proxied result URLs", async () => {
+    const { maskTarget, unmaskTarget, imageToken, verifyImageToken, scrubText } = await import("../account/mask.js");
+    assert.equal(unmaskTarget(maskTarget(GEN_URL)), GEN_URL);
+    assert.ok(!maskTarget(GEN_URL).includes("apimart"));
+    assert.equal(scrubText("apimart_error: invalid key at https://api.apimart.ai/x"), "渠道 2_error: invalid key at [链接已隐藏]");
+    const token = imageToken("https://cdn.example.com/a.png");
+    assert.equal(verifyImageToken(token), "https://cdn.example.com/a.png");
+    assert.equal(verifyImageToken(token.replace(/.$/, "x")), null);
+
+    await adjustBalance(db, user.id, 2000, { kind: "admin", note: "t" });
+    const masked = new Request(`http://127.0.0.1:4173/api/account/relay?t=${maskTarget(GEN_URL)}`, {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: "gemini-3-pro-image-preview" }),
+    });
+    const ok = await relay(db, { ...user, role: "user" }, masked, { fetchImpl: async () => new Response(
+        JSON.stringify({ data: { url: "https://upload.apimart.ai/r/1.png" } }), { headers: { "Content-Type": "application/json" } }) });
+    const body = await ok.json();
+    assert.match(body.data.url, /^http:\/\/127\.0\.0\.1:4173\/api\/account\/img\?t=/);
+    assert.ok(!JSON.stringify(body).includes("apimart"));
+
+    const bad = await relay(db, { ...user, role: "user" }, relayRequest(GEN_URL, { body: { model: "gemini-3-pro-image-preview" } }), { fetchImpl: async () => new Response(
+        JSON.stringify({ error: { message: "apimart upstream busy", type: "apimart_error" } }), { status: 503, headers: { "Content-Type": "application/json" } }) });
+    assert.equal(bad.status, 503);
+    assert.equal((await bad.json()).error.message, "渠道 2 upstream busy");
+});
+
+test("a synchronous Gemini answer without an image is refunded", async () => {
+    await savePrice(db, { channel: "apimart", model: "nano-sync", spec: "", price: "0.2" });
+    const target = "https://api.apimart.ai/v1beta/models/nano-sync:generateContent";
+    const before = await balance();
+    const res = await relay(db, { ...user, role: "user" }, relayRequest(target, { body: {} }), { fetchImpl: async () => new Response(
+        JSON.stringify({ candidates: [{ finishReason: "SAFETY", content: { parts: [{ text: "blocked" }] } }] }), { headers: { "Content-Type": "application/json" } }) });
+    await res.text();
+    assert.equal(await balance(), before);
+    const withImage = await relay(db, { ...user, role: "user" }, relayRequest(target, { body: {} }), { fetchImpl: async () => new Response(
+        JSON.stringify({ candidates: [{ content: { parts: [{ inlineData: { mimeType: "image/png", data: "AAAA" } }] } }] }), { headers: { "Content-Type": "application/json" } }) });
+    await withImage.text();
+    assert.equal(await balance(), before - 200);
 });

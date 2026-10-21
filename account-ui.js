@@ -63,9 +63,23 @@
 .lw-acct-site b{color:var(--a-text);font-variant-numeric:tabular-nums}
 .lw-acct-site.is-low b{color:var(--a-err)}
 @media(max-width:640px){.lw-acct-chip .lw-acct-sites{display:none}}
-.lw-acct-admin-tag{font-size:12px;font-weight:600;color:var(--a-muted)}
+.lw-acct{display:flex;flex-direction:column;align-items:flex-end}
+.lw-acct-admin-tag{font-size:12px;font-weight:700;letter-spacing:.04em}
+.lw-acct-chip.is-user{gap:6px;padding:0 14px 0 5px;border-color:transparent;background:linear-gradient(135deg,#1b604a,#2e9a6d);color:#fff;box-shadow:0 6px 18px rgb(34 121 90 / .32)}
+.lw-acct-chip.is-user:hover{border-color:transparent;box-shadow:0 8px 22px rgb(34 121 90 / .42)}
+.lw-acct-chip.is-user .lw-acct-avatar{background:rgb(255 255 255 / .22);box-shadow:inset 0 0 0 1px rgb(255 255 255 / .35)}
+.lw-acct-chip.is-user .lw-acct-wallet{display:inline-grid;place-items:center;opacity:.85}
+.lw-acct-chip.is-user .lw-acct-bal{font-size:14px;font-weight:800;letter-spacing:.01em}
+.lw-acct-chip.is-user.is-low{background:linear-gradient(135deg,#b45309,#dc2626);box-shadow:0 6px 18px rgb(220 38 38 / .3)}
+.lw-acct-chip.is-admin{padding:0 14px 0 5px;border-color:transparent;background:linear-gradient(135deg,#111827,#374151);color:#f9fafb;box-shadow:0 6px 18px rgb(15 23 42 / .28)}
+.lw-acct-chip.is-admin:hover{border-color:transparent}
+.lw-acct-chip.is-admin .lw-acct-avatar{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#111827}
 .lw-acct-sitestack{display:flex;flex-direction:column;align-items:flex-end;gap:4px;margin-top:6px}
-.lw-acct-siterow{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:128px;height:26px;padding:0 10px;border:1px solid var(--a-border);border-radius:8px;background:var(--a-bg);color:var(--a-text);font-size:12px;text-decoration:none;box-shadow:0 2px 8px rgb(15 23 42 / .06)}
+.lw-acct-siterow{position:relative;display:flex;align-items:center;justify-content:space-between;gap:14px;min-width:138px;height:28px;padding:0 12px 0 22px;border:1px solid var(--a-border);border-radius:10px;background:color-mix(in srgb,var(--a-bg) 88%,transparent);backdrop-filter:blur(8px);color:var(--a-text);font-size:12px;text-decoration:none;box-shadow:0 4px 12px rgb(15 23 42 / .08);transition:border-color .15s,transform .15s}
+.lw-acct-siterow::before{content:"";position:absolute;left:10px;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:var(--a-primary)}
+a.lw-acct-siterow:hover{transform:translateX(-2px)}
+.lw-acct-siterow.is-low::before,.lw-acct-siterow.is-error::before{background:var(--a-err)}
+.lw-acct-siterow.is-loading::before{background:var(--a-muted)}
 a.lw-acct-siterow:hover{border-color:var(--a-primary)}
 .lw-acct-siterow-name{color:var(--a-muted)}
 .lw-acct-siterow b{font-variant-numeric:tabular-nums}
@@ -90,7 +104,7 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
 .lw-acct-link{display:grid;place-items:center;height:38px;border:1px solid var(--a-border);border-radius:9px;color:var(--a-text);font-size:13px;font-weight:600;text-decoration:none}
 .lw-acct-link:hover{background:var(--a-soft)}
 .lw-start .lw-acct{display:none}
-.canvas-balance-stack,.canvas-price-table-host,.canvas-price-table-divider{display:none !important}
+.canvas-balance-stack{display:none !important}
 .startup-entry.lw-gated .startup-entry-workspace>h2,.startup-entry.lw-gated .startup-entry-actions{display:none}
 .lw-entry-acct{--a-bg:var(--entry-button,#fff);--a-text:var(--entry-text,#1f2937);--a-muted:var(--entry-muted,#64748b);--a-border:var(--entry-border,#e2e8f0);--a-soft:var(--entry-hover,#f1f5f9);--a-primary:var(--entry-primary,#22795a);--a-primary-hover:var(--entry-primary-hover,#1b604a);--a-err-bg:var(--entry-error-bg,#fef2f2);--a-err:var(--entry-error-text,#b91c1c);margin-top:18px;color:var(--a-text);font-family:inherit}
 .lw-entry-acct *{box-sizing:border-box}
@@ -112,10 +126,14 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
 @media(max-width:640px){.lw-acct{top:8px;right:8px}.lw-acct-chip .lw-acct-label-text{display:none}}
 `;
 
+  // Balances are shown in a neutral unit (not ¥ or $). The canvas uses the same unit.
+  const UNIT = "฿";
+  globalThis.__lwUnit = UNIT;
+
   function money(n) {
     const v = Number(n) || 0;
     const fixed = Math.abs(v * 100 - Math.round(v * 100)) > 1e-9 ? v.toFixed(3) : v.toFixed(2);
-    return `¥${fixed}`;
+    return `${UNIT}${fixed}`;
   }
 
   function esc(s) {
@@ -203,9 +221,15 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
   }
 
   function setUser(next) {
+    const sameUser = Boolean(user && next && user.id === next.id && user.role === next.role);
     user = next;
     loaded = true;
     applyRole();
+    if (sameUser) {
+      listeners.forEach((fn) => { try { fn(user); } catch (_) { /* ignore */ } });
+      render();
+      return;
+    }
     clearInterval(siteBalanceTimer);
     siteBalances = null;
     globalThis.__lwCloudinary = null;
@@ -251,7 +275,7 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
     try {
       const data = await api("/me");
       setUser(data.user);
-      if (user && open) await loadLedger();
+      if (user?.role === "admin" && open) await loadLedger();
     } catch (_) {
       loaded = true;
       render();
@@ -378,11 +402,11 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
         </div>
         ${msgView()}
       </form>
-      <div class="lw-acct-howto">生成时按价格表从余额扣费，失败自动退回。</div>
-      <div class="lw-acct-section">
+      <div class="lw-acct-howto">生成时按价格表从余额扣费。生成失败一般会自动退回，没有退回的请联系管理员。</div>
+      ${user.role === "admin" ? `<div class="lw-acct-section">
         <div class="lw-acct-section-title">最近记录</div>
         <div class="lw-acct-ledger">${rows}</div>
-      </div>
+      </div>` : ""}
       <div class="lw-acct-foot">
         ${user.role === "admin" ? `<a class="lw-acct-link" href="/admin.html" target="_blank" rel="noopener">管理后台</a>` : ""}
         <button type="button" class="lw-acct-btn is-ghost" data-act="logout">退出登录</button>
@@ -394,11 +418,11 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
   function render() {
     if (!host) return;
     const chip = user
-      ? `<button type="button" class="lw-acct-chip" data-act="toggle" aria-expanded="${open}" aria-label="账户：${esc(user.email)}，余额 ${esc(money(user.balance))}">
+      ? `<button type="button" class="lw-acct-chip ${user.role === "admin" ? "is-admin" : `is-user ${user.balance < 1 ? "is-low" : ""}`}" data-act="toggle" aria-expanded="${open}" aria-label="账户：${esc(user.email)}${user.role === "admin" ? "" : `，余额 ${esc(money(user.balance))}`}">
            <span class="lw-acct-avatar" aria-hidden="true">${esc((user.displayName || user.email).slice(0, 1).toUpperCase())}</span>
            ${user.role === "admin"
              ? `<span class="lw-acct-admin-tag">管理员</span>`
-             : `<span class="lw-acct-bal ${user.balance < 1 ? "is-low" : ""}">${esc(money(user.balance))}</span>`}
+             : `<span class="lw-acct-wallet" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1 0-4h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg></span><span class="lw-acct-bal">${esc(money(user.balance))}</span>`}
          </button>${user.role === "admin" ? siteBalanceStack() : ""}`
       : `<button type="button" class="lw-acct-chip is-guest" data-act="toggle" aria-expanded="${open}">${loaded ? `<span class="lw-acct-label-text">登录 / 注册</span><span aria-hidden="true" class="lw-acct-label-short">账户</span>` : "…"}</button>`;
     paint(host, `${chip}<div class="lw-acct-panel" role="dialog" aria-label="账户">${user ? userView() : guestView()}</div>`);
@@ -501,7 +525,7 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
     message = null;
     render();
     if (open) {
-      if (user) loadLedger();
+      if (user?.role === "admin") loadLedger();
       const first = host.querySelector(".lw-acct-panel input");
       if (first) setTimeout(() => first.focus(), 0);
     }
@@ -576,7 +600,12 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
       message = null;
       render();
     } else if (act === "logout") {
+      const relay = window.__lwRelay;
+      const busy = relay && (relay.inflight > 0 || Date.now() - relay.last < 20000);
+      if (busy && !confirm("还有图片正在生成。现在退出，这次生成的结果可能拿不到（已扣的费用可联系管理员处理）。确定退出吗？")) return;
       try { await api("/logout", { method: "POST" }); } catch (_) { /* ignore */ }
+      // The canvas needs a signed-in account, so go back to the sign-in screen.
+      if (document.querySelector(".laowu-canvas-viewport, .react-flow")) { location.reload(); return; }
       ledgerItems = [];
       entryRedeemOpen = false;
       message = null;
@@ -605,7 +634,6 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
         host.querySelector(".lw-acct-chip")?.focus();
       }
     });
-    window.addEventListener("focus", () => { if (loaded) refresh(); });
     new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true });
     window.addEventListener("resize", schedule);
     render();

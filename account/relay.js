@@ -1,4 +1,4 @@
-// Pay-with-balance relay: /api/account/relay?url=<upstream URL>
+// Pay-with-balance relay: /api/account/relay?t=<masked upstream URL>
 //
 // The browser sends a normal provider request whose API key is the placeholder
 // "lw-balance". index.html reroutes it here. We look up the selling price,
@@ -9,6 +9,7 @@ import { randomBytes } from "node:crypto";
 
 import { channelConfig } from "./channels.js";
 import { describeRequest } from "./describe.js";
+import { CHANNEL_LABELS, rewriteUrls, scrubText, unmaskTarget } from "./mask.js";
 import { AccountError, adjustBalance } from "./service.js";
 
 export { describeRequest };
@@ -65,19 +66,71 @@ function forwardHeaders(request, apiKey) {
     return headers;
 }
 
-function passThrough(upstream) {
+function copyHeaders(upstream) {
     const headers = new Headers();
     for (const name of ["content-type", "cache-control"]) {
         const value = upstream.headers.get(name);
         if (value) headers.set(name, value);
     }
     headers.set("x-lw-relay", "1");
-    return new Response(upstream.body, { status: upstream.status, headers });
+    return headers;
+}
+
+function passThrough(upstream) {
+    return new Response(upstream.body, { status: upstream.status, headers: copyHeaders(upstream) });
+}
+
+// Users never see supplier names or URLs: errors are scrubbed and result URLs
+// in small JSON bodies are pointed at the image proxy.
+async function forUser(upstream, request) {
+    const type = upstream.headers.get("content-type") || "";
+    const length = Number(upstream.headers.get("content-length") || 0);
+    if (upstream.status >= 400) {
+        const text = await upstream.text().catch(() => "");
+        let message = "";
+        try {
+            const data = JSON.parse(text);
+            message = data?.error?.message || data?.message || data?.msg || data?.error || "";
+        } catch { message = text; }
+        const body = { error: { message: scrubText(typeof message === "string" ? message : JSON.stringify(message)).slice(0, 500) || `生成失败（${upstream.status}）` } };
+        return new Response(JSON.stringify(body), { status: upstream.status, headers: { "Content-Type": "application/json; charset=utf-8", "x-lw-relay": "1" } });
+    }
+    if (type.includes("json") && !type.includes("stream") && (!length || length < 2_000_000)) {
+        const text = await upstream.text();
+        let data;
+        try { data = JSON.parse(text); } catch { return new Response(text, { status: upstream.status, headers: copyHeaders(upstream) }); }
+        const origin = new URL(request.url).origin;
+        return new Response(JSON.stringify(rewriteUrls(data, origin)), { status: upstream.status, headers: copyHeaders(upstream) });
+    }
+    return passThrough(upstream);
+}
+
+// A synchronous Gemini call can answer 200 without an image (e.g. blocked by
+// safety). Watch the stream as it passes through and refund if no image came.
+function refundIfNoImage(upstream, refund) {
+    const decoder = new TextDecoder();
+    let tail = "";
+    let sawImage = false;
+    const watch = new TransformStream({
+        transform(chunk, controller) {
+            if (!sawImage) {
+                const text = tail + decoder.decode(chunk, { stream: true });
+                if (/"inline_?[dD]ata"\s*:/.test(text)) sawImage = true;
+                tail = text.slice(-32);
+            }
+            controller.enqueue(chunk);
+        },
+        async flush() {
+            if (!sawImage) await refund("平台未返回图片");
+        },
+    });
+    return new Response(upstream.body.pipeThrough(watch), { status: upstream.status, headers: copyHeaders(upstream) });
 }
 
 export async function relay(db, user, request, { fetchImpl = fetch } = {}) {
     const url = new URL(request.url);
-    const { target, channel } = channelForUrl(url.searchParams.get("url"));
+    const masked = url.searchParams.get("t");
+    const { target, channel } = channelForUrl(masked ? unmaskTarget(masked) : url.searchParams.get("url"));
     const method = request.method.toUpperCase();
     if (!["GET", "HEAD", "POST"].includes(method)) throw new AccountError(405, "bad_method", "不支持的请求方式");
 
@@ -111,7 +164,7 @@ export async function relay(db, user, request, { fetchImpl = fetch } = {}) {
         // The owner's own generations are not charged.
         const unit = isAdmin ? 0 : model ? await findPrice(db, channel, model, spec) : null;
         if (unit == null) {
-            const label = [channel, model || "?", spec].filter(Boolean).join(" / ");
+            const label = [CHANNEL_LABELS[channel] || channel, model || "?", spec].filter(Boolean).join(" / ");
             throw new AccountError(402, "not_priced", `这个模型还没开放余额生成（${label}），请联系管理员定价`);
         }
         const amount = unit * count;
@@ -146,5 +199,8 @@ export async function relay(db, user, request, { fetchImpl = fetch } = {}) {
         throw new AccountError(502, "upstream_failed", "连接平台失败，费用已退回");
     }
     if (upstream.status >= 400) await refund(`平台返回 ${upstream.status}`);
-    return passThrough(upstream);
+    if (charge && upstream.status < 300 && upstream.body && /:generateContent$/.test(target.pathname)) {
+        return refundIfNoImage(upstream, refund);
+    }
+    return user.role === "admin" ? passThrough(upstream) : forUser(upstream, request);
 }

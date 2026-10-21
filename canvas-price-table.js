@@ -78,7 +78,9 @@
     }
     // Keep the normal two-decimal display, but retain a third decimal when
     // the live provider price contains one (for example Tudou's ¥0.088).
-    return `¥${formatCny(amount)}`;
+    // Users see the same neutral unit as their balance; admins see yuan.
+    const unit = globalThis.__lwIsAdmin === true ? "¥" : (globalThis.__lwUnit || "¥");
+    return `${unit}${formatCny(amount)}`;
   }
 
   function formatCny(amount) {
@@ -270,7 +272,7 @@
     const heading = document.createElement("div");
     heading.className = "canvas-price-table-heading";
     const title = document.createElement("span");
-    title.textContent = "模型价格（人民币）";
+    title.textContent = globalThis.__lwIsAdmin === true ? "模型价格（人民币）" : "模型价格";
     heading.appendChild(title);
     const fx = document.createElement("label");
     fx.className = "canvas-price-table-fx";
@@ -300,7 +302,7 @@
     rate.className = "canvas-price-table-subtitle";
     rate.textContent = isAdmin
       ? `管理员看到的是上游成本；人民币 = 美元 × 汇率（当前 1 USD = ¥${getFxRate()}），表内只显示人民币。`
-      : "每张图生成时按下表价格从账户余额扣除，生成失败自动退回。";
+      : "每张图生成时按下表价格从账户余额扣除。生成失败一般会自动退回，没有退回的请联系管理员。";
     panel.appendChild(rate);
     if (!groups.size) {
       const empty = document.createElement("div");
@@ -318,7 +320,7 @@
       groupHead.className = "canvas-price-table-group-head";
       const siteName = document.createElement("span");
       const advantages = { RH: "快速稳定", Mart: "需要魔法", Tudou: "经济实惠", Grsai: "备选一", Soon: "备选二" };
-      const notes = { tudou: "推荐 · 性价比高", apimart: "便宜", grsai: "备用", runninghub: "最稳定 · 价格较高", soon: "备用" };
+      const notes = { tudou: "推荐 · 性价比高", apimart: "便宜 · 需开魔法", grsai: "备用", runninghub: "最稳定 · 价格较高", soon: "备用" };
       const note = isAdmin ? advantages[site] : notes[siteRows[0]?.providerId];
       siteName.textContent = note ? `${site} · ${note}` : site;
       const count = document.createElement("span");
