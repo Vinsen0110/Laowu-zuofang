@@ -10,8 +10,8 @@ const bundle = await readFile(new URL("../assets/index-B2KJ37fm.js", import.meta
 
 test("settings expose an independent global text site and model", () => {
     assert.match(bundle, /className:"generation-settings-sections"/);
-    assert.match(bundle, /children:"\\u751F\\u56FE\\u6A21\\u578B\\u8BBE\\u7F6E"/);
-    assert.match(bundle, /children:"\\u6587\\u672C\\u6A21\\u578B\\u8BBE\\u7F6E"/);
+    assert.match(bundle, /children:"生图模型设置"/);
+    assert.match(bundle, /children:"文本模型设置"/);
     assert.match(bundle, /label:"\\u9ED8\\u8BA4\\u6587\\u672C\\u8BF7\\u6C42\\u7AD9\\u70B9"/);
     assert.match(bundle, /label:"\\u9ED8\\u8BA4\\u6587\\u672C\\u6A21\\u578B（\\u5168\\u5C40）"/);
     assert.match(

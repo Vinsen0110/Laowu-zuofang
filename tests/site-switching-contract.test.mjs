@@ -96,8 +96,8 @@ test("generation defaults identify the active site and use a readable select sta
         /label:"\\u9ED8\\u8BA4\\u751F\\u56FE\\u6A21\\u578B\\uFF08"\+\(activeSiteChannel\(a\)\?\.name/,
     );
     assert.match(bundle, /className:"generation-settings-sections"/);
-    assert.match(bundle, /children:"\\u751F\\u56FE\\u6A21\\u578B\\u8BBE\\u7F6E"/);
-    assert.match(bundle, /children:"\\u6587\\u672C\\u6A21\\u578B\\u8BBE\\u7F6E"/);
+    assert.match(bundle, /children:"生图模型设置"/);
+    assert.match(bundle, /children:"文本模型设置"/);
     assert.match(bundle, /popupClassName:"settings-select-dropdown"/);
     assert.match(
         indexHtml,
