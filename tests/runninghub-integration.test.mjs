@@ -17,6 +17,9 @@ import {
     uploadRunningHubReferenceBlob,
 } from "../runninghub-api.js";
 
+// These tests cover the admin view, where GPT Image 2.5 "official" mode is available.
+globalThis.__lwGptOfficial = true;
+
 const bundle = await readFile(new URL("../assets/index-B2KJ37fm.js", import.meta.url), "utf8");
 const indexHtml = await readFile(new URL("../index.html", import.meta.url), "utf8");
 

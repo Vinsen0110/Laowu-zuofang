@@ -67,8 +67,10 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 .pt-group{margin-top:14px}
 .pt-group h3{margin:0 0 8px;font-size:14px}
 .pt td{vertical-align:top}
-.pt .cell{display:flex;flex-direction:column;gap:3px;min-width:96px}
-.pt .cost{color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
+.pt .cost-col{color:var(--muted);font-variant-numeric:tabular-nums}
+.pt th.cost-head{text-align:center;border-left:1px solid var(--border)}
+.pt th.price-head{text-align:center;border-left:1px solid var(--border);color:var(--primary)}
+.pt td:nth-child(2),.pt td:nth-child(5){border-left:1px solid var(--border)}
 .pt input{width:96px;height:30px;padding:0 8px;text-align:right;font-variant-numeric:tabular-nums}
 .pt input.is-dirty{border-color:var(--primary);background:rgb(34 121 90 / .08)}
 .pt .label{font-weight:600}
@@ -115,6 +117,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
   let balancesLoading = false;
   let prices = [];
   let catalog = [];
+  let cloud = { cloudName: "", apiKey: "", apiSecret: "" };
   let fx = 6.7;
   let markup = 2;
   const draft = new Map(); // "channel|model|spec" -> price string being edited
@@ -129,7 +132,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
         <p><a href="/">返回老屋作坊</a></p></div>`;
       return;
     }
-    await Promise.all([loadStats(), loadUsers(), loadCodes(), loadChannels(), loadPrices()]);
+    await Promise.all([loadStats(), loadUsers(), loadCodes(), loadChannels(), loadPrices(), loadCloud()]);
     render();
     checkBalances();
   }
@@ -138,6 +141,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
   async function loadStats() { statsData = await api("/admin/stats"); }
   async function loadUsers(q) { users = (await api("/admin/users" + (q ? "?q=" + encodeURIComponent(q) : ""))).items; }
   async function loadCodes() { codes = (await api("/admin/codes")).items; }
+  async function loadCloud() { cloud = await api("/admin/cloudinary"); }
   async function loadChannels() { channels = (await api("/admin/channels")).items; }
   async function loadPrices() {
     const r = await api("/admin/price-catalog");
@@ -157,26 +161,32 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
   const SITE_NAME = { tudou: "Tudou", apimart: "Mart", runninghub: "RH", grsai: "Grsai", soon: "Soon" };
 
   function priceTables() {
-    const cell = (r) => {
+    const costCell = (r) => r
+      ? `<td class="num cost-col">${r.cost == null ? `<span class="muted">${esc(r.costText)}</span>` : money(r.cost)}${r.costText.startsWith("$") ? `<span class="key">${esc(r.costText)}</span>` : ""}</td>`
+      : `<td class="num cost-col muted">—</td>`;
+    const priceCell = (r) => {
       if (!r) return `<td class="muted">—</td>`;
       const key = priceKey(r);
       const saved = savedPrice(r);
       const value = draft.has(key) ? draft.get(key) : saved ? String(saved.price) : "";
-      return `<td><div class="cell"><span class="cost">成本 ${r.cost == null ? esc(r.costText) : money(r.cost)}${r.costText.startsWith("$") ? ` <span title="原价">(${esc(r.costText)})</span>` : ""}</span>
-        <input type="number" step="0.001" min="0" placeholder="售价" aria-label="${esc(SITE_NAME[r.channel] + " " + r.label + " " + r.spec)} 售价" data-price-key="${esc(key)}" value="${esc(value)}" class="${draft.has(key) ? "is-dirty" : ""}"></div></td>`;
+      return `<td><input type="number" step="0.001" min="0" placeholder="售价" aria-label="${esc(SITE_NAME[r.channel] + " " + r.label + " " + r.spec)} 售价" data-price-key="${esc(key)}" value="${esc(value)}" class="${draft.has(key) ? "is-dirty" : ""}"></td>`;
     };
     return SITE_ORDER.map((ch) => {
       const rows = catalog.filter((r) => r.channel === ch);
       if (!rows.length) return "";
       const labels = [...new Set(rows.map((r) => r.label))];
-      const hasRes = rows.some((r) => r.spec);
       return `<div class="pt-group"><h3>${esc(SITE_NAME[ch])}</h3><div class="table-box"><table class="pt">
-        <thead><tr><th>模型</th>${hasRes ? "<th>1K</th><th>2K</th><th>4K</th>" : "<th>每张</th>"}</tr></thead>
+        <thead>
+          <tr><th rowspan="2">模型</th><th colspan="3" class="cost-head">成本（元/张）</th><th colspan="3" class="price-head">售价（元/张）</th></tr>
+          <tr><th class="num">1K</th><th class="num">2K</th><th class="num">4K</th><th>1K</th><th>2K</th><th>4K</th></tr>
+        </thead>
         <tbody>${labels.map((label) => {
           const items = rows.filter((r) => r.label === label);
-          const byRes = (res) => items.find((r) => r.spec.split("/")[0] === res);
-          return `<tr><td><span class="label">${esc(label)}</span><span class="key">${esc(items[0].model)}</span></td>
-            ${items.length === 1 && !items[0].spec ? cell(items[0]) + (hasRes ? "<td></td><td></td>" : "") : ["1k", "2k", "4k"].map((res) => cell(byRes(res))).join("")}</tr>`;
+          const single = items.length === 1 && !items[0].spec;
+          const byRes = (res) => single ? (res === "1k" ? items[0] : null) : items.find((r) => r.spec.split("/")[0] === res);
+          const res = ["1k", "2k", "4k"];
+          return `<tr><td><span class="label">${esc(label)}</span><span class="key">${esc(items[0].model)}${single ? " · 不分分辨率" : ""}</span></td>
+            ${res.map((x) => costCell(byRes(x))).join("")}${res.map((x) => priceCell(byRes(x))).join("")}</tr>`;
         }).join("")}</tbody></table></div></div>`;
     }).join("") + extraPrices();
   }
@@ -236,6 +246,18 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
           </div>`;
         }).join("")}</div>
         ${msg(flash.channels)}
+      </section>
+
+      <section class="card">
+        <h2>图床 Cloudinary <span class="muted" style="font-weight:400;font-size:13px">（管理员账号带参考图生成时用；普通用户在画布 设置 → 图床设置 里填自己的）</span></h2>
+        <form class="row" id="cloud-form">
+          <label class="muted" for="cl-name">Cloud Name</label><input id="cl-name" name="cloudName" value="${esc(cloud.cloudName)}" style="width:160px" autocomplete="off">
+          <label class="muted" for="cl-key">API Key</label><input id="cl-key" name="apiKey" value="${esc(cloud.apiKey)}" style="width:180px" autocomplete="off">
+          <label class="muted" for="cl-secret">API Secret</label><input id="cl-secret" name="apiSecret" type="password" placeholder="${cloud.apiSecret ? "已设置，留空不修改" : "粘贴 API Secret"}" style="width:200px" autocomplete="new-password">
+          <button type="submit">保存</button>
+          <a class="muted" href="https://console.cloudinary.com/settings/api-keys" target="_blank" rel="noopener" style="font-size:12px">在哪里找 ↗</a>
+        </form>
+        ${msg(flash.cloud)}
       </section>
 
       <section class="card">
@@ -335,6 +357,10 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
         await loadChannels();
         checkBalances();
 
+      } else if (form.id === "cloud-form") {
+        const data = Object.fromEntries(new FormData(form).entries());
+        cloud = await api("/admin/cloudinary", data);
+        flash.cloud = { text: "已保存，管理员账号刷新画布后生效" };
       } else if (form.id === "codes-form") {
         const data = Object.fromEntries(new FormData(form).entries());
         lastBatch = await api("/admin/codes", data);
@@ -343,6 +369,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
       }
     } catch (err) {
       if (form.id === "codes-form") flash.codes = { err: true, text: err.message };
+      else if (form.id === "cloud-form") flash.cloud = { err: true, text: err.message };
       else if (form.dataset.channel) flash.channels = { err: true, text: err.message };
       else flash.users = { err: true, text: err.message };
     }

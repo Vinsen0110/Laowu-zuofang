@@ -21,6 +21,9 @@ const HOSTS = [
     [/^api(?:-[a-z]+)?\.soonstudio\.ai$/, "soon"],
 ];
 
+// GPT Image 2.5 official (usage-billed) models are for admins only.
+export const ADMIN_ONLY_MODELS = new Set(["gpt-image-2.5-flare", "gpt-image-2.5-sunburst", "rhart-image-g-2.5-official-token"]);
+
 // Polling, uploads and result queries are free; only generation is charged.
 const FREE_PATH = /\/upload|\/query$|\/result$|\/tasks(?:\/|$)/;
 const MAX_COUNT = 10;
@@ -124,7 +127,12 @@ export async function relay(db, user, request, { fetchImpl = fetch } = {}) {
             }
         }
         const { model, spec, count } = describeRequest(target, payload);
-        const unit = model ? await findPrice(db, channel, model, spec) : null;
+        const isAdmin = user.role === "admin";
+        if (!isAdmin && ADMIN_ONLY_MODELS.has(model)) {
+            throw new AccountError(403, "admin_only", "官方模式仅管理员可用，请切换到固定模式");
+        }
+        // The owner's own generations are not charged.
+        const unit = isAdmin ? 0 : model ? await findPrice(db, channel, model, spec) : null;
         if (unit == null) {
             const label = [channel, model || "?", spec].filter(Boolean).join(" / ");
             throw new AccountError(402, "not_priced", `这个模型还没开放余额生成（${label}），请联系管理员定价`);

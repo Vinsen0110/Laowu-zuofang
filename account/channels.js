@@ -32,6 +32,11 @@ CREATE TABLE IF NOT EXISTS lw_channels (
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE lw_channels ADD COLUMN IF NOT EXISTS api_key2 TEXT NOT NULL DEFAULT '';
+CREATE TABLE IF NOT EXISTS lw_settings (
+    key        TEXT PRIMARY KEY,
+    value      TEXT NOT NULL DEFAULT '',
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 CREATE TABLE IF NOT EXISTS lw_prices (
     id          BIGSERIAL PRIMARY KEY,
     channel     TEXT NOT NULL,
@@ -268,4 +273,32 @@ export async function savePrices(db, items) {
         }
     }
     return listPrices(db);
+}
+
+// ---------- admin image host (Cloudinary) ----------
+export async function getCloudinary(db) {
+    const rows = await db.query("SELECT value FROM lw_settings WHERE key = 'cloudinary'");
+    try {
+        const v = JSON.parse(rows[0]?.value || "{}");
+        return { cloudName: String(v.cloudName || ""), apiKey: String(v.apiKey || ""), apiSecret: String(v.apiSecret || "") };
+    } catch {
+        return { cloudName: "", apiKey: "", apiSecret: "" };
+    }
+}
+
+export async function saveCloudinary(db, input) {
+    const current = await getCloudinary(db);
+    const next = {
+        cloudName: input?.cloudName === undefined ? current.cloudName : String(input.cloudName).trim(),
+        apiKey: input?.apiKey === undefined ? current.apiKey : String(input.apiKey).trim(),
+        apiSecret: input?.apiSecret === undefined || input.apiSecret === "" ? current.apiSecret : String(input.apiSecret).trim(),
+    };
+    if (next.cloudName && !/^[a-zA-Z0-9_-]+$/.test(next.cloudName)) throw new AccountError(400, "bad_cloud", "Cloud Name 格式不正确");
+    if (next.apiKey && !/^\d+$/.test(next.apiKey)) throw new AccountError(400, "bad_cloud_key", "API Key 应为纯数字");
+    await db.query(
+        `INSERT INTO lw_settings (key, value) VALUES ('cloudinary', $1)
+         ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = now()`,
+        [JSON.stringify(next)],
+    );
+    return next;
 }

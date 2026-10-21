@@ -2,7 +2,7 @@
 // same code runs on Vercel and in the local preview server.
 
 import { USD_TO_CNY, priceCatalog } from "./catalog.js";
-import { channelBalances, deletePrice, listChannels, listPrices, saveChannel, savePrice, savePrices } from "./channels.js";
+import { channelBalances, deletePrice, getCloudinary, listChannels, listPrices, saveChannel, saveCloudinary, savePrice, savePrices } from "./channels.js";
 import { getDatabase } from "./db.js";
 import { relay } from "./relay.js";
 import { consumeCode, markVerified, requestCode, resetPassword } from "./verify.js";
@@ -198,6 +198,12 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
             }
             if (path === "/admin/prices" && method === "POST") {
                 return json(200, { price: await savePrice(db, await body(request)) });
+            }
+            if (path === "/admin/cloudinary" && method === "GET") {
+                return json(200, await getCloudinary(db));
+            }
+            if (path === "/admin/cloudinary" && method === "POST") {
+                return json(200, await saveCloudinary(db, await body(request)));
             }
             if (path === "/admin/price-catalog" && method === "GET") {
                 return json(200, { fx: USD_TO_CNY, rows: priceCatalog(), prices: await listPrices(db) });

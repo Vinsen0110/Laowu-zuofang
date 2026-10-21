@@ -150,9 +150,15 @@ function validNano21Reference(value) {
     }
 }
 
+// GPT Image 2.5 "official" mode is admin-only; account-ui sets the flag for admins.
+function officialAllowed(config) {
+    return config?.allowOfficial ?? globalThis.__lwGptOfficial === true;
+}
+
 export function apiMartGptImageQuality(config) {
     const value = String(config?.gptImageQuality || APIMART_GPT_FIXED_QUALITY).trim().toLowerCase();
     const is25 = modelName(config) === "gpt-image-2.5";
+    if (is25 && !officialAllowed(config)) return APIMART_GPT_FIXED_QUALITY;
     const allowed = is25 ? ["fixed", "auto", "low", "medium", "high", "xhigh", "max"] : ["auto", "low", "medium", "high"];
     return allowed.includes(value) ? value : (is25 ? "auto" : APIMART_GPT_FIXED_QUALITY);
 }
