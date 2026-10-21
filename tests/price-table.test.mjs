@@ -61,6 +61,13 @@ test("price table observer mounting is idempotent and cannot loop on its own div
   assert.doesNotMatch(script, /shell\.querySelectorAll\("\.canvas-price-table-divider"\)\.forEach\(\(element\) => element\.remove\(\)\)/);
 });
 
+test("price table observer work is coalesced to one attach per animation frame", () => {
+  assert.match(script, /const observer = new MutationObserver\(scheduleAttach\)/);
+  assert.match(script, /attachFrame = requestAnimationFrame\(\(\) => \{\s*attachFrame = null;\s*attach\(\);/);
+  assert.doesNotMatch(script, /new MutationObserver\(\(\) => attach\(\)\)/);
+  assert.match(script, /if \(document\.hidden\) return;/);
+});
+
 test("price table keeps Tudou and Grsai Nano Banana 2.1 while omitting Soon 2.1", () => {
   assert.match(script, /if \(provider === "soon"\) return/);
   assert.match(script, /return add\(model, "Nano Banana 2\.1"\)/);

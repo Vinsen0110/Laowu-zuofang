@@ -470,9 +470,19 @@
     installStyles();
     installBridge();
     attach();
-    const observer = new MutationObserver(() => attach());
+    // Coalesce bursts of DOM changes (node creation, streaming output, project
+    // import) into at most one attach() per animation frame.
+    let attachFrame = null;
+    const scheduleAttach = () => {
+      if (attachFrame !== null) return;
+      attachFrame = requestAnimationFrame(() => {
+        attachFrame = null;
+        attach();
+      });
+    };
+    const observer = new MutationObserver(scheduleAttach);
     observer.observe(document.body, { childList: true, subtree: true });
-    window.addEventListener("resize", attach, { passive: true });
+    window.addEventListener("resize", scheduleAttach, { passive: true });
     window.addEventListener("vinsen-price-change", () => {
       const host = document.querySelector(".canvas-price-table-host");
       if (host?.classList.contains("is-open")) render(host);
@@ -493,6 +503,7 @@
     // when a config update does not emit a public event.
     let lastSnapshot = "";
     window.setInterval(() => {
+      if (document.hidden) return;
       const host = document.querySelector(".canvas-price-table-host");
       if (!host?.classList.contains("is-open")) return;
       const snapshot = bridgeSnapshot();
