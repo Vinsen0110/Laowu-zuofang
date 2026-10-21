@@ -5,6 +5,7 @@ import { USD_TO_CNY, priceCatalog } from "./catalog.js";
 import { channelBalances, deletePrice, getCloudinary, listChannels, listPrices, saveChannel, saveCloudinary, savePrice, savePrices } from "./channels.js";
 import { getDatabase } from "./db.js";
 import { relay } from "./relay.js";
+import { verifyImageToken } from "./mask.js";
 import { consumeCode, markVerified, requestCode, resetPassword } from "./verify.js";
 import {
     AccountError,
@@ -131,6 +132,20 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
 
         if (path === "/relay") {
             return await relay(db, me, request);
+        }
+        if (path === "/img" && method === "GET") {
+            // Result images for users, fetched here so the supplier never shows in the browser.
+            const target = verifyImageToken(url.searchParams.get("t"));
+            if (!target) throw new AccountError(404, "not_found", "图片不存在");
+            const upstream = await fetch(target, { redirect: "follow", signal: request.signal });
+            if (!upstream.ok || !upstream.body) throw new AccountError(502, "img_failed", "图片加载失败");
+            return new Response(upstream.body, {
+                status: 200,
+                headers: {
+                    "Content-Type": upstream.headers.get("content-type") || "application/octet-stream",
+                    "Cache-Control": "private, max-age=86400",
+                },
+            });
         }
 
         if (path === "/prices" && method === "GET") {
