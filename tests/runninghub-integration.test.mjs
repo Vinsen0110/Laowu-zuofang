@@ -446,7 +446,7 @@ test("RH is a fully isolated third site in the compiled app", () => {
     assert.match(bundle, /Ba=!isTudouSite\(balanceSite\)&&!isRunningHubSite\(balanceSite\)/);
     assert.match(bundle, /isRunningHubSite\(balanceSite\)\?`\$\{qke\(be\)\} \$`/);
     assert.doesNotMatch(bundle, /rhBalanceCurrency|setRhBalanceCurrency/);
-    assert.match(bundle, /if\(isTudouSite\(le\)\|\|isRunningHubSite\(le\)\)\{Wt\(!1\),Rt\(null\),Lt\(""\);return\}/);
+    assert.match(bundle, /if\(isTudouSite\(le\)\|\|isRunningHubSite\(le\)\|\|le\.apiKey==="lw-balance"\)\{Wt\(!1\),Rt\(null\),Lt\(""\);return\}/);
     assert.doesNotMatch(bundle, /queryRunningHubAccount|rhAccountLoading|rh-account-/);
     assert.match(bundle, /runningHubImagePrice\(e,t\)/, "RH price must be visible");
     assert.match(bundle, /pke\(h,n\.imageCount>0\)/, "config nodes must use reference pricing");

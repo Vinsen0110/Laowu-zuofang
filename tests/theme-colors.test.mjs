@@ -21,7 +21,8 @@ test("theme.css defines every color variable and class the app uses", () => {
     const referenced = new Set([...(theme + styles).matchAll(/var\((--lw-[\w-]+)\)/g)].map(match => match[1]));
     assert.deepEqual([...referenced].filter(name => !defined.has(name)), []);
     const classes = new Set([...theme.matchAll(/\.(lw-[a-z0-9-]+)/g)].map(match => match[1]));
-    const used = new Set([...bundle.matchAll(/(?<![\w-])(lw-[a-z0-9-]+)/g)].map(match => match[1]));
+    // "lw-balance" is the pay-with-balance API key placeholder, not a class.
+    const used = new Set([...bundle.matchAll(/(?<![\w-])(lw-[a-z0-9-]+)/g)].map(match => match[1]).filter(name => name !== "lw-balance"));
     assert.deepEqual([...used].filter(name => !classes.has(name)), []);
 });
 

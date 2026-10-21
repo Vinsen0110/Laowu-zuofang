@@ -95,11 +95,20 @@ function soonRows() {
         { provider: "soon", size: "1:1", quality, model: "soon::nano-banana-pro" }));
 }
 
+// Text models (prompt helpers, chat) are charged per call; upstream cost depends on usage.
+function textRows() {
+    return [
+        row("tudou", "文本 · Gemini 3.8 Flash", `${TUDOU_ORIGIN}/v1/chat/completions`, { model: "gemini-3.8-flash" }, null, "CNY"),
+        row("apimart", "文本 · Gemini 3.8 Flash", `${APIMART_ORIGIN}/v1/chat/completions`, { model: "gemini-3.8-flash" }, null, "USD"),
+        row("runninghub", "文本 · Gemini 3.7 Flash", "https://llm.runninghub.ai/v1/chat/completions", { model: "google/gemini-3.7-flash" }, null, "USD"),
+    ];
+}
+
 let cached = null;
 export function priceCatalog() {
     if (cached) return cached;
     const seen = new Set();
-    cached = [...tudouRows(), ...apimartRows(), ...runningHubRows(), ...grsaiRows(), ...soonRows()].filter((r) => {
+    cached = [...tudouRows(), ...apimartRows(), ...runningHubRows(), ...grsaiRows(), ...soonRows(), ...textRows()].filter((r) => {
         const key = `${r.channel}|${r.model}|${r.spec}`;
         if (seen.has(key)) return false;
         seen.add(key);
