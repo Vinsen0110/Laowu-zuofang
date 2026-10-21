@@ -2,10 +2,10 @@
 // provider request the canvas sends and reads it with the relay's
 // describeRequest, so the price shown is exactly what the relay charges.
 
-import { APIMART_ORIGIN, apiMartImageRequestSpec } from "./apimart-api.js?v=20261021-official-01";
-import { GRSAI_ORIGIN, grsaiImageRequestSpec } from "./grsai-api.js?v=20261009-nano21-01";
-import { RUNNINGHUB_ORIGIN, runningHubImageRequestSpec } from "./runninghub-api.js?v=20261021-official-01";
-import { SOON_ORIGIN, soonImageRequestSpec } from "./soon-api.js?v=20261007-04";
+import { APIMART_ORIGIN, apiMartImageRequestSpec } from "./apimart-api.js?v=20261021-speed-01";
+import { GRSAI_ORIGIN, grsaiImageRequestSpec } from "./grsai-api.js?v=20261021-speed-01";
+import { RUNNINGHUB_ORIGIN, runningHubImageRequestSpec } from "./runninghub-api.js?v=20261021-speed-01";
+import { SOON_ORIGIN, soonImageRequestSpec } from "./soon-api.js?v=20261021-speed-01";
 import { describeRequest } from "./account/describe.js?v=20261021-01";
 
 const TUDOU_ORIGIN = "https://api.ai-tudou.net";

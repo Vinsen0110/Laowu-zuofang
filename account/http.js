@@ -24,6 +24,7 @@ import {
     logout,
     redeemCode,
     register,
+    setDisplayName,
     setUserDisabled,
     stats,
     userFromSession,
@@ -154,6 +155,10 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
             });
         }
 
+        if (path === "/profile" && method === "POST") {
+            const { displayName } = await body(request);
+            return json(200, { user: await setDisplayName(db, me.id, displayName) });
+        }
         if (path === "/prices" && method === "GET") {
             // Selling prices only (no costs), for the canvas to show before generating.
             const items = (await listPrices(db)).filter((p) => p.enabled).map(({ channel, model, spec, price }) => ({ channel, model, spec, price }));

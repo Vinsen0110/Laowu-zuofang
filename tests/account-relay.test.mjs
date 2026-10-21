@@ -375,3 +375,13 @@ test("removing an email from LW_ADMIN_EMAILS takes admin away (but an empty list
         process.env.LW_ADMIN_EMAILS = prev ?? "";
     }
 });
+
+test("users can set a nickname that the admin user list shows and searches", async () => {
+    const { setDisplayName, listUsers } = await import("../account/service.js");
+    const updated = await setDisplayName(db, user.id, "  小明<script>  ");
+    assert.equal(updated.displayName, "小明script");
+    assert.equal(updated.customName, "小明script");
+    const [found] = await listUsers(db, { search: "小明" });
+    assert.equal(found.email, "payer@test.com");
+    assert.equal((await setDisplayName(db, user.id, "")).displayName, "payer");
+});

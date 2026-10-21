@@ -29,3 +29,10 @@ test("account chip: no focus refresh, no ledger for users, logout guard", () => 
     assert.match(accountUi, /user\.role === "admin" \? `<div class="lw-acct-section">/);
     assert.match(accountUi, /还有图片正在生成/);
 });
+
+test("background tabs keep polling at full speed; badge stays out of the image viewer", () => {
+    assert.match(html, /window\.__lwSetTimeout = function/);
+    assert.match(bundle, /const o=\(globalThis\.__lwSetTimeout\|\|setTimeout\)\(n,e\)/);
+    assert.match(html, /body:has\(\.canvas-image-viewer\) \.lw-acct \{ display: none !important; \}/);
+    assert.match(accountUi, /placeChipLater\(\);/);
+});

@@ -71,9 +71,10 @@ function throwIfAborted(signal) {
 function wait(ms, signal) {
     return new Promise((resolve, reject) => {
         throwIfAborted(signal);
-        const timer = setTimeout(resolve, ms);
+        // Background tabs throttle setTimeout; index.html provides a worker timer.
+        const timer = (globalThis.__lwSetTimeout || setTimeout)(resolve, ms);
         signal?.addEventListener("abort", () => {
-            clearTimeout(timer);
+            (globalThis.__lwClearTimeout || clearTimeout)(timer);
             reject(abortError(signal));
         }, { once: true });
     });

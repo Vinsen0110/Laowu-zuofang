@@ -11,6 +11,7 @@
   let open = false;
   let busy = false;
   let ledgerItems = [];
+  let editingName = false;
   let siteBalances = null; // admin only: upstream balances of the site's keys
   let siteBalanceTimer = null;
   let message = null; // { type: "error" | "ok", text }
@@ -68,6 +69,11 @@
 .lw-acct-site.is-low b{color:var(--a-err)}
 @media(max-width:640px){.lw-acct-chip .lw-acct-sites{display:none}}
 .lw-acct{display:flex;flex-direction:column;align-items:flex-end}
+.lw-acct-who{min-width:0;flex:1}
+.lw-acct-rename{margin-left:4px;font-size:11px;font-weight:500}
+.lw-acct-name-form{display:flex;gap:6px;margin-bottom:2px}
+.lw-acct-name-form .lw-acct-input{height:30px;font-size:13px}
+.lw-acct-name-form .lw-acct-btn{height:30px;padding:0 10px}
 .lw-acct-admin-tag{font-size:12px;font-weight:700;letter-spacing:.04em}
 .lw-acct-chip.is-user{gap:6px;padding:0 14px 0 5px;border-color:#d1fae5;background:linear-gradient(135deg,#f7fefb,#e6fbf1);color:#047857;box-shadow:0 3px 10px rgb(16 185 129 / .10)}
 .lw-acct-chip.is-user:hover{border-color:#a7f3d0;box-shadow:0 4px 14px rgb(16 185 129 / .16)}
@@ -398,7 +404,9 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
     return `
       <div class="lw-acct-head">
         <span class="lw-acct-avatar" aria-hidden="true">${esc((user.displayName || user.email).slice(0, 1).toUpperCase())}</span>
-        <span><div class="lw-acct-name">${esc(user.displayName || user.email)}</div><div class="lw-acct-role">${esc(user.email)}</div></span>
+        <span class="lw-acct-who">${editingName
+          ? `<form class="lw-acct-name-form" data-form="name"><input class="lw-acct-input" name="displayName" maxlength="20" value="${esc(user.displayName || "")}" aria-label="昵称" autocomplete="off"><button class="lw-acct-btn" type="submit">保存</button></form>`
+          : `<div class="lw-acct-name">${esc(user.displayName || user.email)} <button type="button" class="lw-acct-linkbtn lw-acct-rename" data-act="rename">改名</button></div>`}<div class="lw-acct-role">${esc(user.email)}</div></span>
       </div>
       <div class="lw-acct-balance">
         <div class="lw-acct-balance-top"><span class="lw-acct-balance-label">账户余额</span>${user.role === "admin" ? "" : `<a class="lw-acct-buy" href="${BUY_URL}" target="_blank" rel="noopener noreferrer">购买兑换码 ↗</a>`}</div>
@@ -505,10 +513,9 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
 
   function placeChip() {
     if (!host || document.documentElement.classList.contains("lw-start")) return;
-    host.style.visibility = "hidden";
     let right = 12;
     const y = 26;
-    for (let x = window.innerWidth - 8; x > window.innerWidth - 420; x -= 12) {
+    for (let x = window.innerWidth - 8; x > window.innerWidth - 420; x -= 24) {
       const el = document.elementsFromPoint(x, y).find((n) => !host.contains(n) && n !== document.body && n !== document.documentElement && getComputedStyle(n).pointerEvents !== "none");
       if (!el) continue;
       const box = el.getBoundingClientRect();
@@ -516,8 +523,18 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
       right = Math.max(right, window.innerWidth - box.left + 8);
       x = box.left;
     }
-    host.style.right = `${right}px`;
-    host.style.visibility = "";
+    if (host.style.right !== `${right}px`) host.style.right = `${right}px`;
+  }
+
+  // Measuring the top-right corner forces layout, so never do it in the same
+  // frame as a DOM change (e.g. a dropdown opening): wait until things settle.
+  let placeTimer = null;
+  function placeChipLater() {
+    clearTimeout(placeTimer);
+    placeTimer = setTimeout(() => {
+      if (typeof requestIdleCallback === "function") requestIdleCallback(placeChip, { timeout: 500 });
+      else placeChip();
+    }, 400);
   }
 
   let scheduled = false;
@@ -527,7 +544,7 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
     requestAnimationFrame(() => {
       scheduled = false;
       renderEntry(false);
-      placeChip();
+      placeChipLater();
     });
   }
 
@@ -549,6 +566,17 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
     if (busy) return;
     const data = Object.fromEntries(new FormData(form).entries());
     const kind = form.dataset.form;
+    if (kind === "name") {
+      try {
+        const result = await api("/profile", { method: "POST", body: { displayName: String(data.displayName || "").trim() } });
+        editingName = false;
+        setUser({ ...user, ...result.user });
+      } catch (error) {
+        message = { type: "error", text: error.message };
+        render();
+      }
+      return;
+    }
     if (kind === "login" || kind === "register" || kind === "reset") {
       let problem = "";
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(data.email || "").trim())) problem = "请填写正确的邮箱地址";
@@ -604,6 +632,7 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
       if (entryRedeemOpen) entry?.querySelector('input[name="code"]')?.focus();
     }
     else if (act === "send-code") sendCode(el);
+    else if (act === "rename") { editingName = true; render(); host.querySelector('input[name="displayName"]')?.focus(); }
 
     else if (act === "mode-login" || act === "mode-register" || act === "mode-reset") {
       if (mode !== act.slice(5)) { cooldownUntil = 0; codeSentTo = ""; }
