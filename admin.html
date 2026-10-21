@@ -59,6 +59,16 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 .ch label{display:flex;flex-direction:column;gap:3px;color:var(--muted);font-size:12px}
 .ch input{width:100%}
 .ch .row label input{flex:none;width:100%}
+.pt-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.pt-group{margin-top:14px}
+.pt-group h3{margin:0 0 8px;font-size:14px}
+.pt td{vertical-align:top}
+.pt .cell{display:flex;flex-direction:column;gap:3px;min-width:96px}
+.pt .cost{color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
+.pt input{width:96px;height:30px;padding:0 8px;text-align:right;font-variant-numeric:tabular-nums}
+.pt input.is-dirty{border-color:var(--primary);background:rgb(34 121 90 / .08)}
+.pt .label{font-weight:600}
+.pt .key{display:block;color:var(--muted);font-size:11px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 </style>
 </head>
 <body>
@@ -100,7 +110,10 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
   let balances = null;
   let balancesLoading = false;
   let prices = [];
-  let editingPrice = null;
+  let catalog = [];
+  let fx = 6.7;
+  let markup = 2;
+  const draft = new Map(); // "channel|model|spec" -> price string being edited
 
   function msg(m) { return m ? `<div class="msg ${m.err ? "err" : "ok"}" role="${m.err ? "alert" : "status"}">${esc(m.text)}</div>` : ""; }
 
@@ -122,7 +135,12 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
   async function loadUsers(q) { users = (await api("/admin/users" + (q ? "?q=" + encodeURIComponent(q) : ""))).items; }
   async function loadCodes() { codes = (await api("/admin/codes")).items; }
   async function loadChannels() { channels = (await api("/admin/channels")).items; }
-  async function loadPrices() { prices = (await api("/admin/prices")).items; }
+  async function loadPrices() {
+    const r = await api("/admin/price-catalog");
+    catalog = r.rows; prices = r.prices; fx = r.fx;
+  }
+  const priceKey = (r) => `${r.channel}|${r.model}|${r.spec}`;
+  const savedPrice = (r) => prices.find((p) => priceKey(p) === priceKey(r));
   async function checkBalances() {
     balancesLoading = true; render();
     try { balances = await api("/admin/channel-balances"); flash.channels = null; }
@@ -130,6 +148,45 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
     balancesLoading = false; render();
   }
   const fmtBal = (b, unit) => b == null ? "--" : b < 0 ? "无限" : unit + Number(b).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const SITE_ORDER = ["tudou", "apimart", "runninghub", "grsai", "soon"];
+  const SITE_NAME = { tudou: "Tudou", apimart: "Mart", runninghub: "RH", grsai: "Grsai", soon: "Soon" };
+
+  function priceTables() {
+    const cell = (r) => {
+      if (!r) return `<td class="muted">—</td>`;
+      const key = priceKey(r);
+      const saved = savedPrice(r);
+      const value = draft.has(key) ? draft.get(key) : saved ? String(saved.price) : "";
+      return `<td><div class="cell"><span class="cost">成本 ${r.cost == null ? esc(r.costText) : money(r.cost)}${r.costText.startsWith("$") ? ` <span title="原价">(${esc(r.costText)})</span>` : ""}</span>
+        <input type="number" step="0.001" min="0" placeholder="售价" aria-label="${esc(SITE_NAME[r.channel] + " " + r.label + " " + r.spec)} 售价" data-price-key="${esc(key)}" value="${esc(value)}" class="${draft.has(key) ? "is-dirty" : ""}"></div></td>`;
+    };
+    return SITE_ORDER.map((ch) => {
+      const rows = catalog.filter((r) => r.channel === ch);
+      if (!rows.length) return "";
+      const labels = [...new Set(rows.map((r) => r.label))];
+      const hasRes = rows.some((r) => r.spec);
+      return `<div class="pt-group"><h3>${esc(SITE_NAME[ch])}</h3><div class="table-box"><table class="pt">
+        <thead><tr><th>模型</th>${hasRes ? "<th>1K</th><th>2K</th><th>4K</th>" : "<th>每张</th>"}</tr></thead>
+        <tbody>${labels.map((label) => {
+          const items = rows.filter((r) => r.label === label);
+          const byRes = (res) => items.find((r) => r.spec.split("/")[0] === res);
+          return `<tr><td><span class="label">${esc(label)}</span><span class="key">${esc(items[0].model)}</span></td>
+            ${items.length === 1 && !items[0].spec ? cell(items[0]) + (hasRes ? "<td></td><td></td>" : "") : ["1k", "2k", "4k"].map((res) => cell(byRes(res))).join("")}</tr>`;
+        }).join("")}</tbody></table></div></div>`;
+    }).join("") + extraPrices();
+  }
+
+  // Prices saved earlier that are not in the built-in catalog.
+  function extraPrices() {
+    const known = new Set(catalog.map(priceKey));
+    const extra = prices.filter((p) => !known.has(priceKey(p)));
+    if (!extra.length) return "";
+    return `<div class="pt-group"><h3>其他已保存的价格</h3><div class="table-box"><table>
+      <thead><tr><th>渠道</th><th>模型</th><th>规格</th><th class="num">售价</th><th></th></tr></thead>
+      <tbody>${extra.map((r) => `<tr><td>${esc(SITE_NAME[r.channel] || r.channel)}</td><td>${esc(r.model)}</td><td>${esc(r.spec)}</td><td class="num">${money(r.price)}</td>
+        <td><button class="danger small" type="button" data-del-price="${r.id}">删除</button></td></tr>`).join("")}</tbody></table></div></div>`;
+  }
 
   function render() {
     const s = statsData || {};
@@ -166,7 +223,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
             <form data-channel="${c.id}">
               <label>API Key ${c.keySource === "env" ? "（由环境变量提供）" : ""}
                 <input name="apiKey" type="password" autocomplete="off" placeholder="${c.hasKey ? "已设置 " + esc(c.keyPreview) + "，留空不修改" : "粘贴这个渠道的 API Key"}" ${c.keySource === "env" ? "disabled" : ""}></label>
-              <label>接口地址（可选，留空用默认）<input name="baseUrl" value="${esc(c.baseUrl)}" placeholder="https://…"></label>
+              ${c.extraKey ? `<label>${esc(c.extraKey)}
+                <input name="apiKey2" type="password" autocomplete="off" placeholder="${c.hasKey2 ? "已设置 " + esc(c.key2Preview) + "，留空不修改" : "没有可以不填"}"></label>` : ""}
               <div class="row"><label style="flex:1">余额低于多少提醒（${c.unit}）<input name="alertThreshold" type="number" step="0.01" min="0" value="${c.alertThreshold}"></label>
               <button class="small" type="submit" style="align-self:flex-end">保存</button></div>
             </form>
@@ -176,26 +234,15 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
       </section>
 
       <section class="card">
-        <div class="row" style="justify-content:space-between;margin-bottom:12px"><h2 style="margin:0">价格表 <span class="muted" style="font-weight:400;font-size:13px">（用户每次生成按这里的售价扣余额）</span></h2></div>
-        <form class="row" id="price-form" style="margin-bottom:12px">
-          <select name="channel" aria-label="渠道" required>${channels.map((c) => `<option value="${c.id}" ${editingPrice?.channel === c.id ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select>
-          <input name="model" list="model-list" placeholder="模型，如 nano-banana-pro" aria-label="模型" required style="width:200px" value="${esc(editingPrice?.model || "")}">
-          <datalist id="model-list">${[...new Set(channels.flatMap((c) => c.models))].map((m) => `<option value="${esc(m)}">`).join("")}</datalist>
-          <input name="spec" placeholder="规格，如 2K / 高清（可选）" aria-label="规格" style="width:170px" value="${esc(editingPrice?.spec || "")}">
-          <input name="price" type="number" step="0.001" min="0" placeholder="售价 元/次" aria-label="售价（元每次）" required style="width:120px" value="${editingPrice ? editingPrice.price : ""}">
-          <input name="cost" placeholder="成本（备忘，可选）" aria-label="成本" style="width:140px" value="${esc(editingPrice?.cost || "")}">
-          <input name="note" placeholder="备注（可选）" aria-label="备注" style="width:140px" value="${esc(editingPrice?.note || "")}">
-          <button type="submit">${editingPrice ? "保存修改" : "添加"}</button>
-          ${editingPrice ? `<button class="ghost" type="button" id="cancel-price">取消</button>` : ""}
-        </form>
-        <div class="table-box"><table>
-          <thead><tr><th>渠道</th><th>模型</th><th>规格</th><th class="num">售价（元/次）</th><th>成本</th><th>备注</th><th></th></tr></thead>
-          <tbody>${prices.map((r) => `<tr>
-            <td>${esc(channels.find((c) => c.id === r.channel)?.name || r.channel)}</td><td>${esc(r.model)}</td><td>${esc(r.spec)}</td>
-            <td class="num">${money(r.price)}</td><td>${esc(r.cost)}</td><td>${esc(r.note)}</td>
-            <td class="row" style="flex-wrap:nowrap"><button class="ghost small" type="button" data-edit-price="${r.id}">修改</button><button class="danger small" type="button" data-del-price="${r.id}">删除</button></td>
-          </tr>`).join("") || `<tr><td colspan="7" class="muted">价格表是空的，在上面添加模型和售价</td></tr>`}</tbody>
-        </table></div>
+        <h2>价格表 <span class="muted" style="font-weight:400;font-size:13px">（用户用余额生成时，每张按售价扣费；留空 = 不开放这个规格）</span></h2>
+        <div class="pt-tools">
+          <span class="muted">成本已按 1 美元 = ${fx} 元换算</span>
+          <label class="muted" for="pt-markup">倍率</label>
+          <input id="pt-markup" type="number" step="0.1" min="1" value="${markup}" style="width:80px">
+          <button class="ghost" type="button" id="pt-fill">按 成本 × 倍率 填入空白售价</button>
+          <button type="button" id="pt-save">保存价格表${draft.size ? `（${draft.size} 处修改）` : ""}</button>
+        </div>
+        ${priceTables()}
         ${msg(flash.prices)}
       </section>
 
@@ -274,19 +321,14 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
         await Promise.all([loadUsers(document.getElementById("user-q").value.trim()), loadStats()]);
       } else if (form.dataset.channel) {
         const data = Object.fromEntries(new FormData(form).entries());
-        const body = { id: form.dataset.channel, baseUrl: data.baseUrl || "", alertThreshold: data.alertThreshold };
+        const body = { id: form.dataset.channel, alertThreshold: data.alertThreshold };
         if (data.apiKey) body.apiKey = data.apiKey;
+        if (data.apiKey2) body.apiKey2 = data.apiKey2;
         await api("/admin/channels", body);
         flash.channels = { text: "已保存" };
         await loadChannels();
         checkBalances();
-      } else if (form.id === "price-form") {
-        const data = Object.fromEntries(new FormData(form).entries());
-        if (editingPrice) data.id = editingPrice.id;
-        await api("/admin/prices", data);
-        flash.prices = { text: editingPrice ? "已修改" : "已添加" };
-        editingPrice = null;
-        await loadPrices();
+
       } else if (form.id === "codes-form") {
         const data = Object.fromEntries(new FormData(form).entries());
         lastBatch = await api("/admin/codes", data);
@@ -296,10 +338,22 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
     } catch (err) {
       if (form.id === "codes-form") flash.codes = { err: true, text: err.message };
       else if (form.dataset.channel) flash.channels = { err: true, text: err.message };
-      else if (form.id === "price-form") flash.prices = { err: true, text: err.message };
       else flash.users = { err: true, text: err.message };
     }
     render();
+  });
+
+  app.addEventListener("input", (e) => {
+    const input = e.target.closest("[data-price-key]");
+    if (!input) return;
+    const key = input.dataset.priceKey;
+    const r = catalog.find((x) => priceKey(x) === key);
+    const saved = r && savedPrice(r);
+    if ((saved ? String(saved.price) : "") === input.value.trim()) draft.delete(key);
+    else draft.set(key, input.value);
+    input.classList.toggle("is-dirty", draft.has(key));
+    const save = document.getElementById("pt-save");
+    if (save) save.textContent = "保存价格表" + (draft.size ? `（${draft.size} 处修改）` : "");
   });
 
   app.addEventListener("click", async (e) => {
@@ -307,8 +361,31 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
     if (!b) return;
     try {
       if (b.id === "check-balances") { checkBalances(); return; }
-      if (b.dataset.editPrice) { editingPrice = prices.find((r) => r.id === Number(b.dataset.editPrice)); render(); document.querySelector('#price-form [name="price"]')?.focus(); return; }
-      if (b.id === "cancel-price") { editingPrice = null; render(); return; }
+      if (b.id === "pt-fill") {
+        markup = Number(document.getElementById("pt-markup").value) || markup;
+        let n = 0;
+        for (const r of catalog) {
+          const key = priceKey(r);
+          if (r.cost == null || savedPrice(r) || (draft.get(key) ?? "") !== "") continue;
+          draft.set(key, String(Math.ceil(r.cost * markup * 100) / 100));
+          n++;
+        }
+        flash.prices = { text: n ? `已填入 ${n} 个售价（按量计费的规格没有成本，需要手动填），确认后点"保存价格表"` : "没有需要填的空白售价" };
+        render(); return;
+      }
+      if (b.id === "pt-save") {
+        if (!draft.size) { flash.prices = { text: "没有修改" }; render(); return; }
+        const items = [...draft.entries()].map(([key, price]) => {
+          const [channel, model, spec] = key.split("|");
+          const r = catalog.find((x) => priceKey(x) === key);
+          return { channel, model, spec, price: price.trim(), cost: r?.costText || "", note: r?.label || "" };
+        });
+        await api("/admin/prices/bulk", { items });
+        draft.clear();
+        await loadPrices();
+        flash.prices = { text: `已保存 ${items.length} 处修改` };
+        render(); return;
+      }
       if (b.dataset.delPrice) {
         const r = prices.find((x) => x.id === Number(b.dataset.delPrice));
         if (!confirm(`删除 ${r.model} ${r.spec} 的价格？`)) return;
@@ -337,7 +414,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
         a.click();
       }
     } catch (err) {
-      flash.users = { err: true, text: err.message };
+      if (b.id && b.id.startsWith("pt-") || b.dataset.delPrice) flash.prices = { err: true, text: err.message };
+      else flash.users = { err: true, text: err.message };
       render();
     }
   });

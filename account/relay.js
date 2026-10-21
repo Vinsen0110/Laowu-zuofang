@@ -48,24 +48,29 @@ export function describeRequest(target, payload) {
         || path.match(/\/openapi\/v2\/([^/]+)/)?.[1]
         || "",
     ).split("::").at(-1).trim();
-    const spec = String(
+    const resolution = String(
         p.resolution
         ?? p.imageSize
         ?? p.image_size
         ?? p.generationConfig?.imageConfig?.imageSize
         ?? "",
     ).trim().toLowerCase();
+    // GPT image quality (low/medium/high…) changes the upstream cost, so it is part of the spec.
+    const quality = typeof p.quality === "string" ? p.quality.trim().toLowerCase() : "";
+    const spec = [resolution, quality].filter(Boolean).join("/");
     const n = Math.trunc(Number(p.n ?? p.num_images ?? 1));
     const count = Number.isFinite(n) && n > 0 ? Math.min(n, MAX_COUNT) : 1;
     return { model, spec, count };
 }
 
+// Most specific price wins: "2k/high", then "2k", then the model's catch-all "".
 export async function findPrice(db, channel, model, spec) {
+    const resolution = spec.split("/")[0];
     const rows = await db.query(
         `SELECT price_milli, spec FROM lw_prices
-         WHERE channel = $1 AND model = $2 AND enabled AND (spec = $3 OR spec = '')
-         ORDER BY (spec = $3) DESC LIMIT 1`,
-        [channel, model, spec],
+         WHERE channel = $1 AND model = $2 AND enabled AND spec IN ($3, $4, '')
+         ORDER BY (spec = $3) DESC, (spec = $4) DESC LIMIT 1`,
+        [channel, model, spec, resolution],
     );
     return rows[0] ? Number(rows[0].price_milli) : null;
 }

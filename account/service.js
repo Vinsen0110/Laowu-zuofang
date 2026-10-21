@@ -167,6 +167,12 @@ export async function userFromSession(db, token) {
     );
     const user = rows[0];
     if (!user || user.disabled) return null;
+    // LW_ADMIN_EMAILS is the source of truth, so an existing account becomes
+    // admin as soon as its email is added there.
+    if (user.role !== "admin" && adminNames().includes(String(user.username).toLowerCase())) {
+        await db.query("UPDATE lw_users SET role = 'admin' WHERE id = $1", [user.id]);
+        user.role = "admin";
+    }
     return publicUser(user);
 }
 

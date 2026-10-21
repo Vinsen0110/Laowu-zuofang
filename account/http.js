@@ -1,7 +1,8 @@
 // HTTP routes for /api/account/*. Uses web-standard Request/Response so the
 // same code runs on Vercel and in the local preview server.
 
-import { channelBalances, deletePrice, listChannels, listPrices, saveChannel, savePrice } from "./channels.js";
+import { USD_TO_CNY, priceCatalog } from "./catalog.js";
+import { channelBalances, deletePrice, listChannels, listPrices, saveChannel, savePrice, savePrices } from "./channels.js";
 import { getDatabase } from "./db.js";
 import { relay } from "./relay.js";
 import { consumeCode, markVerified, requestCode, resetPassword } from "./verify.js";
@@ -190,6 +191,13 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
             }
             if (path === "/admin/prices" && method === "POST") {
                 return json(200, { price: await savePrice(db, await body(request)) });
+            }
+            if (path === "/admin/price-catalog" && method === "GET") {
+                return json(200, { fx: USD_TO_CNY, rows: priceCatalog(), prices: await listPrices(db) });
+            }
+            if (path === "/admin/prices/bulk" && method === "POST") {
+                const { items } = await body(request);
+                return json(200, { items: await savePrices(db, items) });
             }
             if (path === "/admin/prices/delete" && method === "POST") {
                 const { id } = await body(request);
