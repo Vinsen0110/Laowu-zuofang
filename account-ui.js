@@ -65,12 +65,15 @@
 @media(max-width:640px){.lw-acct-chip .lw-acct-sites{display:none}}
 .lw-acct{display:flex;flex-direction:column;align-items:flex-end}
 .lw-acct-admin-tag{font-size:12px;font-weight:700;letter-spacing:.04em}
-.lw-acct-chip.is-user{gap:6px;padding:0 14px 0 5px;border-color:transparent;background:linear-gradient(135deg,#1b604a,#2e9a6d);color:#fff;box-shadow:0 6px 18px rgb(34 121 90 / .32)}
-.lw-acct-chip.is-user:hover{border-color:transparent;box-shadow:0 8px 22px rgb(34 121 90 / .42)}
-.lw-acct-chip.is-user .lw-acct-avatar{background:rgb(255 255 255 / .22);box-shadow:inset 0 0 0 1px rgb(255 255 255 / .35)}
+.lw-acct-chip.is-user{gap:6px;padding:0 14px 0 5px;border-color:#a7f3d0;background:linear-gradient(135deg,#ecfdf5,#bbf7d0);color:#065f46;box-shadow:0 4px 14px rgb(16 185 129 / .18)}
+.lw-acct-chip.is-user:hover{border-color:#6ee7b7;box-shadow:0 6px 18px rgb(16 185 129 / .26)}
+.lw-acct-chip.is-user .lw-acct-avatar{background:linear-gradient(135deg,#34d399,#10b981);color:#fff}
 .lw-acct-chip.is-user .lw-acct-wallet{display:inline-grid;place-items:center;opacity:.85}
 .lw-acct-chip.is-user .lw-acct-bal{font-size:14px;font-weight:800;letter-spacing:.01em}
-.lw-acct-chip.is-user.is-low{background:linear-gradient(135deg,#b45309,#dc2626);box-shadow:0 6px 18px rgb(220 38 38 / .3)}
+.lw-acct-chip.is-user.is-low{border-color:#fecaca;background:linear-gradient(135deg,#fff7ed,#fee2e2);color:#b91c1c;box-shadow:0 4px 14px rgb(239 68 68 / .16)}
+.lw-acct-chip.is-user.is-low .lw-acct-avatar{background:linear-gradient(135deg,#fb923c,#ef4444)}
+.dark .lw-acct-chip.is-user{border-color:rgb(52 211 153 / .35);background:linear-gradient(135deg,rgb(6 78 59 / .55),rgb(4 120 87 / .45));color:#d1fae5}
+.dark .lw-acct-chip.is-user.is-low{border-color:rgb(248 113 113 / .35);background:linear-gradient(135deg,rgb(124 45 18 / .5),rgb(127 29 29 / .5));color:#fecaca}
 .lw-acct-chip.is-admin{padding:0 14px 0 5px;border-color:transparent;background:linear-gradient(135deg,#111827,#374151);color:#f9fafb;box-shadow:0 6px 18px rgb(15 23 42 / .28)}
 .lw-acct-chip.is-admin:hover{border-color:transparent}
 .lw-acct-chip.is-admin .lw-acct-avatar{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#111827}
