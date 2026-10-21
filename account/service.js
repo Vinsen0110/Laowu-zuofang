@@ -316,6 +316,29 @@ export async function deleteUser(db, userId) {
     await db.query("DELETE FROM lw_users WHERE id = $1", [userId]);
 }
 
+// Renumbers users 1, 2, 3… in sign-up order, all in one transaction. Every
+// table that points at a user follows through ON UPDATE CASCADE, so balances,
+// ledgers, sessions, redeemed codes and tasks stay attached. New sign-ups
+// continue after the highest number.
+export async function renumberUsers(db) {
+    await db.exec(`
+BEGIN;
+ALTER TABLE lw_sessions DROP CONSTRAINT IF EXISTS lw_sessions_user_id_fkey;
+ALTER TABLE lw_sessions ADD CONSTRAINT lw_sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES lw_users(id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE lw_ledger DROP CONSTRAINT IF EXISTS lw_ledger_user_id_fkey;
+ALTER TABLE lw_ledger ADD CONSTRAINT lw_ledger_user_id_fkey FOREIGN KEY (user_id) REFERENCES lw_users(id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE lw_codes DROP CONSTRAINT IF EXISTS lw_codes_used_by_fkey;
+ALTER TABLE lw_codes ADD CONSTRAINT lw_codes_used_by_fkey FOREIGN KEY (used_by) REFERENCES lw_users(id) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE lw_tasks DROP CONSTRAINT IF EXISTS lw_tasks_user_id_fkey;
+ALTER TABLE lw_tasks ADD CONSTRAINT lw_tasks_user_id_fkey FOREIGN KEY (user_id) REFERENCES lw_users(id) ON DELETE CASCADE ON UPDATE CASCADE;
+UPDATE lw_users SET id = -id;
+UPDATE lw_users u SET id = m.rn FROM (SELECT id, row_number() OVER (ORDER BY id DESC) AS rn FROM lw_users) m WHERE u.id = m.id;
+SELECT setval(pg_get_serial_sequence('lw_users', 'id'), GREATEST((SELECT COALESCE(max(id), 0) FROM lw_users), 1), (SELECT count(*) > 0 FROM lw_users));
+COMMIT;`);
+    const [row] = await db.query("SELECT count(*)::int AS n FROM lw_users");
+    return { users: Number(row.n) };
+}
+
 // Users pick the name shown in the canvas and in the admin page.
 export async function setDisplayName(db, userId, raw) {
     const name = String(raw ?? "").replace(/[\u0000-\u001f<>]/g, "").trim().slice(0, 20);

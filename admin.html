@@ -275,7 +275,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
       </section>
 
       <section class="card">
-        <h2>用户</h2>
+        <div class="row" style="justify-content:space-between;margin-bottom:12px"><h2 style="margin:0">用户</h2>
+          <button class="ghost small" type="button" id="renumber-users" title="按注册先后把用户编号改成 1、2、3…，余额和记录都会跟着走">重新编号用户 ID</button></div>
         <form class="row" id="search-form" style="margin-bottom:12px">
           <label for="user-q" class="muted">搜索</label>
           <input id="user-q" placeholder="邮箱或昵称" value="${esc(q)}">
@@ -438,6 +439,12 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
         if (to && !confirm("停用后该用户会被立即退出且无法登录，确认？")) return;
         await api("/admin/disable", { userId: Number(b.dataset.disable), disabled: to });
         await loadUsers(document.getElementById("user-q").value.trim());
+        render();
+      } else if (b.id === "renumber-users") {
+        if (!confirm("把所有用户按注册先后重新编号成 1、2、3…？\n余额、余额记录、兑换码使用记录、登录状态都会跟着新编号，用户不会被退出。")) return;
+        const r = await api("/admin/renumber-users", {});
+        flash.users = { text: `已重新编号 ${r.users} 个用户` };
+        await Promise.all([loadUsers(document.getElementById("user-q").value.trim()), loadStats()]);
         render();
       } else if (b.dataset.zero) {
         const u = users.find((x) => x.id === Number(b.dataset.zero));

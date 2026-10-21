@@ -8,7 +8,7 @@ export const TASK_SCHEMA = `
 CREATE TABLE IF NOT EXISTS lw_tasks (
     channel      TEXT NOT NULL,
     task_id      TEXT NOT NULL,
-    user_id      BIGINT NOT NULL REFERENCES lw_users(id) ON DELETE CASCADE,
+    user_id      BIGINT NOT NULL REFERENCES lw_users(id) ON DELETE CASCADE ON UPDATE CASCADE,
     ref          TEXT NOT NULL,
     amount_milli BIGINT NOT NULL,
     note         TEXT NOT NULL DEFAULT '',
