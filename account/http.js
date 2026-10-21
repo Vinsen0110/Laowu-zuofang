@@ -133,6 +133,11 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
             return await relay(db, me, request);
         }
 
+        if (path === "/prices" && method === "GET") {
+            // Selling prices only (no costs), for the canvas to show before generating.
+            const items = (await listPrices(db)).filter((p) => p.enabled).map(({ channel, model, spec, price }) => ({ channel, model, spec, price }));
+            return json(200, { items });
+        }
         if (path === "/ledger" && method === "GET") {
             return json(200, { items: await ledger(db, me.id, url.searchParams.get("limit")) });
         }

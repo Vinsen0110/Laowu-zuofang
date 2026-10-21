@@ -92,6 +92,7 @@
     if (!row || typeof row !== "object") return null;
     return {
       site: String(row.site || row.providerName || row.provider || "").trim() || "当前站点",
+      providerId: String(row.providerId || ""),
       model: String(row.modelLabel || row.model || "").trim() || "当前模型",
       quality: String(row.qualityLabel || row.quality || row.resolution || "单张").trim(),
       price: row.price ?? row.amount ?? null,
@@ -167,14 +168,18 @@
     try { config = getConfig(); } catch (_) { return []; }
     const channels = Array.isArray(config?.channels) ? config.channels : [];
     const rows = [];
-    const names = { runninghub: "RH", apimart: "Mart", soon: "Soon", tudou: "Tudou", grsai: "Grsai" };
-    const order = ["runninghub", "apimart", "tudou", "grsai", "soon"];
+    // Admins see provider names and upstream costs; users see numbered channels and selling prices.
+    const isAdmin = globalThis.__lwIsAdmin === true;
+    const names = isAdmin
+      ? { runninghub: "RH", apimart: "Mart", soon: "Soon", tudou: "Tudou", grsai: "Grsai" }
+      : { tudou: "渠道 1", apimart: "渠道 2", grsai: "渠道 3", runninghub: "渠道 4", soon: "渠道 5" };
+    const order = ["tudou", "apimart", "grsai", "runninghub", "soon"];
     const resolutions = ["1k", "2k", "4k"];
     channels.slice().sort((a, b) => order.indexOf(a.provider) - order.indexOf(b.provider)).forEach((channel) => {
       const provider = channel.provider;
       if (!names[provider]) return;
       const site = names[provider];
-      const currency = ["runninghub", "apimart"].includes(provider) ? "USD" : "CNY";
+      const currency = isAdmin && ["runninghub", "apimart"].includes(provider) ? "USD" : "CNY";
       const models = Array.isArray(channel.models) ? channel.models : [];
       const add = (model, modelLabel, patch = {}, references = false, note = "", thinkingOptions = null) => {
         const basePatch = thinkingOptions?.length ? { ...patch, gptImageQuality: "medium" } : patch;
@@ -194,7 +199,7 @@
         }
         const prices = Object.values(priceByQuality);
         const same = prices.every((value) => value === prices[0]);
-        rows.push({ site, model: modelLabel, quality: same ? "1K / 2K / 4K" : "每张", currency,
+        rows.push({ site, providerId: provider, model: modelLabel, quality: same ? "1K / 2K / 4K" : "每张", currency,
           price: same ? prices[0] : null, priceByQuality: same ? undefined : priceByQuality,
           thinkingOptions: thinkingOptions || undefined, thinkingPrices: thinkingOptions?.length ? thinkingPrices : undefined,
           note: prices.every((value) => value == null) ? "按实际用量计费" : note,
@@ -212,11 +217,13 @@
         if (model === "nano-banana-pro") return add(model, "Nano Banana Pro");
         if (model === "gpt-image-2.5" && provider === "runninghub") {
           add(model, "GPT Image 2.5 · 固定", { runningHubGpt25Mode: "fixed", gptImageQuality: "medium" });
+          if (!isAdmin) return;
           return add(model, "GPT Image 2.5 · 官方", { runningHubGpt25Mode: "official", gptImageQuality: "medium" });
         }
         if (["gpt-image-2", "gpt-image-2.5"].includes(model) && provider === "apimart") {
           const label = model === "gpt-image-2.5" ? "GPT Image 2.5" : "GPT Image 2";
           add(model, `${label} · 固定`, { gptImageQuality: "fixed" });
+          if (!isAdmin) return;
           return add(model, `${label} · 官方`, { gptImageQuality: "medium" });
         }
         if (model === "gpt-image-2.5" && provider === "tudou") {
@@ -286,11 +293,14 @@
       if (event.key === "Enter") apply.click();
     });
     fx.append(input, apply);
-    heading.appendChild(fx);
+    const isAdmin = globalThis.__lwIsAdmin === true;
+    if (isAdmin) heading.appendChild(fx);
     panel.appendChild(heading);
     const rate = document.createElement("div");
     rate.className = "canvas-price-table-subtitle";
-    rate.textContent = `按画布当前扣费信息计算；人民币 = 美元 × 汇率（当前 1 USD = ¥${getFxRate()}），表内只显示人民币。`;
+    rate.textContent = isAdmin
+      ? `管理员看到的是上游成本；人民币 = 美元 × 汇率（当前 1 USD = ¥${getFxRate()}），表内只显示人民币。`
+      : "每张图生成时按下表价格从账户余额扣除，生成失败自动退回。";
     panel.appendChild(rate);
     if (!groups.size) {
       const empty = document.createElement("div");
@@ -302,12 +312,15 @@
     groups.forEach((siteRows, site) => {
       const group = document.createElement("div");
       group.className = "canvas-price-table-group";
-      group.classList.add(`provider-${site.toLowerCase()}`);
+      const providerClass = { runninghub: "rh", apimart: "mart", tudou: "tudou", grsai: "grsai", soon: "soon" };
+      group.classList.add(`provider-${providerClass[siteRows[0]?.providerId] || site.toLowerCase()}`);
       const groupHead = document.createElement("div");
       groupHead.className = "canvas-price-table-group-head";
       const siteName = document.createElement("span");
       const advantages = { RH: "快速稳定", Mart: "需要魔法", Tudou: "经济实惠", Grsai: "备选一", Soon: "备选二" };
-      siteName.textContent = advantages[site] ? `${site} · ${advantages[site]}` : site;
+      const notes = { tudou: "推荐 · 性价比高", apimart: "便宜", grsai: "备用", runninghub: "最稳定 · 价格较高", soon: "备用" };
+      const note = isAdmin ? advantages[site] : notes[siteRows[0]?.providerId];
+      siteName.textContent = note ? `${site} · ${note}` : site;
       const count = document.createElement("span");
       count.className = "canvas-price-table-count";
       count.textContent = `${siteRows.length} 个模型`;
