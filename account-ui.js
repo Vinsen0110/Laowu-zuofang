@@ -161,6 +161,17 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
     if (!admin && has) options.splice(options.findIndex((o) => o.value === "official"), 1);
   }
 
+  async function refreshSiteBalance(id) {
+    try {
+      const [fresh] = (await api(`/admin/channel-balances?id=${encodeURIComponent(id)}`)).items || [];
+      if (!fresh) return;
+      siteBalances = (siteBalances || []).some((b) => b.id === id)
+        ? siteBalances.map((b) => (b.id === id ? fresh : b))
+        : [...(siteBalances || []), fresh];
+      render();
+    } catch (_) { /* keep last value */ }
+  }
+
   async function loadSiteBalances() {
     if (user?.role !== "admin") return;
     try { siteBalances = (await api("/admin/channel-balances")).items || []; } catch (_) { /* keep last */ }
@@ -205,17 +216,35 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
     }
     if (user?.role === "admin") {
       api("/admin/cloudinary").then((c) => { globalThis.__lwCloudinary = c; }).catch(() => {});
-      loadSiteBalances();
-      siteBalanceTimer = setInterval(loadSiteBalances, 5 * 60 * 1000);
+      loadSiteBalances(); // once on sign-in; afterwards only the site just used is refreshed
     }
     listeners.forEach((fn) => { try { fn(user); } catch (_) { /* ignore */ } });
     render();
   }
 
+  // After a generation: users refresh their own balance; the admin refreshes
+  // only the site that was just used.
+  const SITE_BY_HOST = [
+    [/(^|\.)ai-tudou\.net$/, "tudou"], [/(^|\.)apimart\.ai$/, "apimart"], [/(^|\.)grsaiapi\.com$/, "grsai"],
+    [/(^|\.)runninghub\.ai$/, "runninghub"], [/(^|\.)soonstudio\.ai$/, "soon"],
+  ];
+  const pendingSites = new Set();
   let balanceRefreshTimer = null;
-  window.addEventListener("lw-balance-changed", () => {
+  window.addEventListener("lw-balance-changed", (event) => {
+    if (!user) return;
+    if (user.role === "admin") {
+      let host = "";
+      try { host = new URL(event.detail?.url || "", location.href).hostname; } catch (_) { /* ignore */ }
+      const site = SITE_BY_HOST.find(([re]) => re.test(host))?.[1];
+      if (site) pendingSites.add(site);
+    }
     clearTimeout(balanceRefreshTimer);
-    balanceRefreshTimer = setTimeout(() => { if (user && user.role !== "admin") refresh(); }, 600);
+    balanceRefreshTimer = setTimeout(() => {
+      if (user?.role !== "admin") { refresh(); return; }
+      const sites = [...pendingSites];
+      pendingSites.clear();
+      sites.forEach(refreshSiteBalance);
+    }, 1500);
   });
 
   async function refresh() {
@@ -532,7 +561,7 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
     const el = event.target.closest("[data-act]");
     if (!el) return;
     const act = el.dataset.act;
-    if (act === "toggle") { setOpen(!open); if (open) loadSiteBalances(); }
+    if (act === "toggle") setOpen(!open);
     else if (act === "entry-redeem") {
       entryRedeemOpen = !entryRedeemOpen;
       message = null;

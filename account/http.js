@@ -196,7 +196,8 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
                 return json(200, { channel: await saveChannel(db, await body(request)) });
             }
             if (path === "/admin/channel-balances" && method === "GET") {
-                return json(200, await channelBalances(db));
+                const id = url.searchParams.get("id");
+                return json(200, await channelBalances(db, id ? { ids: [id] } : {}));
             }
             if (path === "/admin/prices" && method === "GET") {
                 return json(200, { items: await listPrices(db) });

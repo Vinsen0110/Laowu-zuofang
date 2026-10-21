@@ -20,6 +20,9 @@ export const CHANNELS = [
 
 const CHANNEL_IDS = new Set(CHANNELS.map((c) => c.id));
 
+// What users see in the canvas for each site (see display-order.js).
+export const CHANNEL_LABELS = { tudou: "渠道 1", apimart: "渠道 2", grsai: "渠道 3", runninghub: "渠道 4", soon: "渠道 5" };
+
 export const CHANNEL_SCHEMA = `
 CREATE TABLE IF NOT EXISTS lw_channels (
     id              TEXT PRIMARY KEY,
@@ -96,6 +99,7 @@ export async function listChannels(db) {
             keyPreview: maskKey(c.apiKey),
             keySource: c.keySource,
             extraKey: def.extraKey || "",
+            channelLabel: CHANNEL_LABELS[def.id] || "",
             topupUrl: def.topupUrl || "",
             hasKey2: Boolean(c.apiKey2),
             key2Preview: maskKey(c.apiKey2),
@@ -188,9 +192,11 @@ async function queryBalance(id, cfg, fetchImpl, signal) {
     throw new Error("这个渠道暂不支持自动查询余额");
 }
 
-export async function channelBalances(db, { fetchImpl = fetch, timeoutMs = 12000 } = {}) {
+// Queries upstream balances; pass `ids` to refresh only those channels.
+export async function channelBalances(db, { fetchImpl = fetch, timeoutMs = 12000, ids = null } = {}) {
     const rows = await channelRows(db);
-    const results = await Promise.all(CHANNELS.map(async (def) => {
+    const wanted = ids ? CHANNELS.filter((c) => ids.includes(c.id)) : CHANNELS;
+    const results = await Promise.all(wanted.map(async (def) => {
         const row = rows.get(def.id);
         const cfg = resolve(def, row);
         const base = { id: def.id, name: def.name, unit: def.unit, topupUrl: def.topupUrl || "", alertThreshold: cfg.alertThreshold, enabled: cfg.enabled };
