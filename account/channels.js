@@ -11,11 +11,11 @@ import { AccountError, milliToYuan, yuanToMilli } from "./service.js";
 const TUDOU_ORIGIN = "https://api.ai-tudou.net";
 
 export const CHANNELS = [
-    { id: "tudou", name: "土豆", unit: "$", models: ["nano-banana-2.1", "nano-banana-pro", "gpt-image-2.5", "gemini-3.8-flash"] },
-    { id: "apimart", name: "APIMart", unit: "$", models: [...APIMART_IMAGE_MODELS, ...APIMART_TEXT_MODELS] },
-    { id: "grsai", name: "Grsai", unit: "$", models: [...GRSAI_IMAGE_MODELS], extraKey: "账户 Token（查账户总余额用，可选）" },
-    { id: "runninghub", name: "RunningHub", unit: "$", models: [...RUNNINGHUB_IMAGE_MODELS, ...RUNNINGHUB_TEXT_MODELS] },
-    { id: "soon", name: "Soon", unit: "$", models: [...SOON_IMAGE_MODELS] },
+    { id: "tudou", name: "土豆", unit: "$", topupUrl: "https://api.ai-tudou.net/wallet", models: ["nano-banana-2.1", "nano-banana-pro", "gpt-image-2.5", "gemini-3.8-flash"] },
+    { id: "apimart", name: "APIMart", unit: "$", topupUrl: "https://apimart.ai/zh/billing", models: [...APIMART_IMAGE_MODELS, ...APIMART_TEXT_MODELS] },
+    { id: "grsai", name: "Grsai", unit: "$", topupUrl: "https://grsai.com/zh/dashboard/billing", models: [...GRSAI_IMAGE_MODELS], extraKey: "账户 Token（查账户总余额用，可选）" },
+    { id: "runninghub", name: "RunningHub", unit: "$", topupUrl: "https://www.runninghub.ai/vip-rights/4", models: [...RUNNINGHUB_IMAGE_MODELS, ...RUNNINGHUB_TEXT_MODELS] },
+    { id: "soon", name: "Soon", unit: "$", topupUrl: "https://soonstudio.ai/account?tab=transactions&entry=main", models: [...SOON_IMAGE_MODELS] },
 ];
 
 const CHANNEL_IDS = new Set(CHANNELS.map((c) => c.id));
@@ -91,6 +91,7 @@ export async function listChannels(db) {
             keyPreview: maskKey(c.apiKey),
             keySource: c.keySource,
             extraKey: def.extraKey || "",
+            topupUrl: def.topupUrl || "",
             hasKey2: Boolean(c.apiKey2),
             key2Preview: maskKey(c.apiKey2),
             baseUrl: c.baseUrl,

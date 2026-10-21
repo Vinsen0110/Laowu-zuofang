@@ -186,3 +186,16 @@ test("deleting a user: refuses admins and accounts with balance", async () => {
     assert.equal((await db.query("SELECT 1 FROM lw_users WHERE id = $1", [extra.id])).length, 0);
     assert.equal((await db.query("SELECT 1 FROM lw_ledger WHERE user_id = $1", [extra.id])).length, 0);
 });
+
+test("reads are limited to task polling; balance endpoints are blocked", async () => {
+    await assert.rejects(
+        relay(db, user, relayRequest("https://api.apimart.ai/v1/user/balance", { method: "GET" }), { fetchImpl: upstream(200) }),
+        /不能通过余额调用/,
+    );
+    await assert.rejects(
+        relay(db, user, relayRequest("https://api.ai-tudou.net/api/usage/token/", { method: "GET" }), { fetchImpl: upstream(200) }),
+        /不能通过余额调用/,
+    );
+    const ok = await relay(db, user, relayRequest("https://api.apimart.ai/v1/tasks/abc?language=zh", { method: "GET" }), { fetchImpl: upstream(200) });
+    assert.equal(ok.status, 200);
+});

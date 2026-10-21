@@ -53,7 +53,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 .ch.is-low{border-color:var(--danger);box-shadow:0 0 0 3px var(--danger-bg)}
 .ch-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .ch-name{font-weight:700}
+.ch-bal-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .ch-bal{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+.ch-topup{display:inline-flex;align-items:center;height:30px;padding:0 12px;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap}
+.ch-topup:hover{background:var(--soft)}
+.ch.is-low .ch-topup{border-color:var(--danger);background:var(--danger);color:#fff}
 .ch-sub{color:var(--muted);font-size:12px;min-height:16px}
 .ch form{display:flex;flex-direction:column;gap:6px;padding-top:8px;border-top:1px dashed var(--border)}
 .ch label{display:flex;flex-direction:column;gap:3px;color:var(--muted);font-size:12px}
@@ -218,7 +222,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
           const tag = !b ? "" : b.status === "ok" ? "ok" : b.status === "low" || b.status === "error" ? "off" : "";
           return `<div class="ch ${b?.status === "low" ? "is-low" : ""}">
             <div class="ch-head"><span class="ch-name">${esc(c.name)}</span>${status ? `<span class="tag ${tag}">${status}</span>` : ""}</div>
-            <div class="ch-bal">${b && b.balance !== undefined ? fmtBal(b.balance, c.unit) : c.lastBalance != null ? fmtBal(c.lastBalance, c.unit) : "--"}</div>
+            <div class="ch-bal-row"><div class="ch-bal">${b && b.balance !== undefined ? fmtBal(b.balance, c.unit) : c.lastBalance != null ? fmtBal(c.lastBalance, c.unit) : "--"}</div>
+              ${c.topupUrl ? `<a class="ch-topup" href="${esc(c.topupUrl)}" target="_blank" rel="noopener noreferrer">去充值 ↗</a>` : ""}</div>
             <div class="ch-sub">${esc(b?.detail || b?.message || (c.lastCheckedAt ? "上次 " + time(c.lastCheckedAt) : ""))}</div>
             <form data-channel="${c.id}">
               <label>API Key ${c.keySource === "env" ? "（由环境变量提供）" : ""}

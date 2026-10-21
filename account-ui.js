@@ -11,7 +11,6 @@
   let open = false;
   let busy = false;
   let ledgerItems = [];
-  let copiedKey = false;
   let message = null; // { type: "error" | "ok", text }
 
   const css = `
@@ -60,7 +59,6 @@
 .lw-acct-section-title{margin-bottom:6px;color:var(--a-muted);font-size:12px;font-weight:700}
 .lw-acct-howto{margin:0 0 14px;padding:10px 12px;border-radius:10px;background:var(--a-soft);font-size:12px;line-height:1.6;color:var(--a-muted)}
 .lw-acct-howto b{color:var(--a-text)}
-.lw-acct-howto code{padding:1px 6px;border:1px solid var(--a-border);border-radius:6px;background:var(--a-bg);color:var(--a-text);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;cursor:pointer}
 .lw-acct-ledger{max-height:180px;overflow:auto;border:1px solid var(--a-border);border-radius:10px}
 .lw-acct-ledger-row{display:flex;justify-content:space-between;gap:10px;padding:8px 10px;border-top:1px solid var(--a-border);font-size:12px}
 .lw-acct-ledger-row:first-child{border-top:0}
@@ -265,11 +263,7 @@
         </div>
         ${msgView()}
       </form>
-      <div class="lw-acct-howto">
-        <b>用余额生成：</b>在设置里给要用的平台加一个 Key，值填
-        <code data-act="copy-key" title="点击复制">lw-balance</code>${copiedKey ? " 已复制" : ""}，
-        生成时就会按价格表从余额扣费，失败自动退回。用自己的 Key 不受影响。
-      </div>
+      <div class="lw-acct-howto">生成时按价格表从余额扣费，失败自动退回。</div>
       <div class="lw-acct-section">
         <div class="lw-acct-section-title">最近记录</div>
         <div class="lw-acct-ledger">${rows}</div>
@@ -456,10 +450,7 @@
       if (entryRedeemOpen) entry?.querySelector('input[name="code"]')?.focus();
     }
     else if (act === "send-code") sendCode(el);
-    else if (act === "copy-key") {
-      try { await navigator.clipboard.writeText("lw-balance"); copiedKey = true; } catch (_) { copiedKey = false; }
-      render();
-    }
+
     else if (act === "mode-login" || act === "mode-register" || act === "mode-reset") {
       if (mode !== act.slice(5)) { cooldownUntil = 0; codeSentTo = ""; }
       mode = act.slice(5);

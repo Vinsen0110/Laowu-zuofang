@@ -101,6 +101,11 @@ export async function relay(db, user, request, { fetchImpl = fetch } = {}) {
     const method = request.method.toUpperCase();
     if (!["GET", "HEAD", "POST"].includes(method)) throw new AccountError(405, "bad_method", "不支持的请求方式");
 
+    // Reads are only for task polling and results; account/balance endpoints stay private.
+    if (method !== "POST" && !FREE_PATH.test(target.pathname)) {
+        throw new AccountError(403, "forbidden_path", "这个接口不能通过余额调用");
+    }
+
     const config = await channelConfig(db, channel);
     if (!config.enabled || !config.apiKey) {
         throw new AccountError(503, "channel_off", "这个平台暂时不能用余额生成，请联系管理员");
