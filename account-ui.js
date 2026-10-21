@@ -53,6 +53,10 @@
 .lw-acct-role{color:var(--a-muted);font-size:12px}
 .lw-acct-balance{padding:14px;margin-bottom:12px;border-radius:12px;background:var(--a-soft)}
 .lw-acct-balance-label{color:var(--a-muted);font-size:12px;font-weight:600}
+.lw-acct-balance-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.lw-acct-buy{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:999px;background:linear-gradient(135deg,#ecfdf5,#bbf7d0);border:1px solid #a7f3d0;color:#065f46;font-size:12px;font-weight:700;text-decoration:none}
+.lw-acct-buy:hover{border-color:#6ee7b7}
+.lw-entry-acct .lw-entry-mini.lw-entry-buy{display:inline-grid;place-items:center;text-decoration:none;background:linear-gradient(135deg,#ecfdf5,#bbf7d0);border-color:#a7f3d0;color:#065f46;font-weight:700}
 .lw-acct-balance-value{margin-top:2px;font-size:28px;font-weight:800;font-variant-numeric:tabular-nums}
 .lw-acct-row{display:flex;gap:8px}
 .lw-acct-row .lw-acct-input{flex:1;min-width:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;text-transform:uppercase}
@@ -131,6 +135,8 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
 
   // Balances are shown in a neutral unit (not ¥ or $). The canvas uses the same unit.
   const UNIT = "฿";
+  // Where users buy redeem codes.
+  const BUY_URL = "https://catfk.com/shop/AV0594PI";
   globalThis.__lwUnit = UNIT;
 
   function money(n) {
@@ -394,7 +400,7 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
         <span><div class="lw-acct-name">${esc(user.displayName || user.email)}</div><div class="lw-acct-role">${esc(user.email)}</div></span>
       </div>
       <div class="lw-acct-balance">
-        <div class="lw-acct-balance-label">账户余额</div>
+        <div class="lw-acct-balance-top"><span class="lw-acct-balance-label">账户余额</span>${user.role === "admin" ? "" : `<a class="lw-acct-buy" href="${BUY_URL}" target="_blank" rel="noopener noreferrer">购买兑换码 ↗</a>`}</div>
         <div class="lw-acct-balance-value">${esc(money(user.balance))}</div>
       </div>
       <form class="lw-acct-form" data-form="redeem">
@@ -465,6 +471,7 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
           ? `<span class="lw-entry-user-bal lw-acct-sites">${siteBalancesInline()}</span>`
           : `<span class="lw-entry-user-bal">余额 <b>${esc(money(user.balance))}</b></span>`}
         <span class="lw-entry-spacer"></span>
+        ${user.role === "admin" ? "" : `<a class="lw-entry-mini lw-entry-buy" href="${BUY_URL}" target="_blank" rel="noopener noreferrer">购买</a>`}
         <button type="button" class="lw-entry-mini" data-act="entry-redeem" aria-expanded="${entryRedeemOpen}">充值</button>
         ${user.role === "admin" ? `<a class="lw-entry-mini" style="display:inline-grid;place-items:center;text-decoration:none" href="/admin.html" target="_blank" rel="noopener">管理后台</a>` : ""}
         <button type="button" class="lw-entry-mini" data-act="logout">退出</button>
