@@ -695,7 +695,8 @@
         .api-hosting-page details > summary { pointer-events: none; }
         .canvas-site-menu-label { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; }
         .canvas-site-menu-note { font-size: 11px; font-weight: 500; opacity: .6; }
-        body:has(.canvas-image-viewer) .lw-acct { display: none !important; }
+        body:has(.canvas-image-viewer) .lw-acct,
+        body:has(.ant-modal-wrap:not([style*="display: none"]) .laowu-config-modal) .lw-acct { display: none !important; }
         .canvas-refund-hint { margin-top: -4px; color: var(--lw-stone-500); font-size: 11px; line-height: 1.5; }
         .api-hosting-tip { margin: 4px 0 12px; color: var(--lw-stone-500); font-size: 13px; line-height: 1.6; }
         .api-hosting-tip a { color: var(--lw-indigo-700); }
