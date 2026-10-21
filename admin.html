@@ -271,6 +271,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
               <td class="row" style="flex-wrap:nowrap">
                 <button class="ghost small" type="button" data-ledger="${u.id}" data-name="${esc(u.username)}">记录</button>
                 ${u.id === me.id ? "" : `<button class="${u.disabled ? "ghost" : "danger"} small" type="button" data-disable="${u.id}" data-to="${!u.disabled}">${u.disabled ? "启用" : "停用"}</button>`}
+                ${u.id === me.id || u.role === "admin" ? "" : `<button class="danger small" type="button" data-delete-user="${u.id}">删除</button>`}
               </td>
             </tr>`).join("") || `<tr><td colspan="8" class="muted">没有用户</td></tr>`}</tbody>
         </table></div>
@@ -402,6 +403,13 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
         if (to && !confirm("停用后该用户会被立即退出且无法登录，确认？")) return;
         await api("/admin/disable", { userId: Number(b.dataset.disable), disabled: to });
         await loadUsers(document.getElementById("user-q").value.trim());
+        render();
+      } else if (b.dataset.deleteUser) {
+        const u = users.find((x) => x.id === Number(b.dataset.deleteUser));
+        if (!confirm(`永久删除 ${u.username}？该账号的登录和余额记录会一起删除，无法恢复。`)) return;
+        await api("/admin/delete-user", { userId: u.id });
+        flash.users = { text: `已删除 ${u.username}` };
+        await Promise.all([loadUsers(document.getElementById("user-q").value.trim()), loadStats()]);
         render();
       } else if (b.id === "copy-codes") {
         await navigator.clipboard.writeText(lastBatch.codes.join("\n"));

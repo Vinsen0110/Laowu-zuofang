@@ -175,3 +175,14 @@ test("Grsai keeps an optional second key and uses it for the account balance", a
     assert.match(call.url, /getCredits$/);
     assert.match(call.body, /account-token/);
 });
+
+test("deleting a user: refuses admins and accounts with balance", async () => {
+    const { deleteUser } = await import("../account/service.js");
+    const extra = await register(db, { email: "gone@test.com", password: "password123" });
+    await adjustBalance(db, extra.id, 100, { kind: "admin", note: "t" });
+    await assert.rejects(deleteUser(db, extra.id), /还有余额/);
+    await adjustBalance(db, extra.id, -100, { kind: "admin", note: "t" });
+    await deleteUser(db, extra.id);
+    assert.equal((await db.query("SELECT 1 FROM lw_users WHERE id = $1", [extra.id])).length, 0);
+    assert.equal((await db.query("SELECT 1 FROM lw_ledger WHERE user_id = $1", [extra.id])).length, 0);
+});
