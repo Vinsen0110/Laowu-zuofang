@@ -301,7 +301,7 @@
     const rate = document.createElement("div");
     rate.className = "canvas-price-table-subtitle";
     rate.textContent = isAdmin
-      ? `管理员看到的是上游成本；人民币 = 美元 × 汇率（当前 1 USD = ¥${getFxRate()}），表内只显示人民币。`
+      ? `管理员看到的是原价（上游成本）；人民币 = 美元 × 汇率（当前 1 USD = ¥${getFxRate()}）。客户价在管理后台设置。`
       : "每张图生成时按下表价格从账户余额扣除。生成失败一般会自动退回，没有退回的请联系管理员。";
     panel.appendChild(rate);
     if (!groups.size) {
