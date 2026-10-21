@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>老屋作坊 · 管理后台</title>
+<link rel="icon" type="image/png" href="./kitty.png">
+<style>
+:root{--bg:#f8fafc;--card:#fff;--text:#1f2937;--muted:#64748b;--border:#e2e8f0;--soft:#f1f5f9;--primary:#22795a;--primary-h:#1b604a;--danger:#b91c1c;--danger-bg:#fef2f2}
+@media (prefers-color-scheme:dark){:root{--bg:#11151c;--card:#1a1f29;--text:#f1f5f9;--muted:#94a3b8;--border:#2c3442;--soft:#222937;--primary:#26875f;--primary-h:#2e9a6d;--danger:#fca5a5;--danger-bg:#3b0d0d}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif}
+.wrap{max-width:1120px;margin:0 auto;padding:24px 16px 64px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
+h1{display:flex;align-items:center;gap:10px;margin:0;font-size:22px}
+h1 img{width:36px;height:36px}
+h2{margin:0 0 12px;font-size:16px}
+.muted{color:var(--muted)}
+.card{padding:18px;margin-bottom:16px;border:1px solid var(--border);border-radius:14px;background:var(--card)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.stat{padding:14px 16px;border:1px solid var(--border);border-radius:12px;background:var(--card)}
+.stat b{display:block;margin-top:2px;font-size:24px;font-variant-numeric:tabular-nums}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+input,select{height:36px;padding:0 10px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font:inherit}
+input:focus{outline:2px solid rgb(34 121 90 / .35);border-color:var(--primary)}
+button{height:36px;padding:0 14px;border:0;border-radius:8px;background:var(--primary);color:#fff;font-weight:600;font-size:13px;font-family:inherit;cursor:pointer}
+button:hover{background:var(--primary-h)}
+button.ghost{background:transparent;color:var(--text);border:1px solid var(--border)}
+button.ghost:hover{background:var(--soft)}
+button.danger{background:transparent;color:var(--danger);border:1px solid var(--border)}
+button.small{height:30px;padding:0 10px;font-size:12px}
+.table-box{overflow-x:auto;border:1px solid var(--border);border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:9px 12px;border-top:1px solid var(--border);text-align:left;white-space:nowrap}
+thead th{border-top:0;background:var(--soft);color:var(--muted);font-weight:600;font-size:12px}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.tag{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--soft);color:var(--muted);font-size:12px}
+.tag.ok{background:rgb(34 121 90 / .14);color:var(--primary)}
+.tag.off{background:var(--danger-bg);color:var(--danger)}
+.msg{margin-top:10px;padding:8px 12px;border-radius:8px;font-size:13px}
+.msg.err{background:var(--danger-bg);color:var(--danger)}
+.msg.ok{background:rgb(34 121 90 / .12);color:var(--primary)}
+textarea{width:100%;min-height:140px;margin-top:10px;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--soft);color:var(--text);font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace}
+.gate{max-width:420px;margin:12vh auto;text-align:center}
+.gate a{color:var(--primary)}
+dialog{width:min(560px,calc(100vw - 32px));padding:20px;border:1px solid var(--border);border-radius:14px;background:var(--card);color:var(--text)}
+dialog::backdrop{background:rgb(15 23 42 / .45)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.alert{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;margin-bottom:16px;border-radius:12px;background:var(--danger-bg);color:var(--danger);font-weight:600}
+.channels{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.ch{display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--card)}
+.ch.is-low{border-color:var(--danger);box-shadow:0 0 0 3px var(--danger-bg)}
+.ch-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ch-name{font-weight:700}
+.ch-bal{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+.ch-sub{color:var(--muted);font-size:12px;min-height:16px}
+.ch form{display:flex;flex-direction:column;gap:6px;padding-top:8px;border-top:1px dashed var(--border)}
+.ch label{display:flex;flex-direction:column;gap:3px;color:var(--muted);font-size:12px}
+.ch input{width:100%}
+.ch .row label input{flex:none;width:100%}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><p class="muted">加载中…</p></div>
+
+<dialog id="ledger-dialog">
+  <div class="row" style="justify-content:space-between;margin-bottom:12px"><h2 id="ledger-title" style="margin:0">余额记录</h2><button class="ghost small" type="button" onclick="this.closest('dialog').close()">关闭</button></div>
+  <div class="table-box"><table><thead><tr><th>时间</th><th>说明</th><th class="num">变动</th><th class="num">余额</th></tr></thead><tbody id="ledger-body"></tbody></table></div>
+</dialog>
+
+<script>
+(function () {
+  "use strict";
+  const app = document.getElementById("app");
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const money = (n) => "¥" + (Math.round(Number(n) * 1000) % 10 ? Number(n).toFixed(3) : Number(n).toFixed(2));
+  const time = (t) => t ? new Date(t).toLocaleString("zh-CN", { hour12: false }) : "";
+  const KIND = { redeem: "兑换码", admin: "管理员调整", usage: "生成消费", refund: "失败退款" };
+
+  async function api(path, body, method) {
+    const res = await fetch("/api/account" + path, {
+      method: method || (body ? "POST" : "GET"),
+      credentials: "same-origin",
+      headers: body ? { "Content-Type": "application/json" } : undefined,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    let data = {};
+    try { data = await res.json(); } catch (_) {}
+    if (!res.ok) throw new Error(data?.error?.message || "请求失败（" + res.status + "）");
+    return data;
+  }
+
+  let me = null;
+  let users = [];
+  let codes = [];
+  let lastBatch = null;
+  let flash = { users: null, codes: null, channels: null, prices: null };
+  let channels = [];
+  let balances = null;
+  let balancesLoading = false;
+  let prices = [];
+  let editingPrice = null;
+
+  function msg(m) { return m ? `<div class="msg ${m.err ? "err" : "ok"}" role="${m.err ? "alert" : "status"}">${esc(m.text)}</div>` : ""; }
+
+  async function load() {
+    me = (await api("/me")).user;
+    if (!me || me.role !== "admin") {
+      app.innerHTML = `<div class="gate card"><h1 style="justify-content:center"><img src="./kitty.png" alt="">管理后台</h1>
+        <p class="muted">${me ? "当前账号没有管理员权限。" : "请先在老屋作坊首页登录管理员账号。"}</p>
+        <p><a href="/">返回老屋作坊</a></p></div>`;
+      return;
+    }
+    await Promise.all([loadStats(), loadUsers(), loadCodes(), loadChannels(), loadPrices()]);
+    render();
+    checkBalances();
+  }
+
+  let statsData = null;
+  async function loadStats() { statsData = await api("/admin/stats"); }
+  async function loadUsers(q) { users = (await api("/admin/users" + (q ? "?q=" + encodeURIComponent(q) : ""))).items; }
+  async function loadCodes() { codes = (await api("/admin/codes")).items; }
+  async function loadChannels() { channels = (await api("/admin/channels")).items; }
+  async function loadPrices() { prices = (await api("/admin/prices")).items; }
+  async function checkBalances() {
+    balancesLoading = true; render();
+    try { balances = await api("/admin/channel-balances"); flash.channels = null; }
+    catch (err) { flash.channels = { err: true, text: err.message }; }
+    balancesLoading = false; render();
+  }
+  const fmtBal = (b, unit) => b == null ? "--" : b < 0 ? "无限" : unit + Number(b).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  function render() {
+    const s = statsData || {};
+    const q = document.getElementById("user-q")?.value || "";
+    app.innerHTML = `
+      <header><h1><img src="./kitty.png" alt="">老屋作坊 · 管理后台</h1><span class="muted">${esc(me.username)} · <a href="/" style="color:inherit">返回首页</a></span></header>
+      <div class="stats">
+        <div class="stat"><span class="muted">用户数</span><b>${s.users ?? 0}</b></div>
+        <div class="stat"><span class="muted">累计充值</span><b>${money(s.totalTopup ?? 0)}</b></div>
+        <div class="stat"><span class="muted">累计消费</span><b>${money(s.totalUsage ?? 0)}</b></div>
+        <div class="stat"><span class="muted">用户余额合计</span><b>${money(s.totalBalance ?? 0)}</b></div>
+        <div class="stat"><span class="muted">未使用兑换码</span><b>${s.unusedCodes ?? 0}</b></div>
+      </div>
+
+      ${(() => {
+        const low = (balances?.items || []).filter((b) => b.status === "low");
+        return low.length ? `<div class="alert" role="alert">⚠ 该充值了：${low.map((b) => `${esc(b.name)}（剩 ${fmtBal(b.balance, b.unit)}，低于提醒线 ${b.unit}${b.alertThreshold}）`).join("；")}</div>` : "";
+      })()}
+
+      <section class="card">
+        <div class="row" style="justify-content:space-between;margin-bottom:12px">
+          <h2 style="margin:0">渠道余额</h2>
+          <span class="row"><span class="muted" style="font-size:12px">${balances ? "上次查询 " + esc(time(balances.checkedAt)) : ""}</span>
+          <button class="ghost small" type="button" id="check-balances" ${balancesLoading ? "disabled" : ""}>${balancesLoading ? "查询中…" : "刷新余额"}</button></span>
+        </div>
+        <div class="channels">${channels.map((c) => {
+          const b = (balances?.items || []).find((x) => x.id === c.id);
+          const status = !b ? (balancesLoading ? "查询中…" : "") : b.status === "ok" ? "正常" : b.status === "low" ? "该充值了" : b.status === "no_key" ? "未设置 Key" : "查询失败";
+          const tag = !b ? "" : b.status === "ok" ? "ok" : b.status === "low" || b.status === "error" ? "off" : "";
+          return `<div class="ch ${b?.status === "low" ? "is-low" : ""}">
+            <div class="ch-head"><span class="ch-name">${esc(c.name)}</span>${status ? `<span class="tag ${tag}">${status}</span>` : ""}</div>
+            <div class="ch-bal">${b && b.balance !== undefined ? fmtBal(b.balance, c.unit) : c.lastBalance != null ? fmtBal(c.lastBalance, c.unit) : "--"}</div>
+            <div class="ch-sub">${esc(b?.detail || b?.message || (c.lastCheckedAt ? "上次 " + time(c.lastCheckedAt) : ""))}</div>
+            <form data-channel="${c.id}">
+              <label>API Key ${c.keySource === "env" ? "（由环境变量提供）" : ""}
+                <input name="apiKey" type="password" autocomplete="off" placeholder="${c.hasKey ? "已设置 " + esc(c.keyPreview) + "，留空不修改" : "粘贴这个渠道的 API Key"}" ${c.keySource === "env" ? "disabled" : ""}></label>
+              <label>接口地址（可选，留空用默认）<input name="baseUrl" value="${esc(c.baseUrl)}" placeholder="https://…"></label>
+              <div class="row"><label style="flex:1">余额低于多少提醒（${c.unit}）<input name="alertThreshold" type="number" step="0.01" min="0" value="${c.alertThreshold}"></label>
+              <button class="small" type="submit" style="align-self:flex-end">保存</button></div>
+            </form>
+          </div>`;
+        }).join("")}</div>
+        ${msg(flash.channels)}
+      </section>
+
+      <section class="card">
+        <div class="row" style="justify-content:space-between;margin-bottom:12px"><h2 style="margin:0">价格表 <span class="muted" style="font-weight:400;font-size:13px">（用户每次生成按这里的售价扣余额）</span></h2></div>
+        <form class="row" id="price-form" style="margin-bottom:12px">
+          <select name="channel" aria-label="渠道" required>${channels.map((c) => `<option value="${c.id}" ${editingPrice?.channel === c.id ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select>
+          <input name="model" list="model-list" placeholder="模型，如 nano-banana-pro" aria-label="模型" required style="width:200px" value="${esc(editingPrice?.model || "")}">
+          <datalist id="model-list">${[...new Set(channels.flatMap((c) => c.models))].map((m) => `<option value="${esc(m)}">`).join("")}</datalist>
+          <input name="spec" placeholder="规格，如 2K / 高清（可选）" aria-label="规格" style="width:170px" value="${esc(editingPrice?.spec || "")}">
+          <input name="price" type="number" step="0.001" min="0" placeholder="售价 元/次" aria-label="售价（元每次）" required style="width:120px" value="${editingPrice ? editingPrice.price : ""}">
+          <input name="cost" placeholder="成本（备忘，可选）" aria-label="成本" style="width:140px" value="${esc(editingPrice?.cost || "")}">
+          <input name="note" placeholder="备注（可选）" aria-label="备注" style="width:140px" value="${esc(editingPrice?.note || "")}">
+          <button type="submit">${editingPrice ? "保存修改" : "添加"}</button>
+          ${editingPrice ? `<button class="ghost" type="button" id="cancel-price">取消</button>` : ""}
+        </form>
+        <div class="table-box"><table>
+          <thead><tr><th>渠道</th><th>模型</th><th>规格</th><th class="num">售价（元/次）</th><th>成本</th><th>备注</th><th></th></tr></thead>
+          <tbody>${prices.map((r) => `<tr>
+            <td>${esc(channels.find((c) => c.id === r.channel)?.name || r.channel)}</td><td>${esc(r.model)}</td><td>${esc(r.spec)}</td>
+            <td class="num">${money(r.price)}</td><td>${esc(r.cost)}</td><td>${esc(r.note)}</td>
+            <td class="row" style="flex-wrap:nowrap"><button class="ghost small" type="button" data-edit-price="${r.id}">修改</button><button class="danger small" type="button" data-del-price="${r.id}">删除</button></td>
+          </tr>`).join("") || `<tr><td colspan="7" class="muted">价格表是空的，在上面添加模型和售价</td></tr>`}</tbody>
+        </table></div>
+        ${msg(flash.prices)}
+      </section>
+
+      <section class="card">
+        <h2>用户</h2>
+        <form class="row" id="search-form" style="margin-bottom:12px">
+          <label for="user-q" class="muted">搜索</label>
+          <input id="user-q" placeholder="邮箱" value="${esc(q)}">
+          <button class="ghost" type="submit">搜索</button>
+        </form>
+        <div class="table-box"><table>
+          <thead><tr><th>ID</th><th>邮箱</th><th>状态</th><th class="num">余额</th><th class="num">已消费</th><th>注册时间</th><th>调整余额（元，负数为扣减）</th><th></th></tr></thead>
+          <tbody>${users.map((u) => `
+            <tr>
+              <td>${u.id}</td>
+              <td>${esc(u.username)} ${u.role === "admin" ? '<span class="tag ok">管理员</span>' : ""}</td>
+              <td>${u.disabled ? '<span class="tag off">已停用</span>' : '<span class="tag">正常</span>'}</td>
+              <td class="num">${money(u.balance)}</td>
+              <td class="num">${money(u.spent)}</td>
+              <td>${esc(time(u.createdAt))}</td>
+              <td><form class="row" data-adjust="${u.id}" style="flex-wrap:nowrap">
+                <input name="amount" type="number" step="0.01" placeholder="如 50 或 -10" aria-label="给 ${esc(u.username)} 调整的金额" style="width:120px">
+                <input name="note" placeholder="备注（可选）" aria-label="备注" style="width:120px">
+                <button class="small" type="submit">确定</button>
+              </form></td>
+              <td class="row" style="flex-wrap:nowrap">
+                <button class="ghost small" type="button" data-ledger="${u.id}" data-name="${esc(u.username)}">记录</button>
+                ${u.id === me.id ? "" : `<button class="${u.disabled ? "ghost" : "danger"} small" type="button" data-disable="${u.id}" data-to="${!u.disabled}">${u.disabled ? "启用" : "停用"}</button>`}
+              </td>
+            </tr>`).join("") || `<tr><td colspan="8" class="muted">没有用户</td></tr>`}</tbody>
+        </table></div>
+        ${msg(flash.users)}
+      </section>
+
+      <section class="card">
+        <h2>生成兑换码</h2>
+        <form class="row" id="codes-form">
+          <label class="muted" for="c-amount">面额（元）</label><input id="c-amount" name="amountYuan" type="number" step="0.01" min="0.01" required style="width:110px" placeholder="如 20">
+          <label class="muted" for="c-count">数量</label><input id="c-count" name="count" type="number" min="1" max="500" value="10" required style="width:90px">
+          <label class="muted" for="c-batch">批次备注</label><input id="c-batch" name="batch" placeholder="如 16688-10月" style="width:160px">
+          <button type="submit">生成</button>
+        </form>
+        ${lastBatch ? `<p class="muted" style="margin:12px 0 0">已生成 ${lastBatch.codes.length} 个 ${money(lastBatch.amount)} 兑换码（批次：${esc(lastBatch.batch)}），每行一个，可直接复制到卡密平台：</p>
+          <textarea readonly id="new-codes" aria-label="新生成的兑换码">${esc(lastBatch.codes.join("\n"))}</textarea>
+          <div class="row" style="margin-top:8px"><button class="ghost" type="button" id="copy-codes">复制全部</button><button class="ghost" type="button" id="dl-codes">下载 CSV</button></div>` : ""}
+        ${msg(flash.codes)}
+      </section>
+
+      <section class="card">
+        <h2>兑换码记录 <span class="muted" style="font-weight:400;font-size:13px">（最近 200 个）</span></h2>
+        <div class="table-box"><table>
+          <thead><tr><th>兑换码</th><th class="num">面额</th><th>批次</th><th>状态</th><th>使用者</th><th>生成时间</th></tr></thead>
+          <tbody>${codes.map((c) => `<tr>
+            <td><code>${esc(c.code)}</code></td><td class="num">${money(c.amount)}</td><td>${esc(c.batch)}</td>
+            <td>${c.usedAt ? '<span class="tag">已使用</span>' : '<span class="tag ok">未使用</span>'}</td>
+            <td>${esc(c.usedBy || "")}${c.usedAt ? ` <span class="muted">${esc(time(c.usedAt))}</span>` : ""}</td>
+            <td>${esc(time(c.createdAt))}</td></tr>`).join("") || `<tr><td colspan="6" class="muted">还没有兑换码</td></tr>`}</tbody>
+        </table></div>
+      </section>`;
+  }
+
+  app.addEventListener("submit", async (e) => {
+    const form = e.target;
+    e.preventDefault();
+    try {
+      if (form.id === "search-form") {
+        await loadUsers(form.querySelector("#user-q").value.trim());
+        flash.users = null;
+      } else if (form.dataset.adjust) {
+        const amount = form.amount.value.trim();
+        if (!amount || Number(amount) === 0) throw new Error("请输入金额");
+        const u = users.find((x) => x.id === Number(form.dataset.adjust));
+        if (!confirm(`确认给 ${u.username} ${Number(amount) > 0 ? "充值" : "扣减"} ${money(Math.abs(Number(amount)))}？`)) return;
+        const r = await api("/admin/balance", { userId: u.id, amountYuan: amount, note: form.note.value.trim() });
+        flash.users = { text: `${u.username} 当前余额 ${money(r.balance)}` };
+        await Promise.all([loadUsers(document.getElementById("user-q").value.trim()), loadStats()]);
+      } else if (form.dataset.channel) {
+        const data = Object.fromEntries(new FormData(form).entries());
+        const body = { id: form.dataset.channel, baseUrl: data.baseUrl || "", alertThreshold: data.alertThreshold };
+        if (data.apiKey) body.apiKey = data.apiKey;
+        await api("/admin/channels", body);
+        flash.channels = { text: "已保存" };
+        await loadChannels();
+        checkBalances();
+      } else if (form.id === "price-form") {
+        const data = Object.fromEntries(new FormData(form).entries());
+        if (editingPrice) data.id = editingPrice.id;
+        await api("/admin/prices", data);
+        flash.prices = { text: editingPrice ? "已修改" : "已添加" };
+        editingPrice = null;
+        await loadPrices();
+      } else if (form.id === "codes-form") {
+        const data = Object.fromEntries(new FormData(form).entries());
+        lastBatch = await api("/admin/codes", data);
+        flash.codes = { text: "生成成功" };
+        await Promise.all([loadCodes(), loadStats()]);
+      }
+    } catch (err) {
+      if (form.id === "codes-form") flash.codes = { err: true, text: err.message };
+      else if (form.dataset.channel) flash.channels = { err: true, text: err.message };
+      else if (form.id === "price-form") flash.prices = { err: true, text: err.message };
+      else flash.users = { err: true, text: err.message };
+    }
+    render();
+  });
+
+  app.addEventListener("click", async (e) => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    try {
+      if (b.id === "check-balances") { checkBalances(); return; }
+      if (b.dataset.editPrice) { editingPrice = prices.find((r) => r.id === Number(b.dataset.editPrice)); render(); document.querySelector('#price-form [name="price"]')?.focus(); return; }
+      if (b.id === "cancel-price") { editingPrice = null; render(); return; }
+      if (b.dataset.delPrice) {
+        const r = prices.find((x) => x.id === Number(b.dataset.delPrice));
+        if (!confirm(`删除 ${r.model} ${r.spec} 的价格？`)) return;
+        await api("/admin/prices/delete", { id: r.id });
+        await loadPrices(); render(); return;
+      }
+      if (b.dataset.ledger) {
+        const items = (await api("/admin/user-ledger?userId=" + b.dataset.ledger)).items;
+        document.getElementById("ledger-title").textContent = b.dataset.name + " 的余额记录";
+        document.getElementById("ledger-body").innerHTML = items.map((i) => `<tr><td>${esc(time(i.createdAt))}</td><td>${esc(i.note || KIND[i.kind] || i.kind)}</td><td class="num">${i.amount > 0 ? "+" : ""}${money(i.amount).replace("¥-", "-¥")}</td><td class="num">${money(i.balanceAfter)}</td></tr>`).join("") || `<tr><td colspan="4" class="muted">没有记录</td></tr>`;
+        document.getElementById("ledger-dialog").showModal();
+      } else if (b.dataset.disable) {
+        const to = b.dataset.to === "true";
+        if (to && !confirm("停用后该用户会被立即退出且无法登录，确认？")) return;
+        await api("/admin/disable", { userId: Number(b.dataset.disable), disabled: to });
+        await loadUsers(document.getElementById("user-q").value.trim());
+        render();
+      } else if (b.id === "copy-codes") {
+        await navigator.clipboard.writeText(lastBatch.codes.join("\n"));
+        b.textContent = "已复制";
+      } else if (b.id === "dl-codes") {
+        const csv = "兑换码,面额,批次\n" + lastBatch.codes.map((c) => `${c},${lastBatch.amount},${lastBatch.batch}`).join("\n");
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv" }));
+        a.download = `兑换码-${lastBatch.amount}元-${lastBatch.codes.length}个.csv`;
+        a.click();
+      }
+    } catch (err) {
+      flash.users = { err: true, text: err.message };
+      render();
+    }
+  });
+
+  load().catch((err) => { app.innerHTML = `<div class="gate card"><p class="msg err">${esc(err.message)}</p></div>`; });
+})();
+</script>
+</body>
+</html>
