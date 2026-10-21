@@ -299,6 +299,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
               </form></td>
               <td class="row" style="flex-wrap:nowrap">
                 <button class="ghost small" type="button" data-ledger="${u.id}" data-name="${esc(u.username)}">记录</button>
+                ${u.balance > 0 ? `<button class="ghost small" type="button" data-zero="${u.id}">余额清零</button>` : ""}
                 ${u.id === me.id ? "" : `<button class="${u.disabled ? "ghost" : "danger"} small" type="button" data-disable="${u.id}" data-to="${!u.disabled}">${u.disabled ? "启用" : "停用"}</button>`}
                 ${u.id === me.id || u.role === "admin" ? "" : `<button class="danger small" type="button" data-delete-user="${u.id}">删除</button>`}
               </td>
@@ -437,6 +438,13 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
         if (to && !confirm("停用后该用户会被立即退出且无法登录，确认？")) return;
         await api("/admin/disable", { userId: Number(b.dataset.disable), disabled: to });
         await loadUsers(document.getElementById("user-q").value.trim());
+        render();
+      } else if (b.dataset.zero) {
+        const u = users.find((x) => x.id === Number(b.dataset.zero));
+        if (!confirm(`把 ${u.username} 的余额 ${money(u.balance)} 清零？会记入余额记录。`)) return;
+        const r = await api("/admin/balance", { userId: u.id, amountYuan: -u.balance, note: "管理员清零" });
+        flash.users = { text: `${u.username} 余额已清零（当前 ${money(r.balance)}）` };
+        await Promise.all([loadUsers(document.getElementById("user-q").value.trim()), loadStats()]);
         render();
       } else if (b.dataset.deleteUser) {
         const u = users.find((x) => x.id === Number(b.dataset.deleteUser));

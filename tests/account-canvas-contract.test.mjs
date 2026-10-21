@@ -33,6 +33,7 @@ test("account chip: no focus refresh, no ledger for users, logout guard", () => 
 test("background tabs keep polling at full speed; badge stays out of the image viewer", () => {
     assert.match(html, /window\.__lwSetTimeout = function/);
     assert.match(bundle, /const o=\(globalThis\.__lwSetTimeout\|\|setTimeout\)\(n,e\)/);
-    assert.match(html, /body:has\(\.canvas-image-viewer\) \.lw-acct \{ display: none !important; \}/);
+    assert.match(html, /body:has\(\.canvas-image-viewer\) \.lw-acct,/);
+    assert.match(html, /body:has\(\.ant-modal-wrap:not\(\[style\*="display: none"\]\) \.laowu-config-modal\) \.lw-acct \{ display: none !important; \}/);
     assert.match(accountUi, /placeChipLater\(\);/);
 });
