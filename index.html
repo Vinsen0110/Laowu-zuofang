@@ -6,7 +6,7 @@
         <meta name="description" content="老屋作坊创作工具" />
         <link rel="icon" type="image/png" href="./kitty.png" />
         <link rel="preload" href="./assets/index-DT58oPsm.css" as="style" crossorigin>
-        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261021-channels-01" crossorigin>
+        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261021-defaults-01" crossorigin>
         <link rel="preload" href="./icons/gemini.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/openai.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/claude.svg" as="image" type="image/svg+xml" />
@@ -154,7 +154,7 @@
                                 }
                             }
                             return nativeFetch(relayUrl(rawUrl), relayInit).then(function (response) {
-                                if (method === "POST") window.dispatchEvent(new Event("lw-balance-changed"));
+                                if (method === "POST") window.dispatchEvent(new CustomEvent("lw-balance-changed", { detail: { url: String(rawUrl) } }));
                                 return response;
                             });
                         }
@@ -212,7 +212,8 @@
                     var state = this.__lwBalance;
                     if (state && state.relay) {
                         if (String(state.method).toUpperCase() === "POST") {
-                            this.addEventListener("loadend", function () { window.dispatchEvent(new Event("lw-balance-changed")); }, { once: true });
+                            var doneUrl = state.url;
+                            this.addEventListener("loadend", function () { window.dispatchEvent(new CustomEvent("lw-balance-changed", { detail: { url: doneUrl } })); }, { once: true });
                         }
                         // Re-open against the relay; that clears headers, so replay them.
                         nativeXhrOpen.call(this, state.method, relayUrl(state.url), true);
@@ -651,11 +652,11 @@
                 else document.addEventListener("DOMContentLoaded", observe, { once: true });
             })();
         </script>
-        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261021-channels-01"></script>
+        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261021-defaults-01"></script>
       <script type="module" src="./display-model-names.js?v=20261008-nano21-01"></script>
       <script type="module" src="./canvas-price-table.js?v=20261021-channels-01"></script>
       <script src="./prevent-canvas-drag-download.js?v=20260827-01"></script>
-      <script src="./account-ui.js?v=20261021-account-08"></script>
+      <script src="./account-ui.js?v=20261021-account-09"></script>
       <link rel="stylesheet" crossorigin href="./assets/index-DT58oPsm.css">
       <link rel="stylesheet" href="./theme.css?v=20261015-direct-01">
       <link rel="stylesheet" href="./startup-entry.css?v=20261015-theme-03">

@@ -230,3 +230,15 @@ test("admin Cloudinary is saved on the server and used when the canvas has none"
         globalThis.__lwCloudinary = null;
     }
 });
+
+test("balance refresh can target a single site", async () => {
+    const { channelBalances, listChannels } = await import("../account/channels.js");
+    const seen = [];
+    const result = await channelBalances(db, { ids: ["apimart"], fetchImpl: async (url) => {
+        seen.push(String(url));
+        return new Response(JSON.stringify({ data: { remain_balance: 3 } }), { headers: { "Content-Type": "application/json" } });
+    } });
+    assert.deepEqual(result.items.map((i) => i.id), ["apimart"]);
+    assert.ok(seen.every((u) => u.includes("apimart")));
+    assert.equal((await listChannels(db)).find((c) => c.id === "runninghub").channelLabel, "渠道 4");
+});

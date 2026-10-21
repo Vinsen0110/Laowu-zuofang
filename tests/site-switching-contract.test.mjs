@@ -91,10 +91,8 @@ test("the redundant disabled redo icon is hidden from the left toolbar", () => {
 });
 
 test("generation defaults identify the active site and use a readable select state", () => {
-    assert.match(
-        bundle,
-        /label:"\\u9ED8\\u8BA4\\u751F\\u56FE\\u6A21\\u578B\\uFF08"\+\(activeSiteChannel\(a\)\?\.name/,
-    );
+    // The default image model label no longer names the site.
+    assert.match(bundle, /label:"\\u9ED8\\u8BA4\\u751F\\u56FE\\u6A21\\u578B",/);
     assert.match(bundle, /className:"generation-settings-sections"/);
     assert.match(bundle, /children:"生图模型设置"/);
     assert.match(bundle, /children:"文本模型设置"/);
@@ -120,4 +118,9 @@ test("generation defaults identify the active site and use a readable select sta
         indexHtml,
         /\.dark \.settings-model-select\[data-state="open"\] \.canvas-model-picker-text[^}]*color: var\(--lw-stone-100\) !important;[^}]*-webkit-text-fill-color: var\(--lw-stone-100\) !important;/s,
     );
+});
+
+test("new users start on 渠道 1 (Tudou) for images and 渠道 2 (Mart) for text", () => {
+    assert.match(bundle, /an=\{channelMode:"local",activeSiteId:TUDOU_SITE_ID,textSiteId:APIMART_SITE_ID,baseUrl:TUDOU_BASE_URL,/);
+    assert.match(bundle, /imageModel:\`\$\{TUDOU_SITE_ID\}::nano-banana-pro\`/);
 });
