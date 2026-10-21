@@ -11,6 +11,8 @@
   let open = false;
   let busy = false;
   let ledgerItems = [];
+  let siteBalances = null; // admin only: upstream balances of the site's keys
+  let siteBalanceTimer = null;
   let message = null; // { type: "error" | "ok", text }
 
   const css = `
@@ -57,6 +59,12 @@
 .lw-acct-row .lw-acct-btn{padding:0 14px}
 .lw-acct-section{margin-top:14px}
 .lw-acct-section-title{margin-bottom:6px;color:var(--a-muted);font-size:12px;font-weight:700}
+.lw-acct-sites{display:inline-flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:12px;font-weight:500;color:var(--a-muted)}
+.lw-acct-site b{color:var(--a-text);font-variant-numeric:tabular-nums}
+.lw-acct-site.is-low b{color:var(--a-err)}
+@media(max-width:640px){.lw-acct-chip .lw-acct-sites{display:none}}
+.lw-entry-user{flex-wrap:wrap}
+.lw-entry-user .lw-acct-sites{order:10;flex-basis:100%;padding-left:34px}
 .lw-acct-howto{margin:0 0 14px;padding:10px 12px;border-radius:10px;background:var(--a-soft);font-size:12px;line-height:1.6;color:var(--a-muted)}
 .lw-acct-howto b{color:var(--a-text)}
 .lw-acct-ledger{max-height:180px;overflow:auto;border:1px solid var(--a-border);border-radius:10px}
@@ -125,9 +133,52 @@
     return data;
   }
 
+  const SITE_SHORT = { tudou: "土豆", apimart: "Mart", grsai: "Grsai", runninghub: "RH", soon: "Soon" };
+
+  // GPT Image 2.5 "official" mode is admin-only. The app bundle reads this flag
+  // and the shared option list; the server refuses official requests from users.
+  function applyRole(tries = 0) {
+    const admin = user?.role === "admin";
+    globalThis.__lwGptOfficial = admin;
+    const options = globalThis.__lwGptModeOptions;
+    if (!options) {
+      if (tries < 40) setTimeout(() => applyRole(tries + 1), 250);
+      return;
+    }
+    const has = options.some((o) => o.value === "official");
+    if (admin && !has) options.push({ value: "official", label: "官方" });
+    if (!admin && has) options.splice(options.findIndex((o) => o.value === "official"), 1);
+  }
+
+  async function loadSiteBalances() {
+    if (user?.role !== "admin") return;
+    try { siteBalances = (await api("/admin/channel-balances")).items || []; } catch (_) { /* keep last */ }
+    render();
+  }
+
+  function siteBalanceText(b) {
+    if (b.balance === undefined || b.balance === null) return "--";
+    if (b.balance < 0) return "无限";
+    return `${b.unit || "$"}${Number(b.balance).toFixed(2)}`;
+  }
+
+  function siteBalancesInline() {
+    if (!siteBalances) return `<span class="lw-acct-sites-loading">站点余额…</span>`;
+    return siteBalances.map((b) => `<span class="lw-acct-site ${b.status === "low" ? "is-low" : ""}" title="${esc(b.message || b.detail || "")}">${esc(SITE_SHORT[b.id] || b.name)} <b>${esc(siteBalanceText(b))}</b></span>`).join("");
+  }
+
   function setUser(next) {
     user = next;
     loaded = true;
+    applyRole();
+    clearInterval(siteBalanceTimer);
+    siteBalances = null;
+    globalThis.__lwCloudinary = null;
+    if (user?.role === "admin") {
+      api("/admin/cloudinary").then((c) => { globalThis.__lwCloudinary = c; }).catch(() => {});
+      loadSiteBalances();
+      siteBalanceTimer = setInterval(loadSiteBalances, 5 * 60 * 1000);
+    }
     listeners.forEach((fn) => { try { fn(user); } catch (_) { /* ignore */ } });
     render();
   }
@@ -281,7 +332,9 @@
     const chip = user
       ? `<button type="button" class="lw-acct-chip" data-act="toggle" aria-expanded="${open}" aria-label="账户：${esc(user.email)}，余额 ${esc(money(user.balance))}">
            <span class="lw-acct-avatar" aria-hidden="true">${esc((user.displayName || user.email).slice(0, 1).toUpperCase())}</span>
-           <span class="lw-acct-bal ${user.balance < 1 ? "is-low" : ""}">${esc(money(user.balance))}</span>
+           ${user.role === "admin"
+             ? `<span class="lw-acct-sites">${siteBalancesInline()}</span>`
+             : `<span class="lw-acct-bal ${user.balance < 1 ? "is-low" : ""}">${esc(money(user.balance))}</span>`}
          </button>`
       : `<button type="button" class="lw-acct-chip is-guest" data-act="toggle" aria-expanded="${open}">${loaded ? `<span class="lw-acct-label-text">登录 / 注册</span><span aria-hidden="true" class="lw-acct-label-short">账户</span>` : "…"}</button>`;
     paint(host, `${chip}<div class="lw-acct-panel" role="dialog" aria-label="账户">${user ? userView() : guestView()}</div>`);
@@ -317,7 +370,9 @@
     return `<div class="lw-entry-user">
         <span class="lw-acct-avatar" aria-hidden="true">${esc((user.displayName || user.email).slice(0, 1).toUpperCase())}</span>
         <span class="lw-entry-user-name" title="${esc(user.email)}">${esc(user.email)}</span>
-        <span class="lw-entry-user-bal">余额 <b>${esc(money(user.balance))}</b></span>
+        ${user.role === "admin"
+          ? `<span class="lw-entry-user-bal lw-acct-sites">${siteBalancesInline()}</span>`
+          : `<span class="lw-entry-user-bal">余额 <b>${esc(money(user.balance))}</b></span>`}
         <span class="lw-entry-spacer"></span>
         <button type="button" class="lw-entry-mini" data-act="entry-redeem" aria-expanded="${entryRedeemOpen}">充值</button>
         ${user.role === "admin" ? `<a class="lw-entry-mini" style="display:inline-grid;place-items:center;text-decoration:none" href="/admin.html" target="_blank" rel="noopener">管理后台</a>` : ""}
@@ -442,7 +497,7 @@
     const el = event.target.closest("[data-act]");
     if (!el) return;
     const act = el.dataset.act;
-    if (act === "toggle") setOpen(!open);
+    if (act === "toggle") { setOpen(!open); if (open) loadSiteBalances(); }
     else if (act === "entry-redeem") {
       entryRedeemOpen = !entryRedeemOpen;
       message = null;

@@ -7,7 +7,7 @@ import { APIMART_ORIGIN, apiMartImagePrice, apiMartImageRequestSpec } from "../a
 import { GRSAI_ORIGIN, grsaiImagePrice, grsaiImageRequestSpec } from "../grsai-api.js";
 import { RUNNINGHUB_ORIGIN, runningHubImagePrice, runningHubImageRequestSpec } from "../runninghub-api.js";
 import { SOON_ORIGIN, soonImagePrice, soonImageRequestSpec } from "../soon-api.js";
-import { describeRequest } from "./relay.js";
+import { ADMIN_ONLY_MODELS, describeRequest } from "./relay.js";
 
 export const USD_TO_CNY = 6.7;
 const RES = ["1k", "2k", "4k"];
@@ -59,7 +59,7 @@ function tudouRows() {
 function apimartRows() {
     const rows = [];
     const add = (label, patch) => RES.forEach((quality) => rows.push(fromBuilder("apimart", `${APIMART_ORIGIN}/v1`, apiMartImageRequestSpec, apiMartImagePrice, "USD", label,
-        { provider: "apimart", size: "1:1", quality, ...patch })));
+        { provider: "apimart", size: "1:1", quality, allowOfficial: true, ...patch })));
     add("Nano Banana 2.1", { model: "apimart::nano-banana-2.1" });
     add("Nano Banana Pro", { model: "apimart::nano-banana-pro" });
     add("GPT Image 2.5 · 固定", { model: "apimart::gpt-image-2.5", gptImageQuality: "fixed" });
@@ -72,7 +72,7 @@ function apimartRows() {
 function runningHubRows() {
     const rows = [];
     const add = (label, patch) => RES.forEach((quality) => rows.push(fromBuilder("runninghub", RUNNINGHUB_ORIGIN, runningHubImageRequestSpec, runningHubImagePrice, "USD", label,
-        { provider: "runninghub", size: "1:1", quality, ...patch })));
+        { provider: "runninghub", size: "1:1", quality, allowOfficial: true, ...patch })));
     add("Nano Banana Pro", { model: "rh::nano-banana-pro" });
     add("GPT Image 2.5 · 固定", { model: "rh::gpt-image-2.5", runningHubGpt25Mode: "fixed" });
     for (const q of GPT_QUALITIES) add(`GPT Image 2.5 · 官方 · ${q}`, { model: "rh::gpt-image-2.5", runningHubGpt25Mode: "official", gptImageQuality: q });
@@ -108,7 +108,9 @@ let cached = null;
 export function priceCatalog() {
     if (cached) return cached;
     const seen = new Set();
+    // Admin-only models (GPT 2.5 official) are free for the admin and closed to users, so they are not priced.
     cached = [...tudouRows(), ...apimartRows(), ...runningHubRows(), ...grsaiRows(), ...soonRows(), ...textRows()].filter((r) => {
+        if (ADMIN_ONLY_MODELS.has(r.model)) return false;
         const key = `${r.channel}|${r.model}|${r.spec}`;
         if (seen.has(key)) return false;
         seen.add(key);

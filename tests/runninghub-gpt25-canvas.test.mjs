@@ -18,6 +18,9 @@ import {
     apiMartImageRequestSpec,
 } from "../apimart-api.js";
 
+// These tests cover the admin view, where GPT Image 2.5 "official" mode is available.
+globalThis.__lwGptOfficial = true;
+
 const source = await readFile(new URL("../assets/index-B2KJ37fm.js", import.meta.url), "utf8");
 
 // Compile the shipped functions instead of recreating their rendering conditions.
@@ -95,6 +98,8 @@ const ${source.slice(nanoRatioStart, source.indexOf(",pg=", nanoRatioStart))};
 const ${source.slice(extraRatioStart, source.indexOf(";", extraRatioStart) + 1)}`,
     context,
 );
+// Admin view: account-ui adds the official option for admins.
+context.__lwGptModeOptions.push({ value: "official", label: "官方" });
 for (const name of [
     "ES", "$S", "pr", "Nxe", "siteModelRefs", "yx", "imageNodeConfig", "switchImageNodeSite", "vX", "gke", "nanoRatioPresets", "isNanoRatioModel", "runningHubUiParams", "RunningHub25Controls",
     "runningHub25RatioValue", "runningHub25RatioOptions", "runningHub25ModePatch",

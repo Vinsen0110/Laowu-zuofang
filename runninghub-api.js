@@ -98,6 +98,8 @@ export function runningHubGpt25Variant(config) {
 }
 
 export function runningHubGpt25Mode(config) {
+    // "official" is admin-only; account-ui sets the flag for admins.
+    if (!(config?.allowOfficial ?? globalThis.__lwGptOfficial === true)) return "fixed";
     const value = String(config?.runningHubGpt25Mode || "fixed").trim().toLowerCase();
     return RUNNINGHUB_GPT25_MODES.includes(value) ? value : "fixed";
 }

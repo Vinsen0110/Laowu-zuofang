@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import {
+    apiMartGptImageQuality,
     APIMART_BACKEND_MODEL,
     APIMART_IMAGE_MODELS,
     APIMART_NANO21_FIXED_BACKEND_MODEL,
@@ -28,6 +29,9 @@ import {
     uploadApiMartReferenceBlob,
     validateApiMartNano21ReferenceBytes,
 } from "../apimart-api.js";
+
+// These tests cover the admin view, where GPT Image 2.5 "official" mode is available.
+globalThis.__lwGptOfficial = true;
 
 const bundle = await readFile(new URL("../assets/index-B2KJ37fm.js", import.meta.url), "utf8");
 
@@ -402,7 +406,8 @@ test("APIMart settings share multi-key controls without a billing panel", () => 
 });
 
 test("APIMart GPT Image 2 exposes isolated fixed and official controls", () => {
-    assert.match(bundle, /APIMART_GPT_MODE_OPTIONS=\[\{value:"fixed",label:"固定"\},\{value:"official",label:"官方"\}\]/);
+    // Users only get "fixed"; account-ui adds "official" to this shared list for admins.
+    assert.match(bundle, /APIMART_GPT_MODE_OPTIONS=\(globalThis\.__lwGptModeOptions=\[\{value:"fixed",label:"固定"\}\]\)/);
     assert.match(bundle, /APIMART_GPT25_VARIANT_OPTIONS=\[\{value:"flare",label:"Flare"\},\{value:"sunburst",label:"Sunburst"\}\]/);
     assert.match(bundle, /APIMART_GPT_OFFICIAL_QUALITY_OPTIONS=\[\{value:"auto",label:"Auto"\},\.\.\.GPT_IMAGE_QUALITY_OPTIONS\]/);
     assert.match(bundle, /APIMART_GPT_OUTPUT_FORMAT_OPTIONS=\[\{value:"png",label:"PNG"\},\{value:"jpeg",label:"JPEG"\},\{value:"webp",label:"WebP"\}\]/);
@@ -423,7 +428,7 @@ test("APIMart GPT Image 2 exposes isolated fixed and official controls", () => {
     assert.match(bundle, /value:apiMartBackgroundValue,items:APIMART_GPT_BACKGROUND_OPTIONS/);
     assert.match(bundle, /disabled:!!g\.disabled,title:g\.title/);
     assert.match(bundle, /s\?null:n==null\?y\.jsx\("span"/);
-    const modeOptions = bundle.match(/APIMART_GPT_MODE_OPTIONS=(\[[^\]]+\])/)?.[1] || "";
+    const modeOptions = bundle.match(/APIMART_GPT_MODE_OPTIONS=\(globalThis\.__lwGptModeOptions=(\[[^\]]+\])/)?.[1] || "";
     assert.doesNotMatch(modeOptions, /value:"auto"/);
 });
 
@@ -440,4 +445,16 @@ test("APIMart official output settings survive generation, retry, and project re
         assert.match(body, /apimartGpt25Variant:t\??\.metadata\?\.apimartGpt25Variant\|\|e\.apimartGpt25Variant\|\|an\.apimartGpt25Variant/);
     }
     assert.match(bundle, /projectImageModelParams\(e\).*apimartOutputFormat:t\.apimartOutputFormat,apimartBackground:t\.apimartBackground/);
+});
+
+test("GPT Image 2.5 official mode is admin-only", () => {
+    const config = { provider: "apimart", model: "apimart::gpt-image-2.5", gptImageQuality: "high" };
+    assert.equal(apiMartGptImageQuality(config), "high");
+    globalThis.__lwGptOfficial = false;
+    try {
+        assert.equal(apiMartGptImageQuality(config), "fixed");
+        assert.equal(apiMartGptImageQuality({ ...config, allowOfficial: true }), "high");
+    } finally {
+        globalThis.__lwGptOfficial = true;
+    }
 });

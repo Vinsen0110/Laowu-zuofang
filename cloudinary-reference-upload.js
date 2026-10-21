@@ -110,11 +110,18 @@ export async function prepareCloudinaryReferenceBlob(original, options = {}) {
 }
 
 export function cloudinaryCredentials(config) {
-    const cloudName = String(config?.cloudinaryCloudName || "").trim();
-    const apiKey = String(config?.cloudinaryApiKey || "").trim();
-    const apiSecret = String(config?.cloudinaryApiSecret || "").trim();
+    // Users fill their own account in 设置 → 图床设置; the admin's comes from the admin page.
+    const own = config?.cloudinaryCloudName || config?.cloudinaryApiKey || config?.cloudinaryApiSecret;
+    const source = own ? config : {
+        cloudinaryCloudName: globalThis.__lwCloudinary?.cloudName,
+        cloudinaryApiKey: globalThis.__lwCloudinary?.apiKey,
+        cloudinaryApiSecret: globalThis.__lwCloudinary?.apiSecret,
+    };
+    const cloudName = String(source?.cloudinaryCloudName || "").trim();
+    const apiKey = String(source?.cloudinaryApiKey || "").trim();
+    const apiSecret = String(source?.cloudinaryApiSecret || "").trim();
     if (!cloudName || !apiKey || !apiSecret) {
-        throw new Error("请先在 API 设置中填写你自己的 Cloudinary Cloud Name、API Key 和 API Secret");
+        throw new Error("带参考图生成需要图床：请先在 设置 → 图床设置 中填写你自己的 Cloudinary Cloud Name、API Key 和 API Secret");
     }
     if (!/^[a-zA-Z0-9_-]+$/.test(cloudName) || !/^\d+$/.test(apiKey)) {
         throw new Error("Cloudinary Cloud Name 或 API Key 格式不正确");

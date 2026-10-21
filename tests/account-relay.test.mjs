@@ -199,3 +199,34 @@ test("reads are limited to task polling; balance endpoints are blocked", async (
     const ok = await relay(db, user, relayRequest("https://api.apimart.ai/v1/tasks/abc?language=zh", { method: "GET" }), { fetchImpl: upstream(200) });
     assert.equal(ok.status, 200);
 });
+
+test("official GPT 2.5 is admin-only, and admin generations are free", async () => {
+    const seen = [];
+    await assert.rejects(
+        relay(db, { ...user, role: "user" }, relayRequest(GEN_URL, { body: { model: "gpt-image-2.5-flare", quality: "high" } }), { fetchImpl: upstream(200, seen) }),
+        /仅管理员可用/,
+    );
+    assert.equal(seen.length, 0);
+    const before = await balance();
+    const res = await relay(db, { ...user, role: "admin" }, relayRequest(GEN_URL, { body: { model: "gpt-image-2.5-flare", quality: "high" } }), { fetchImpl: upstream(200, seen) });
+    assert.equal(res.status, 200);
+    assert.equal(seen[0].auth, "Bearer sk-site-key");
+    assert.equal(await balance(), before);
+});
+
+test("admin Cloudinary is saved on the server and used when the canvas has none", async () => {
+    const { getCloudinary, saveCloudinary } = await import("../account/channels.js");
+    const { cloudinaryCredentials } = await import("../cloudinary-reference-upload.js");
+    await saveCloudinary(db, { cloudName: "site-cloud", apiKey: "12345", apiSecret: "s3cret" });
+    await saveCloudinary(db, { cloudName: "site-cloud", apiKey: "12345", apiSecret: "" }); // empty keeps the secret
+    assert.deepEqual(await getCloudinary(db), { cloudName: "site-cloud", apiKey: "12345", apiSecret: "s3cret" });
+    await assert.rejects(saveCloudinary(db, { apiKey: "abc" }), /纯数字/);
+    assert.throws(() => cloudinaryCredentials({}), /图床设置/);
+    globalThis.__lwCloudinary = await getCloudinary(db);
+    try {
+        assert.equal(cloudinaryCredentials({}).cloudName, "site-cloud");
+        assert.equal(cloudinaryCredentials({ cloudinaryCloudName: "mine", cloudinaryApiKey: "9", cloudinaryApiSecret: "x" }).cloudName, "mine");
+    } finally {
+        globalThis.__lwCloudinary = null;
+    }
+});
