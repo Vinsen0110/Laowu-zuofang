@@ -5,6 +5,7 @@ import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { fetchApiMartResultImage } from "./apimart-result-image.js";
 import { inlineTudouGeminiReferences, isTudouGeminiImageTarget } from "./tudou-reference-images.js";
+import { handleAccountRequest } from "./account/http.js";
 
 const root = resolve(process.cwd());
 const host = process.env.HOST || "127.0.0.1";
@@ -253,6 +254,20 @@ async function proxyApiMartImage(response, requestUrl) {
     }
 }
 
+async function serveAccountApi(request, response, requestUrl) {
+    const method = request.method?.toUpperCase() || "GET";
+    const headers = new Headers();
+    for (const [name, value] of Object.entries(request.headers)) {
+        if (typeof value === "string") headers.set(name, value);
+    }
+    const body = method === "GET" || method === "HEAD" ? undefined : await readRequestBody(request, 64 * 1024);
+    const webResponse = await handleAccountRequest(new Request(requestUrl, { method, headers, body }));
+    const outHeaders = {};
+    webResponse.headers.forEach((value, name) => { outHeaders[name] = value; });
+    response.writeHead(webResponse.status, outHeaders);
+    response.end(Buffer.from(await webResponse.arrayBuffer()));
+}
+
 async function serveStatic(request, response, requestUrl) {
     let pathname;
     try {
@@ -292,7 +307,9 @@ async function serveStatic(request, response, requestUrl) {
 const server = createServer(async (request, response) => {
     const requestUrl = new URL(request.url || "/", `http://${request.headers.host || `${host}:${port}`}`);
     try {
-        if (requestUrl.pathname.startsWith("/api/tudou/")) {
+        if (requestUrl.pathname === "/api/account" || requestUrl.pathname.startsWith("/api/account/")) {
+            await serveAccountApi(request, response, requestUrl);
+        } else if (requestUrl.pathname.startsWith("/api/tudou/")) {
             await proxyTudouApi(request, response, requestUrl);
         } else if (requestUrl.pathname === "/api/tudou-image") {
             await proxyTudouImage(response, requestUrl);

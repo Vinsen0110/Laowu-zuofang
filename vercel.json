@@ -8,6 +8,10 @@
     "api/apimart-image.js": {
       "maxDuration": 60,
       "supportsCancellation": true
+    },
+    "api/account.js": {
+      "maxDuration": 300,
+      "supportsCancellation": true
     }
   },
   "headers": [
@@ -49,6 +53,10 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/api/account/:path*",
+      "destination": "/api/account"
+    },
     {
       "source": "/api/tudou/:path*",
       "destination": "/api/tudou-proxy"

@@ -120,9 +120,42 @@
                 var useLocalTudouProxy = Boolean(window.oldHouseDesktop) ||
                     location.hostname === "127.0.0.1" || location.hostname === "localhost";
                 var hostedProxyOrigin = location.hostname === "vinsen0110.github.io" ? "https://www.vinsen.top" : "";
+                // A provider API key of "lw-balance" means: pay with the signed-in
+                // account's balance. Those requests go through /api/account/relay,
+                // which uses the site's own key and charges per generation.
+                var balanceKey = "Bearer lw-balance";
+                var balanceHost = /^(?:api\.ai-tudou\.net|api\.apimart\.ai|grsaiapi\.com|(?:www|llm)\.runninghub\.ai|api(?:-[a-z]+)?\.soonstudio\.ai)$/;
+                var isBalanceTarget = function (rawUrl) {
+                    try {
+                        return balanceHost.test(new URL(rawUrl, location.href).hostname);
+                    } catch (error) {
+                        return false;
+                    }
+                };
+                var relayUrl = function (rawUrl) {
+                    return "/api/account/relay?url=" + encodeURIComponent(new URL(rawUrl, location.href).href);
+                };
                 var proxiedFetch = function (input, init) {
                     var method = String((init && init.method) || (input && input.method) || "GET").toUpperCase();
                     var rawUrl = typeof input === "string" || input instanceof URL ? String(input) : input && input.url;
+                    if (rawUrl && isBalanceTarget(rawUrl)) {
+                        var headers = new Headers((init && init.headers) || (input instanceof Request ? input.headers : undefined));
+                        if (String(headers.get("authorization") || "").trim() === balanceKey) {
+                            headers.delete("authorization");
+                            var relayInit = Object.assign({}, init, { headers: headers, credentials: "same-origin" });
+                            if (input instanceof Request) {
+                                relayInit.method = relayInit.method || input.method;
+                                relayInit.signal = relayInit.signal || input.signal;
+                                if (relayInit.body === undefined && method !== "GET" && method !== "HEAD") {
+                                    return input.clone().arrayBuffer().then(function (buffer) {
+                                        relayInit.body = buffer;
+                                        return nativeFetch(relayUrl(rawUrl), relayInit);
+                                    });
+                                }
+                            }
+                            return nativeFetch(relayUrl(rawUrl), relayInit);
+                        }
+                    }
                     if (useLocalTudouProxy && method === "GET" && rawUrl) {
                         try {
                             var target = new URL(rawUrl, location.href);
@@ -159,7 +192,30 @@
                 };
                 window.fetch = proxiedFetch;
                 var nativeXhrOpen = XMLHttpRequest.prototype.open;
+                var nativeXhrSetHeader = XMLHttpRequest.prototype.setRequestHeader;
+                var nativeXhrSend = XMLHttpRequest.prototype.send;
+                XMLHttpRequest.prototype.setRequestHeader = function (name, value) {
+                    var state = this.__lwBalance;
+                    if (state) {
+                        if (String(name).toLowerCase() === "authorization" && String(value).trim() === balanceKey) {
+                            state.relay = true;
+                            return;
+                        }
+                        state.headers.push([name, value]);
+                    }
+                    return nativeXhrSetHeader.apply(this, arguments);
+                };
+                XMLHttpRequest.prototype.send = function () {
+                    var state = this.__lwBalance;
+                    if (state && state.relay) {
+                        // Re-open against the relay; that clears headers, so replay them.
+                        nativeXhrOpen.call(this, state.method, relayUrl(state.url), true);
+                        for (var i = 0; i < state.headers.length; i++) nativeXhrSetHeader.apply(this, state.headers[i]);
+                    }
+                    return nativeXhrSend.apply(this, arguments);
+                };
                 XMLHttpRequest.prototype.open = function (method, url) {
+                    this.__lwBalance = isBalanceTarget(String(url)) ? { method: method, url: String(url), headers: [], relay: false } : null;
                     if (useLocalTudouProxy) {
                         try {
                             var target = new URL(String(url), location.href);
@@ -593,6 +649,7 @@
       <script type="module" src="./display-model-names.js?v=20261008-nano21-01"></script>
       <script type="module" src="./canvas-price-table.js?v=20261021-coalesce-01"></script>
       <script src="./prevent-canvas-drag-download.js?v=20260827-01"></script>
+      <script src="./account-ui.js?v=20261021-account-05"></script>
       <link rel="stylesheet" crossorigin href="./assets/index-DT58oPsm.css">
       <link rel="stylesheet" href="./theme.css?v=20261015-direct-01">
       <link rel="stylesheet" href="./startup-entry.css?v=20261015-theme-03">
