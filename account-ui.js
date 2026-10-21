@@ -69,13 +69,13 @@
 @media(max-width:640px){.lw-acct-chip .lw-acct-sites{display:none}}
 .lw-acct{display:flex;flex-direction:column;align-items:flex-end}
 .lw-acct-admin-tag{font-size:12px;font-weight:700;letter-spacing:.04em}
-.lw-acct-chip.is-user{gap:6px;padding:0 14px 0 5px;border-color:#a7f3d0;background:linear-gradient(135deg,#ecfdf5,#bbf7d0);color:#065f46;box-shadow:0 4px 14px rgb(16 185 129 / .18)}
-.lw-acct-chip.is-user:hover{border-color:#6ee7b7;box-shadow:0 6px 18px rgb(16 185 129 / .26)}
-.lw-acct-chip.is-user .lw-acct-avatar{background:linear-gradient(135deg,#34d399,#10b981);color:#fff}
+.lw-acct-chip.is-user{gap:6px;padding:0 14px 0 5px;border-color:#d1fae5;background:linear-gradient(135deg,#f7fefb,#e6fbf1);color:#047857;box-shadow:0 3px 10px rgb(16 185 129 / .10)}
+.lw-acct-chip.is-user:hover{border-color:#a7f3d0;box-shadow:0 4px 14px rgb(16 185 129 / .16)}
+.lw-acct-chip.is-user .lw-acct-avatar{background:linear-gradient(135deg,#6ee7b7,#34d399);color:#fff}
 .lw-acct-chip.is-user .lw-acct-wallet{display:inline-grid;place-items:center;opacity:.85}
 .lw-acct-chip.is-user .lw-acct-bal{font-size:14px;font-weight:800;letter-spacing:.01em}
-.lw-acct-chip.is-user.is-low{border-color:#fecaca;background:linear-gradient(135deg,#fff7ed,#fee2e2);color:#b91c1c;box-shadow:0 4px 14px rgb(239 68 68 / .16)}
-.lw-acct-chip.is-user.is-low .lw-acct-avatar{background:linear-gradient(135deg,#fb923c,#ef4444)}
+.lw-acct-chip.is-user.is-low{border-color:#fed7aa;background:linear-gradient(135deg,#fffaf5,#fff1e6);color:#c2410c;box-shadow:0 3px 10px rgb(249 115 22 / .10)}
+.lw-acct-chip.is-user.is-low .lw-acct-avatar{background:linear-gradient(135deg,#fdba74,#fb923c)}
 .dark .lw-acct-chip.is-user{border-color:rgb(52 211 153 / .35);background:linear-gradient(135deg,rgb(6 78 59 / .55),rgb(4 120 87 / .45));color:#d1fae5}
 .dark .lw-acct-chip.is-user.is-low{border-color:rgb(248 113 113 / .35);background:linear-gradient(135deg,rgb(124 45 18 / .5),rgb(127 29 29 / .5));color:#fecaca}
 .lw-acct-chip.is-admin{padding:0 14px 0 5px;border-color:transparent;background:linear-gradient(135deg,#111827,#374151);color:#f9fafb;box-shadow:0 6px 18px rgb(15 23 42 / .28)}
@@ -135,6 +135,7 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
 
   // Balances are shown in a neutral unit (not ¥ or $). The canvas uses the same unit.
   const UNIT = "฿";
+  const LOW_BALANCE = 10; // badge turns warm below this
   // Where users buy redeem codes.
   const BUY_URL = "https://catfk.com/shop/AV0594PI";
   globalThis.__lwUnit = UNIT;
@@ -427,7 +428,7 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
   function render() {
     if (!host) return;
     const chip = user
-      ? `<button type="button" class="lw-acct-chip ${user.role === "admin" ? "is-admin" : `is-user ${user.balance < 1 ? "is-low" : ""}`}" data-act="toggle" aria-expanded="${open}" aria-label="账户：${esc(user.email)}${user.role === "admin" ? "" : `，余额 ${esc(money(user.balance))}`}">
+      ? `<button type="button" class="lw-acct-chip ${user.role === "admin" ? "is-admin" : `is-user ${user.balance < LOW_BALANCE ? "is-low" : ""}`}" data-act="toggle" aria-expanded="${open}" aria-label="账户：${esc(user.email)}${user.role === "admin" ? "" : `，余额 ${esc(money(user.balance))}`}">
            <span class="lw-acct-avatar" aria-hidden="true">${esc((user.displayName || user.email).slice(0, 1).toUpperCase())}</span>
            ${user.role === "admin"
              ? `<span class="lw-acct-admin-tag">管理员</span>`
