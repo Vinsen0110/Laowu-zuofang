@@ -8,7 +8,10 @@
 import { randomBytes } from "node:crypto";
 
 import { channelConfig } from "./channels.js";
+import { describeRequest } from "./describe.js";
 import { AccountError, adjustBalance } from "./service.js";
+
+export { describeRequest };
 
 export const BALANCE_KEY = "lw-balance";
 
@@ -26,7 +29,6 @@ export const ADMIN_ONLY_MODELS = new Set(["gpt-image-2.5-flare", "gpt-image-2.5-
 
 // Polling, uploads and result queries are free; only generation is charged.
 const FREE_PATH = /\/upload|\/query$|\/result$|\/tasks(?:\/|$)/;
-const MAX_COUNT = 10;
 
 export function channelForUrl(raw) {
     let target;
@@ -39,31 +41,6 @@ export function channelForUrl(raw) {
     const hit = HOSTS.find(([re]) => re.test(target.hostname));
     if (!hit) throw new AccountError(400, "bad_target", "这个平台不支持余额生成");
     return { target, channel: hit[1] };
-}
-
-// What the request is for: model, spec (resolution) and how many images.
-export function describeRequest(target, payload) {
-    const p = payload && typeof payload === "object" ? payload : {};
-    const path = target.pathname;
-    const model = String(
-        p.model
-        || path.match(/\/models\/([^/:]+)/)?.[1]
-        || path.match(/\/openapi\/v2\/([^/]+)/)?.[1]
-        || "",
-    ).split("::").at(-1).trim();
-    const resolution = String(
-        p.resolution
-        ?? p.imageSize
-        ?? p.image_size
-        ?? p.generationConfig?.imageConfig?.imageSize
-        ?? "",
-    ).trim().toLowerCase();
-    // GPT image quality (low/medium/high…) changes the upstream cost, so it is part of the spec.
-    const quality = typeof p.quality === "string" ? p.quality.trim().toLowerCase() : "";
-    const spec = [resolution, quality].filter(Boolean).join("/");
-    const n = Math.trunc(Number(p.n ?? p.num_images ?? 1));
-    const count = Number.isFinite(n) && n > 0 ? Math.min(n, MAX_COUNT) : 1;
-    return { model, spec, count };
 }
 
 // Most specific price wins: "2k/high", then "2k", then the model's catch-all "".

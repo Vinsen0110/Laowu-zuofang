@@ -193,7 +193,7 @@ export async function channelBalances(db, { fetchImpl = fetch, timeoutMs = 12000
     const results = await Promise.all(CHANNELS.map(async (def) => {
         const row = rows.get(def.id);
         const cfg = resolve(def, row);
-        const base = { id: def.id, name: def.name, unit: def.unit, alertThreshold: cfg.alertThreshold, enabled: cfg.enabled };
+        const base = { id: def.id, name: def.name, unit: def.unit, topupUrl: def.topupUrl || "", alertThreshold: cfg.alertThreshold, enabled: cfg.enabled };
         if (!cfg.apiKey) return { ...base, status: "no_key", message: "还没有填写 API Key" };
         const t = withTimeout(timeoutMs);
         try {

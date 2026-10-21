@@ -63,6 +63,16 @@
 .lw-acct-site b{color:var(--a-text);font-variant-numeric:tabular-nums}
 .lw-acct-site.is-low b{color:var(--a-err)}
 @media(max-width:640px){.lw-acct-chip .lw-acct-sites{display:none}}
+.lw-acct-admin-tag{font-size:12px;font-weight:600;color:var(--a-muted)}
+.lw-acct-sitestack{display:flex;flex-direction:column;align-items:flex-end;gap:4px;margin-top:6px}
+.lw-acct-siterow{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:128px;height:26px;padding:0 10px;border:1px solid var(--a-border);border-radius:8px;background:var(--a-bg);color:var(--a-text);font-size:12px;text-decoration:none;box-shadow:0 2px 8px rgb(15 23 42 / .06)}
+a.lw-acct-siterow:hover{border-color:var(--a-primary)}
+.lw-acct-siterow-name{color:var(--a-muted)}
+.lw-acct-siterow b{font-variant-numeric:tabular-nums}
+.lw-acct-siterow.is-low{border-color:var(--a-err)}
+.lw-acct-siterow.is-low b,.lw-acct-siterow.is-error b{color:var(--a-err)}
+.lw-acct-siterow.is-loading{color:var(--a-muted)}
+.lw-acct.is-open .lw-acct-sitestack{visibility:hidden}
 .lw-entry-user{flex-wrap:wrap}
 .lw-entry-user .lw-acct-sites{order:10;flex-basis:100%;padding-left:34px}
 .lw-acct-howto{margin:0 0 14px;padding:10px 12px;border-radius:10px;background:var(--a-soft);font-size:12px;line-height:1.6;color:var(--a-muted)}
@@ -139,6 +149,7 @@
   // and the shared option list; the server refuses official requests from users.
   function applyRole(tries = 0) {
     const admin = user?.role === "admin";
+    globalThis.__lwIsAdmin = admin;
     globalThis.__lwGptOfficial = admin;
     const options = globalThis.__lwGptModeOptions;
     if (!options) {
@@ -167,6 +178,19 @@
     return siteBalances.map((b) => `<span class="lw-acct-site ${b.status === "low" ? "is-low" : ""}" title="${esc(b.message || b.detail || "")}">${esc(SITE_SHORT[b.id] || b.name)} <b>${esc(siteBalanceText(b))}</b></span>`).join("");
   }
 
+  // Admin canvas: one site per row under the avatar, right-aligned; each row opens that site's top-up page.
+  function siteBalanceStack() {
+    if (!siteBalances) return `<div class="lw-acct-sitestack"><span class="lw-acct-siterow is-loading">站点余额加载中…</span></div>`;
+    return `<div class="lw-acct-sitestack" aria-label="站点余额">${siteBalances.map((b) => {
+      const label = `<span class="lw-acct-siterow-name">${esc(SITE_SHORT[b.id] || b.name)}</span><b>${esc(siteBalanceText(b))}</b>`;
+      const cls = `lw-acct-siterow ${b.status === "low" ? "is-low" : ""} ${b.status === "error" ? "is-error" : ""}`;
+      const title = esc(b.message || b.detail || "");
+      return b.topupUrl
+        ? `<a class="${cls}" href="${esc(b.topupUrl)}" target="_blank" rel="noopener noreferrer" title="${title || "去充值"}">${label}</a>`
+        : `<span class="${cls}" title="${title}">${label}</span>`;
+    }).join("")}</div>`;
+  }
+
   function setUser(next) {
     user = next;
     loaded = true;
@@ -174,6 +198,11 @@
     clearInterval(siteBalanceTimer);
     siteBalances = null;
     globalThis.__lwCloudinary = null;
+    globalThis.__lwPrices = null;
+    if (user && user.role !== "admin") {
+      // Selling prices for the canvas price display (the relay charges the same table).
+      api("/prices").then((r) => { globalThis.__lwPrices = r.items || []; window.dispatchEvent(new Event("lw-prices-loaded")); }).catch(() => {});
+    }
     if (user?.role === "admin") {
       api("/admin/cloudinary").then((c) => { globalThis.__lwCloudinary = c; }).catch(() => {});
       loadSiteBalances();
@@ -182,6 +211,12 @@
     listeners.forEach((fn) => { try { fn(user); } catch (_) { /* ignore */ } });
     render();
   }
+
+  let balanceRefreshTimer = null;
+  window.addEventListener("lw-balance-changed", () => {
+    clearTimeout(balanceRefreshTimer);
+    balanceRefreshTimer = setTimeout(() => { if (user && user.role !== "admin") refresh(); }, 600);
+  });
 
   async function refresh() {
     try {
@@ -333,9 +368,9 @@
       ? `<button type="button" class="lw-acct-chip" data-act="toggle" aria-expanded="${open}" aria-label="账户：${esc(user.email)}，余额 ${esc(money(user.balance))}">
            <span class="lw-acct-avatar" aria-hidden="true">${esc((user.displayName || user.email).slice(0, 1).toUpperCase())}</span>
            ${user.role === "admin"
-             ? `<span class="lw-acct-sites">${siteBalancesInline()}</span>`
+             ? `<span class="lw-acct-admin-tag">管理员</span>`
              : `<span class="lw-acct-bal ${user.balance < 1 ? "is-low" : ""}">${esc(money(user.balance))}</span>`}
-         </button>`
+         </button>${user.role === "admin" ? siteBalanceStack() : ""}`
       : `<button type="button" class="lw-acct-chip is-guest" data-act="toggle" aria-expanded="${open}">${loaded ? `<span class="lw-acct-label-text">登录 / 注册</span><span aria-hidden="true" class="lw-acct-label-short">账户</span>` : "…"}</button>`;
     paint(host, `${chip}<div class="lw-acct-panel" role="dialog" aria-label="账户">${user ? userView() : guestView()}</div>`);
     host.classList.toggle("is-open", open);

@@ -33,6 +33,9 @@ const context = vm.createContext({
     isGrsaiSite,
     grsaiImagePrice,
     bd: (config, model) => config.channels.find(channel => channel.id === model.split("::")[0]),
+    // These tests check upstream costs, which is what the admin sees; users get lwSellPrice.
+    __lwIsAdmin: true,
+    lwSellPrice: () => 0.3,
 });
 for (const name of [
     "$S", "pr", "jMe", "isTudouNano21Model", "isTudouSite",
@@ -113,5 +116,14 @@ test("Nano Banana estimates remain isolated from other providers", () => {
         assert.equal(context.pke({ ...config, provider: "custom" }), quality === "4k" ? 0.55 : 0.4);
         assert.equal(context.pke({ ...config, provider: "runninghub" }), quality === "4k" ? 0.07 : 0.06);
         assert.equal(context.pke({ ...config, provider: "apimart" }), apiMartImagePrice(config));
+    }
+});
+
+test("signed-in users see the selling price times the batch count", () => {
+    context.__lwIsAdmin = false;
+    try {
+        assert.equal(context.pke({ provider: "tudou", model: "tudou::nano-banana-pro", quality: "1k", count: 3 }), 0.9);
+    } finally {
+        context.__lwIsAdmin = true;
     }
 });

@@ -21,8 +21,9 @@ test("site displays known providers first without mutating stored channels", () 
         { id: "soon", name: "Soon" },
     ];
 
-    assert.deepEqual(SITE_DISPLAY_ORDER, ["runninghub", "apimart", "tudou", "grsai", "soon"]);
-    assert.deepEqual(orderSiteChannels(channels).map(({ name }) => name), ["RH", "Mart", "Tudou", "Grsai", "Soon", "Custom"]);
+    // 渠道 1-5: Tudou, Mart, Grsai, RH, Soon
+    assert.deepEqual(SITE_DISPLAY_ORDER, ["tudou", "apimart", "grsai", "runninghub", "soon"]);
+    assert.deepEqual(orderSiteChannels(channels).map(({ name }) => name), ["Tudou", "Mart", "Grsai", "RH", "Soon", "Custom"]);
     assert.deepEqual(channels.map(({ name }) => name), ["Custom", "Tudou", "RH", "Grsai", "Mart", "Soon"]);
     assert.deepEqual(
         orderModelReferences([
@@ -35,11 +36,11 @@ test("site displays known providers first without mutating stored channels", () 
             "grsai::nano-banana-pro",
         ]),
         [
+            "tudou::gpt-image-2",
+            "apimart::nano-banana-pro",
+            "grsai::nano-banana-pro",
             "runninghub::gpt-image-2",
             "runninghub::nano-banana-pro",
-            "apimart::nano-banana-pro",
-            "tudou::gpt-image-2",
-            "grsai::nano-banana-pro",
             "soon::nano-banana-pro",
             "default::nano-banana-pro",
         ],
@@ -63,9 +64,9 @@ test("Mart 2.1 stays beside the existing Mart model without reordering other pro
         "grsai::nano-banana-pro",
     ];
     assert.deepEqual(orderModelReferences(references), [
+        "tudou::nano-banana-pro",
         "apimart::nano-banana-2.1",
         "apimart::nano-banana-pro",
-        "tudou::nano-banana-pro",
         "grsai::nano-banana-pro",
         "soon::nano-banana-pro",
     ]);
@@ -81,4 +82,15 @@ test("all site and ratio selectors use the shared display order", () => {
     assert.match(bundle, /options:orderRatioPresets\(isRunningHubGpt25\?runningHub25RatioOptions\(\{\.\.\.a,model:a\.imageModel\|\|a\.model\},\[\.\.\.J2e,\.\.\.GPT_IMAGE_EXTRA_RATIO_PRESETS\]\):isGptImageConfig\?/);
     assert.match(bundle, /ratioPresets=orderRatioPresets\(isRunningHub25\?runningHub25RatioOptions\(e,\[\.\.\.pg,\.\.\.GPT_IMAGE_EXTRA_RATIO_PRESETS\]\):isGptImageModel\?/);
     assert.match(bundle, /items:orderRatioPresets\(isRunningHub25\?runningHub25RatioOptions\(t,\[\.\.\.pX,\.\.\.GPT_IMAGE_EXTRA_RATIO_PRESETS\]\):v\?/);
+});
+
+test("users see numbered channels, admins see provider names", async () => {
+    const { siteDisplayName, siteDisplayNote } = await import("../display-order.js");
+    globalThis.__lwIsAdmin = false;
+    assert.equal(siteDisplayName({ id: "runninghub", name: "RH" }), "渠道 4");
+    assert.equal(siteDisplayName({ id: "tudou", name: "Tudou" }), "渠道 1");
+    assert.equal(siteDisplayNote({ id: "runninghub" }), "最稳定 · 价格较高");
+    globalThis.__lwIsAdmin = true;
+    assert.equal(siteDisplayName({ id: "runninghub", name: "RH" }), "RH");
+    delete globalThis.__lwIsAdmin;
 });
