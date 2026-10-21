@@ -302,7 +302,7 @@ test("actual bundle image uploader routes Tudou/GRSAI references to Cloudinary",
 });
 
 test("settings accept personal Cloudinary credentials instead of shared application access codes", () => {
-    const settings = between('className:"api-settings-page"', 'className:"api-site-tabs"');
+    const settings = between('className:"api-settings-section api-collapsible"', 'className:"generation-settings-sections"');
     for (const key of ["cloudinaryCloudName", "cloudinaryApiKey", "cloudinaryApiSecret"]) assert.ok(settings.includes(key));
     assert.match(settings, /secret\?_o.Password:_o/);
     assert.doesNotMatch(settings, /上传服务访问码|cloudinaryUploadToken|ImgBB|imgbbApiKey|referenceImageHost/);

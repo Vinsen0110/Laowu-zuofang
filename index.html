@@ -6,7 +6,7 @@
         <meta name="description" content="老屋作坊创作工具" />
         <link rel="icon" type="image/png" href="./kitty.png" />
         <link rel="preload" href="./assets/index-DT58oPsm.css" as="style" crossorigin>
-        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261020-save-fix-01" crossorigin>
+        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261021-settings-01" crossorigin>
         <link rel="preload" href="./icons/gemini.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/openai.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/claude.svg" as="image" type="image/svg+xml" />
@@ -589,7 +589,7 @@
                 else document.addEventListener("DOMContentLoaded", observe, { once: true });
             })();
         </script>
-        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261020-save-fix-01"></script>
+        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261021-settings-01"></script>
       <script type="module" src="./display-model-names.js?v=20261008-nano21-01"></script>
       <script type="module" src="./canvas-price-table.js?v=20261021-coalesce-01"></script>
       <script src="./prevent-canvas-drag-download.js?v=20260827-01"></script>
@@ -985,6 +985,103 @@
           max-width: 540px;
           grid-template-columns: minmax(0, 1fr);
           margin-bottom: 16px;
+        }
+        .api-site-tab {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 7px;
+        }
+        .api-site-dot {
+          width: 7px;
+          height: 7px;
+          flex: 0 0 auto;
+          border-radius: 50%;
+        }
+        .api-site-dot.is-set {
+          background: var(--lw-emerald-500);
+        }
+        .api-site-dot.is-empty {
+          box-shadow: inset 0 0 0 1.5px var(--lw-stone-300);
+        }
+        .api-site-current {
+          padding: 0 6px;
+          border-radius: 999px;
+          background: var(--lw-ui-blue-50);
+          color: var(--lw-ui-blue-700);
+          font-size: 11px;
+          font-weight: 600;
+          line-height: 16px;
+        }
+        .api-key-actions .ant-btn {
+          min-width: 76px;
+        }
+        .api-collapsible > summary {
+          display: flex;
+          min-height: 32px;
+          align-items: center;
+          gap: 12px;
+          cursor: pointer;
+          list-style: none;
+        }
+        .api-collapsible > summary::-webkit-details-marker {
+          display: none;
+        }
+        .api-collapsible > summary h3 {
+          margin: 0;
+          color: var(--lw-ui-gray-700);
+          font-size: 14px;
+          font-weight: 700;
+          line-height: 22px;
+        }
+        .api-collapsible-status {
+          margin-left: auto;
+          font-size: 12px;
+          font-weight: 600;
+        }
+        .api-collapsible-status.is-set {
+          color: var(--lw-emerald-700);
+        }
+        .api-collapsible-status.is-empty {
+          color: var(--lw-amber-600);
+        }
+        .api-collapsible > summary::after {
+          width: 7px;
+          height: 7px;
+          margin-bottom: 3px;
+          border-right: 2px solid var(--lw-ui-gray-500);
+          border-bottom: 2px solid var(--lw-ui-gray-500);
+          content: "";
+          transform: rotate(45deg);
+          transition: transform 160ms ease;
+        }
+        .api-collapsible[open] > summary {
+          margin-bottom: 14px;
+        }
+        .api-collapsible[open] > summary::after {
+          margin-bottom: -3px;
+          transform: rotate(-135deg);
+        }
+        .settings-price-hint {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px 10px;
+          color: var(--lw-ui-gray-500);
+          font-size: 13px;
+          line-height: 22px;
+        }
+        .settings-price-item {
+          padding: 1px 10px;
+          border: 1px solid var(--lw-ui-gray-200-alt);
+          border-radius: 999px;
+          background: var(--lw-cool-gray-50);
+          font-variant-numeric: tabular-nums;
+        }
+        .settings-price-item.is-current {
+          border-color: transparent;
+          background: var(--lw-ui-blue-50);
+          color: var(--lw-ui-blue-700);
+          font-weight: 600;
         }
         .rh-text-model-empty {
           padding: 14px 16px;
@@ -1785,6 +1882,36 @@
           background: var(--lw-stone-800);
           color: var(--lw-blue-300);
           box-shadow: 0 1px 3px rgb(var(--lw-black-rgb) / 0.42);
+        }
+        .dark .api-site-dot.is-empty {
+          box-shadow: inset 0 0 0 1.5px var(--lw-stone-400);
+        }
+        .dark .api-site-current {
+          background: rgb(var(--lw-blue-700-rgb) / 0.4);
+          color: var(--lw-blue-300);
+        }
+        .dark .api-collapsible > summary h3 {
+          color: var(--lw-stone-300);
+        }
+        .dark .api-collapsible > summary::after {
+          border-color: var(--lw-stone-400);
+        }
+        .dark .api-collapsible-status.is-set {
+          color: var(--lw-emerald-300);
+        }
+        .dark .api-collapsible-status.is-empty {
+          color: var(--lw-amber-500);
+        }
+        .dark .settings-price-hint {
+          color: var(--lw-stone-400);
+        }
+        .dark .settings-price-item {
+          border-color: var(--lw-stone-700);
+          background: var(--lw-stone-800);
+        }
+        .dark .settings-price-item.is-current {
+          background: rgb(var(--lw-blue-700-rgb) / 0.4);
+          color: var(--lw-blue-300);
         }
         .dark .api-settings-section,
         .dark .settings-section {

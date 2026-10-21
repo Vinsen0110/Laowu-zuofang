@@ -387,6 +387,15 @@ function RunningHub25Controls({config,onChange,onOpenChange,theme,compact=false}
 
 function apiMartGptMode(e){return apiMartGptImageQuality(e)==="fixed"?"fixed":"official"}function apiMartGpt25Variant(e){return String(e?.apimartGpt25Variant||"flare").trim().toLowerCase()==="sunburst"?"sunburst":"flare"}function apiMartOfficialQuality(e){const t=apiMartGptImageQuality(e);return t==="fixed"?"medium":t}
 function CanvasSiteSwitcher(){const e=Wy(),t=activeSiteChannel(e);return y.jsx("div",{className:"canvas-site-control",children:y.jsxs("div",{className:"canvas-site-brand",children:[y.jsx("img",{src:"./kitty.png",alt:"",className:"canvas-site-logo"}),y.jsx("span",{className:"canvas-site-brand-name",children:"\u8001\u5C4B\u4F5C\u574A"}),y.jsxs("span",{className:"canvas-site-current-label","aria-live":"polite",children:["\u5F53\u524D\uFF1A",y.jsx("strong",{style:{background:t?.id===RUNNINGHUB_SITE_ID?"var(--lw-site-runninghub)":t?.id===TUDOU_SITE_ID?"var(--lw-site-tudou)":t?.id===APIMART_SITE_ID?"var(--lw-site-apimart)":"var(--lw-site-other)",color:"var(--lw-on-dark-text)",padding:"1px 6px",borderRadius:"4px",fontSize:"12px",fontWeight:"600"},children:t?.name||"\u672A\u8BBE\u7F6E"})]})]})})}
+function laowuSettingsPriceRow(a){
+  try{
+    const model=a.imageModel||a.model,site=Array.isArray(a.channels)?bd(a,model):null,currency=["runninghub","apimart"].includes(site?.provider)?"$":"¥",
+    items=[["1k","1K"],["2k","2K"],["4k","4K"]].map(([key,label])=>{let price=null;try{price=pke({...a,model,imageModel:model,quality:key,count:1,channelMode:"local"},!1)}catch(_){}return{key,label,price}});
+    if(!model)return null;
+    const cur=String(a.quality||"4k").toLowerCase(),usage=items.every(t=>t.price==null),same=!usage&&items.every(t=>t.price===items[0].price);
+    return y.jsx(ur.Item,{label:"预计单张价格",className:"settings-field settings-field-wide",children:y.jsx("div",{className:"settings-price-hint",children:usage?y.jsx("span",{children:"按实际用量计费，无法预估"}):same?y.jsx("span",{children:currency+items[0].price+" / 张（各分辨率相同）"}):items.map(t=>y.jsxs("span",{className:"settings-price-item"+(t.key===cur?" is-current":""),children:[t.label," ",t.price==null?"—":currency+t.price]},t.key))})})
+  }catch(_){return null}
+}
 function t$e(){const{message:e}=As.useApp(),[t,n]=c.useState("api"),[r,o]=c.useState(!1),[editingKeyId,setEditingKeyId]=c.useState(null),[keyMenuOpen,setKeyMenuOpen]=c.useState(!1),[configSiteId,setConfigSiteId]=c.useState(null),
 a=Xr($=>$.config),i=Xr($=>$.updateConfig),patchConfig=Xr($=>$.patchConfig),l=Xr($=>$.isConfigOpen),d=Xr($=>$.shouldPromptContinue),f=Xr($=>$.setConfigDialogOpen),m=Xr($=>$.clearPromptContinue),h=$=>patchConfig($),v=configSiteId||a.activeSiteId||DP,g=a.channels.find($=>$.id===v)||activeSiteChannel(a),siteKeyState=normalizeSiteApiKeys(g),siteKeys=siteKeyState.apiKeys,activeKey=siteKeys.find($=>$.id===siteKeyState.activeKeyId)||siteKeys[0],
 isRunningHubGpt25=pr(a.imageModel||a.model)==="gpt-image-2.5"&&g?.provider==="runninghub",isApiMartGptImageConfig=(pr(a.imageModel||a.model)==="gpt-image-2"||pr(a.imageModel||a.model)==="gpt-image-2.5")&&g?.provider==="apimart",isApiMartGpt25=pr(a.imageModel||a.model)==="gpt-image-2.5"&&g?.provider==="apimart",
@@ -411,7 +420,7 @@ E=typeof window<"u"&&!!window.oldHouseDesktop,P=async()=>{if(!(!E||r)){o(!0);try
   styles:{body:{padding:0}},
   children:y.jsxs("div",{
     className:"laowu-config-shell flex overflow-hidden bg-white dark:bg-stone-900",
-    style:{height:"min(760px, 90vh)",borderRadius:12},
+    style:{minHeight:"min(560px, 90vh)",maxHeight:"90vh",borderRadius:12},
     children:[
       y.jsxs("aside",{
         className:"laowu-config-sidebar shrink-0 border-r border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-950",
@@ -442,31 +451,21 @@ E=typeof window<"u"&&!!window.oldHouseDesktop,P=async()=>{if(!(!E||r)){o(!0);try
           ]}),
           y.jsx(ur,{layout:"vertical",requiredMark:!1,children:
             t==="api"?y.jsxs("div",{className:"api-settings-page",children:[
-              y.jsxs("section",{className:"api-settings-section",children:[
-                y.jsx("div",{className:"api-section-heading",children:y.jsx("h3",{children:"Cloudinary（土豆 / GRSAI）"})}),
-                y.jsx("div",{className:"api-key-row reference-host-row",children:[
-                  ["cloudinaryCloudName","Cloud Name",!1],
-                  ["cloudinaryApiKey","API Key",!0],
-                  ["cloudinaryApiSecret","API Secret",!0]
-                ].map(([key,label,secret])=>y.jsxs("label",{className:"api-field",children:[
-                  y.jsx("span",{className:"api-field-label",children:label}),
-                  y.jsx(secret?_o.Password:_o,{className:"api-key-input",size:"large",value:a[key]||"",placeholder:label,autoComplete:"off",spellCheck:!1,onChange:$=>i(key,$.target.value)})
-                ]},key))})
-              ]}),
-              y.jsx("div",{className:"api-site-tabs",role:"tablist","aria-label":"\u7AD9\u70B9",children:orderSiteChannels(a.channels).map($=>y.jsx("button",{
+              y.jsx("div",{className:"api-site-tabs",role:"tablist","aria-label":"\u7AD9\u70B9",children:orderSiteChannels(a.channels).map($=>{const keyed=normalizeSiteApiKeys($).apiKey.trim()!=="",inUse=(a.activeSiteId||DP)===$.id;return y.jsxs("button",{
                 type:"button",
                 role:"tab",
                 "aria-selected":v===$.id,
+                title:$.name+(keyed?" · 已配置密钥":" · 未配置密钥")+(inUse?" · 当前使用":""),
                 className:"api-site-tab"+(v===$.id?" is-active":""),
                 onClick:()=>k($.id),
-                children:$.name
-              },$.id))}),
+                children:[y.jsx("span",{className:"api-site-dot "+(keyed?"is-set":"is-empty"),"aria-hidden":"true"}),$.name,inUse?y.jsx("span",{className:"api-site-current",children:"当前"}):null]
+              },$.id)})}),
               y.jsxs("section",{className:"api-settings-section",children:[
                 y.jsxs("div",{className:"api-section-heading",children:[
                   y.jsx("h3",{children:"\u7AD9\u70B9 API \u5BC6\u94A5"}),
                   y.jsxs("div",{className:"api-key-actions",children:[
-                    y.jsx(Bt,{size:"small",onClick:addSiteKey,children:"\u6DFB\u52A0\u5BC6\u94A5"}),
-                    y.jsx(Bt,{size:"small",danger:!0,disabled:siteKeys.length<=1,onClick:deleteSiteKey,children:"\u5220\u9664"})
+                    y.jsx(Bt,{onClick:addSiteKey,children:"\u6DFB\u52A0\u5BC6\u94A5"}),
+                    y.jsx(Bt,{danger:!0,disabled:siteKeys.length<=1,title:siteKeys.length<=1?"至少保留一个密钥":"删除当前密钥",onClick:deleteSiteKey,children:"\u5220\u9664"})
                   ]})
                 ]},"site-key-heading"),
                 y.jsxs("div",{className:"api-key-row",children:[
@@ -487,6 +486,20 @@ E=typeof window<"u"&&!!window.oldHouseDesktop,P=async()=>{if(!(!E||r)){o(!0);try
                   y.jsx(_o.Password,{key:"grsai-balance-token",id:"grsai-balance-token",name:"grsai-balance-token",className:"api-balance-password",size:"large",value:a.grsaiTotalBalanceToken||"",placeholder:"\u8BF7\u8F93\u5165 Grsai \u8D26\u6237 Token",autoComplete:"new-password","data-1p-ignore":"true","data-lpignore":"true","data-form-type":"other",onChange:$=>i("grsaiTotalBalanceToken",$.target.value)})
                 ]})
               ]}):null
+              ,y.jsxs("details",{className:"api-settings-section api-collapsible",children:[
+                y.jsxs("summary",{children:[
+                  y.jsx("h3",{children:"图床 Cloudinary（Tudou / Grsai 参考图）"}),
+                  y.jsx("span",{className:"api-collapsible-status "+((a.cloudinaryCloudName&&a.cloudinaryApiKey&&a.cloudinaryApiSecret)?"is-set":"is-empty"),children:(a.cloudinaryCloudName&&a.cloudinaryApiKey&&a.cloudinaryApiSecret)?"已配置":"未配置"})
+                ]}),
+                y.jsx("div",{className:"api-key-row reference-host-row",children:[
+                  ["cloudinaryCloudName","Cloud Name",!1],
+                  ["cloudinaryApiKey","API Key",!0],
+                  ["cloudinaryApiSecret","API Secret",!0]
+                ].map(([key,label,secret])=>y.jsxs("label",{className:"api-field",children:[
+                  y.jsx("span",{className:"api-field-label",children:label}),
+                  y.jsx(secret?_o.Password:_o,{className:"api-key-input",size:"large",value:a[key]||"",placeholder:label,autoComplete:"off",spellCheck:!1,onChange:$=>i(key,$.target.value)})
+                ]},key))})
+              ]})
             ]}):t==="generation"?y.jsxs("div",{className:"generation-settings-sections",children:[
               y.jsxs("section",{className:"settings-section",children:[
                 y.jsx("div",{className:"api-section-heading",children:y.jsx("h3",{children:"\u751F\u56FE\u6A21\u578B\u8BBE\u7F6E"})}),
@@ -494,6 +507,7 @@ E=typeof window<"u"&&!!window.oldHouseDesktop,P=async()=>{if(!(!E||r)){o(!0);try
                   y.jsx(ur.Item,{label:"\u9ED8\u8BA4\u751F\u56FE\u6A21\u578B\uFF08"+(activeSiteChannel(a)?.name||"\u5F53\u524D\u7AD9\u70B9")+"\uFF09",className:"settings-field settings-field-wide",children:y.jsx(Td,{config:a,value:a.imageModel||a.model,capability:"image",fullWidth:!0,className:"settings-model-select !h-11 !rounded-xl !border-stone-200 dark:!border-stone-600 !bg-white dark:!bg-stone-800 !px-4",contentClassName:"settings-select-dropdown dark:[&_*]:!text-stone-200",onChange:$=>{const j=a.size||"auto",T=nanoRatioPresets($).some(N=>(N.size||N.value)===j||N.value===j),N=Array.isArray(a.channels)?bd(a,$):activeSiteChannel(a);h({imageModel:$,...pr($)==="gpt-image-2"&&isApiMartSite(N)?{gptImageQuality:"fixed",apimartOutputFormat:a.apimartOutputFormat||"png",apimartBackground:a.apimartBackground||"auto"}:{},...isNanoRatioModel($)&&!T?{size:"auto"}:{}})}})}),
                   y.jsx(ur.Item,{label:"\u5206\u8FA8\u7387",className:"settings-field",children:y.jsx(bs,{className:"settings-select",popupClassName:"settings-select-dropdown",size:"large",value:a.quality||"4k",options:Z2e,onChange:$=>i("quality",$)})}),
                   y.jsx(ur.Item,{label:"\u5C3A\u5BF8\u6BD4\u4F8B",className:"settings-field",children:y.jsx(bs,{className:"settings-select",popupClassName:"settings-select-dropdown",size:"large",value:isRunningHubGpt25?runningHub25RatioValue({...a,model:a.imageModel||a.model}):a.size||"auto",options:orderRatioPresets(isRunningHubGpt25?runningHub25RatioOptions({...a,model:a.imageModel||a.model},[...J2e,...GPT_IMAGE_EXTRA_RATIO_PRESETS]):isGptImageConfig?[...J2e,...GPT_IMAGE_EXTRA_RATIO_PRESETS]:nanoRatioPresets(a.imageModel||a.model)),optionRender:$=>y.jsxs("span",{className:"flex min-w-0 items-center gap-2",children:[ratioShape({value:$.value}),y.jsx("span",{className:"min-w-0 truncate",children:$.label})]}),labelRender:$=>y.jsxs("span",{className:"flex min-w-0 items-center gap-2",children:[ratioShape({value:$.value}),y.jsx("span",{className:"min-w-0 truncate",children:$.label})]}),onChange:$=>i("size",$)})}),
+laowuSettingsPriceRow(a),
 isRunningHubGpt25?y.jsxs(y.Fragment,{children:[
                     y.jsx(ur.Item,{label:"生成模式",className:"settings-field",children:y.jsx(bs,{className:"settings-select",popupClassName:"settings-select-dropdown",size:"large",value:runningHubGpt25Mode(a),options:APIMART_GPT_MODE_OPTIONS,onChange:$=>h(runningHub25ModePatch({...a,model:a.imageModel||a.model},$))})}),
                     y.jsx(ur.Item,{label:"模型变体",className:"settings-field",children:y.jsx(bs,{className:"settings-select",popupClassName:"settings-select-dropdown",size:"large",value:runningHubGpt25Variant(a),options:APIMART_GPT25_VARIANT_OPTIONS,onChange:$=>h({runningHubGpt25Variant:$})})}),
