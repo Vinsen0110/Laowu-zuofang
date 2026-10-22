@@ -23,7 +23,7 @@
 .lw-acct-chip{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 12px 0 6px;border:1px solid var(--a-border);border-radius:999px;background:var(--a-bg);color:var(--a-text);font-weight:600;font-size:13px;font-family:inherit;cursor:pointer;box-shadow:0 4px 14px rgb(15 23 42 / .08);transition:border-color .15s,box-shadow .15s}
 .lw-acct-chip:hover{border-color:var(--a-primary);box-shadow:0 6px 18px rgb(15 23 42 / .12)}
 .lw-acct-chip.is-guest{padding:0 14px}
-.lw-acct-avatar{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--a-primary);color:#fff;font-size:12px;font-weight:700}
+.lw-acct-avatar{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;overflow:hidden;background:var(--a-primary);color:#fff;font-size:12px;font-weight:700}
 .lw-acct-bal{font-variant-numeric:tabular-nums}
 .lw-acct-bal.is-low{color:var(--a-err)}
 .lw-acct-panel{position:absolute;top:44px;right:0;width:320px;max-width:calc(100vw - 24px);padding:18px;border:1px solid var(--a-border);border-radius:16px;background:var(--a-bg);box-shadow:0 18px 50px rgb(15 23 42 / .18);display:none}
@@ -125,7 +125,10 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
 .lw-am-sec{padding:10px 10px}
 .lw-am-sep{height:1px;margin:2px 4px;background:var(--a-border)}
 .lw-am-who{display:flex;align-items:center;gap:10px}
-.lw-am-avatar{flex:0 0 auto;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--a-soft);border:1px solid var(--a-border);color:var(--a-text);font-size:13px;font-weight:600}
+.lw-am-avatar{position:relative;flex:0 0 auto;display:grid;place-items:center;width:36px;height:36px;padding:0;border:0;border-radius:50%;background:var(--a-soft);color:var(--a-text);font-size:13px;font-weight:600;cursor:pointer;overflow:hidden}
+.lw-am-avatar img,.lw-acct-avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+.lw-am-avatar-edit{position:absolute;inset:0;display:grid;place-items:center;background:rgb(15 23 42 / .45);color:#fff;opacity:0;transition:opacity .12s}
+.lw-am-avatar:hover .lw-am-avatar-edit,.lw-am-avatar:focus-visible .lw-am-avatar-edit{opacity:1}
 .lw-am-id{min-width:0;flex:1}
 .lw-am-name{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:600;line-height:18px}
 .lw-am-name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -476,12 +479,66 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
     ticket: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9a3 3 0 0 0 0 6v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a3 3 0 0 0 0-6V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1Z"/><path d="M13 5v2M13 17v2M13 11v2"/></svg>',
     out: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>',
     admin: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>',
+    camera: '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3Z"/><circle cx="12" cy="13" r="3"/></svg>',
+    image: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>',
+    reset: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>',
     ext: '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>',
   };
 
+  function avatarImg() {
+    const url = typeof globalThis.lwAvatarUrl === "function" ? globalThis.lwAvatarUrl(user) : "";
+    return url ? `<img src="${esc(url)}" alt="" draggable="false">` : esc((user.displayName || user.email).slice(0, 1).toUpperCase());
+  }
+
+  // Crop to a centred square and shrink to 128px WebP before upload (well under the server's limit).
+  async function shrinkAvatar(file) {
+    const bitmap = await createImageBitmap(file);
+    const side = Math.min(bitmap.width, bitmap.height);
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 128;
+    canvas.getContext("2d").drawImage(bitmap, (bitmap.width - side) / 2, (bitmap.height - side) / 2, side, side, 0, 0, 128, 128);
+    bitmap.close?.();
+    for (const q of [0.85, 0.7, 0.55]) {
+      const url = canvas.toDataURL("image/webp", q);
+      if (url.startsWith("data:image/webp") && url.length < 50_000) return url;
+    }
+    return canvas.toDataURL("image/jpeg", 0.7);
+  }
+
+  async function saveAvatar(avatar) {
+    busy = true;
+    render();
+    try {
+      const r = await api("/avatar", { method: "POST", body: { avatar } });
+      message = null;
+      setUser(r.user);
+    } catch (err) {
+      message = { type: "error", text: err.message };
+    } finally {
+      busy = false;
+      render();
+    }
+  }
+
+  function pickAvatar() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/png,image/jpeg,image/webp";
+    input.addEventListener("change", async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      try {
+        await saveAvatar(await shrinkAvatar(file));
+      } catch (_) {
+        message = { type: "error", text: "这张图片读取失败，请换一张试试" };
+        render();
+      }
+    });
+    input.click();
+  }
+
   function userView() {
     const isAdmin = user.role === "admin";
-    const initial = esc((user.displayName || user.email).slice(0, 1).toUpperCase());
     const rows = ledgerItems.length
       ? ledgerItems.map((i) => `
         <div class="lw-am-row">
@@ -493,7 +550,7 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
       ? `<form class="lw-am-rename" data-form="name"><input class="lw-am-field" name="displayName" maxlength="20" value="${esc(user.displayName || "")}" aria-label="昵称" autocomplete="off"><button class="lw-am-submit" type="submit">保存</button></form>`
       : `<div class="lw-am-id"><div class="lw-am-name"><span>${esc(user.displayName || user.email)}</span><button type="button" class="lw-am-icon" data-act="rename" title="改名" aria-label="改名">${ICON.pencil}</button></div><div class="lw-am-email">${esc(user.email)}</div></div>`;
     return `
-      <div class="lw-am-sec lw-am-who"><span class="lw-am-avatar" aria-hidden="true">${initial}</span>${who}</div>
+      <div class="lw-am-sec lw-am-who"><button type="button" class="lw-am-avatar" data-act="avatar-pick" title="更换头像" aria-label="更换头像">${avatarImg()}<span class="lw-am-avatar-edit" aria-hidden="true">${ICON.camera}</span></button>${who}</div>
       <div class="lw-am-sep"></div>
       <div class="lw-am-sec">
         <div class="lw-am-label">余额</div>
@@ -517,6 +574,8 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
       </div>` : ""}
       <div class="lw-am-sep"></div>
       <div style="padding:4px 0">
+        <button type="button" class="lw-am-item" data-act="avatar-pick">${ICON.image}更换头像</button>
+        ${user.avatar ? `<button type="button" class="lw-am-item" data-act="avatar-reset">${ICON.reset}恢复默认头像</button>` : ""}
         ${isAdmin ? `<a class="lw-am-item" href="/admin.html" target="_blank" rel="noopener">${ICON.admin}管理后台<span class="lw-am-kbd">${ICON.ext}</span></a>` : ""}
         <button type="button" class="lw-am-item is-danger" data-act="logout">${ICON.out}退出登录</button>
       </div>`;
@@ -528,7 +587,7 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
     if (!host) return;
     const chip = user
       ? `<button type="button" class="lw-acct-chip ${user.role === "admin" ? "is-admin" : `is-user ${user.balance < LOW_BALANCE ? "is-low" : ""}`}" data-act="toggle" aria-expanded="${open}" aria-label="账户：${esc(user.email)}${user.role === "admin" ? "" : `，余额 ${esc(money(user.balance))}`}">
-           <span class="lw-acct-avatar" aria-hidden="true">${esc((user.displayName || user.email).slice(0, 1).toUpperCase())}</span>
+           <span class="lw-acct-avatar" aria-hidden="true">${avatarImg()}</span>
            ${user.role === "admin"
              ? `<span class="lw-acct-admin-tag">管理员</span>`
              : `<span class="lw-acct-wallet" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1 0-4h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg></span><span class="lw-acct-bal">${esc(money(user.balance))}</span>`}
@@ -565,7 +624,7 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
         <p class="lw-entry-sub">${mode === "reset" ? "输入注册时用的邮箱，收到验证码后设置新密码。" : mode === "register" ? "用邮箱注册，验证码会发送到你的邮箱。生成费用从账户余额扣除。" : "登录后即可新建或打开工程，生成费用从账户余额扣除。"}</p>${guestView()}`;
     }
     return `<div class="lw-entry-user">
-        <span class="lw-acct-avatar" aria-hidden="true">${esc((user.displayName || user.email).slice(0, 1).toUpperCase())}</span>
+        <span class="lw-acct-avatar" aria-hidden="true">${avatarImg()}</span>
         <span class="lw-entry-user-name" title="${esc(user.email)}">${esc(user.email)}</span>
         ${user.role === "admin"
           ? `<span class="lw-entry-user-bal lw-acct-sites">${siteBalancesInline()}</span>`
@@ -726,6 +785,8 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
       if (entryRedeemOpen) entry?.querySelector('input[name="code"]')?.focus();
     }
     else if (act === "send-code") sendCode(el);
+    else if (act === "avatar-pick") { pickAvatar(); }
+    else if (act === "avatar-reset") { saveAvatar(""); }
     else if (act === "rename") { editingName = true; render(); host.querySelector('input[name="displayName"]')?.focus(); }
 
     else if (act === "mode-login" || act === "mode-register" || act === "mode-reset") {

@@ -83,6 +83,7 @@ function publicUser(row) {
         username: row.username,
         displayName: String(row.display_name || "").trim() || String(row.username).split("@")[0],
         customName: String(row.display_name || ""),
+        avatar: String(row.avatar || ""),
         role: row.role,
         balance: milliToYuan(row.balance_milli),
         balanceMilli: Number(row.balance_milli),
@@ -343,6 +344,18 @@ COMMIT;`);
 export async function setDisplayName(db, userId, raw) {
     const name = String(raw ?? "").replace(/[\u0000-\u001f<>]/g, "").trim().slice(0, 20);
     const rows = await db.query("UPDATE lw_users SET display_name = $2 WHERE id = $1 RETURNING *", [userId, name]);
+    if (!rows[0]) throw new AccountError(404, "not_found", "账号不存在");
+    return publicUser(rows[0]);
+}
+
+// A small picture the browser has already cropped and shrunk; "" goes back to the generated one.
+export const AVATAR_MAX_CHARS = 60_000;
+export async function setAvatar(db, userId, raw) {
+    const avatar = String(raw ?? "").trim();
+    if (avatar && (!/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(avatar) || avatar.length > AVATAR_MAX_CHARS)) {
+        throw new AccountError(400, "bad_avatar", "头像图片格式不支持或太大，请换一张");
+    }
+    const rows = await db.query("UPDATE lw_users SET avatar = $2 WHERE id = $1 RETURNING *", [userId, avatar]);
     if (!rows[0]) throw new AccountError(404, "not_found", "账号不存在");
     return publicUser(rows[0]);
 }
