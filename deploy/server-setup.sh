@@ -76,6 +76,10 @@ systemctl restart laowu
     for d in $DOMAINS; do
         cat <<SITE
 $d {
+	log {
+		output file /var/lib/caddy/access.log
+		format json
+	}
 	encode zstd gzip
 	reverse_proxy 127.0.0.1:4173 {
 		flush_interval -1

@@ -13,6 +13,7 @@ import { describeRequest } from "./describe.js";
 import { CHANNEL_LABELS, rewriteUrls, scrubText, unmaskTarget } from "./mask.js";
 import { AccountError, adjustBalance, milliToYuan } from "./service.js";
 import { findTaskId, recordTask, settleTask, taskOutcome } from "./tasks.js";
+import { inlineTudouGeminiReferences, isTudouGeminiImageTarget } from "../tudou-reference-images.js";
 
 export { describeRequest };
 
@@ -163,6 +164,22 @@ export async function relay(db, user, request, { fetchImpl = fetch } = {}) {
     }
 
     const raw = method === "POST" ? await request.arrayBuffer() : undefined;
+    let body = raw;
+    if (raw && channel === "tudou" && isTudouGeminiImageTarget(target)) {
+        // Gemini wants references inline: fetch the hosted copies here, next to the
+        // image host, so the browser uploads each reference only once.
+        let parsed = null;
+        try { parsed = JSON.parse(new TextDecoder().decode(raw)); } catch { /* left to the checks below */ }
+        if (parsed) {
+            try {
+                const { payload: inlined, converted } = await inlineTudouGeminiReferences(target, parsed, { signal: request.signal, redirect: "follow", fetchImpl });
+                if (converted) body = new TextEncoder().encode(JSON.stringify(inlined));
+            } catch (error) {
+                if (request.signal?.aborted) throw error;
+                throw new AccountError(502, "reference_failed", "参考图读取失败，请重试（未扣费）");
+            }
+        }
+    }
     let charge = null;
     if (method === "POST" && !FREE_PATH.test(target.pathname)) {
         let payload = null;
@@ -210,7 +227,7 @@ export async function relay(db, user, request, { fetchImpl = fetch } = {}) {
         upstream = await fetchImpl(target, {
             method,
             headers: forwardHeaders(request, config.apiKey),
-            body: raw,
+            body,
             redirect: "manual",
             signal: request.signal,
         });
