@@ -183,13 +183,13 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
 .lw-gate-tile{position:relative;width:100%;aspect-ratio:3/4;overflow:hidden;border-radius:12px;background:#1b1d22 center/cover no-repeat;box-shadow:0 10px 26px rgb(0 0 0 / .4)}
 .lw-gate-tile img{display:block;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s ease}
 .lw-gate-tile img.is-in{opacity:1}
-.lw-gate-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgb(10 11 14 / .05),rgb(10 11 14 / .25) 45%,rgb(10 11 14 / .85))}
-.lw-gate-caption{position:absolute;left:48px;right:48px;bottom:48px;color:#fff}
-.lw-gate-brand{display:flex;align-items:center;gap:10px;margin-bottom:22px;font-weight:600;font-size:15px}
+.lw-gate-shade{position:absolute;inset:0;background:radial-gradient(70% 55% at 50% 50%,rgb(10 11 14 / .72),rgb(10 11 14 / .3) 70%,rgb(10 11 14 / .5))}
+.lw-gate-caption{position:absolute;left:10%;right:10%;top:50%;translate:0 -50%;color:#fff;text-align:center}
+.lw-gate-brand{position:absolute;top:56px;left:50%;translate:-50% 0;z-index:1;display:flex;align-items:center;gap:10px;color:#fff;font-weight:600;font-size:15px}
 .lw-gate-brand img,.lw-gate-mobile-brand img{width:34px;height:34px;padding:3px;border-radius:10px;background:#fff}
-.lw-gate-caption h1{margin:0 0 10px;font-size:34px;line-height:1.25;font-weight:650;letter-spacing:-.01em;color:#fff}
-.lw-gate-caption p{margin:0;color:rgb(255 255 255 / .72);font-size:15px}
-.lw-gate-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.lw-gate-caption h1{margin:0 0 16px;font-size:clamp(34px,3.4vw,48px);line-height:1.2;font-weight:650;letter-spacing:-.01em;color:#fff;text-shadow:0 4px 30px rgb(0 0 0 / .5)}
+.lw-gate-caption p{margin:0;color:rgb(255 255 255 / .72);font-size:16px}
+.lw-gate-tags{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:28px}
 .lw-gate-tags span{padding:5px 10px;border:1px solid rgb(255 255 255 / .2);border-radius:999px;background:rgb(255 255 255 / .08);color:rgb(255 255 255 / .85);font-size:12px;backdrop-filter:blur(6px)}
 .lw-gate-side{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;overflow:auto}
 .lw-gate-slot{width:100%;max-width:360px}
@@ -844,8 +844,8 @@ button.lw-gate-face:hover{transform:scale(1.04)}
     return `<section class="lw-gate-art" aria-hidden="true">
         <div class="lw-gate-wall">${col(0)}${col(1)}${col(4)}${col(7)}</div>
         <div class="lw-gate-shade"></div>
+        <div class="lw-gate-brand"><img src="./kitty.png" alt="">老屋作坊</div>
         <div class="lw-gate-caption">
-          <div class="lw-gate-brand"><img src="./kitty.png" alt="">老屋作坊</div>
           <h1>一张无限画布，<br>把想法变成图片</h1>
           <p>文生图、图生图、多图参考与局部修改，在同一张画布上完成。</p>
           <div class="lw-gate-tags"><span>Nano Banana Pro</span><span>GPT Image 2.5</span><span>最高 4K</span><span>失败自动退回</span></div>
