@@ -55,8 +55,8 @@ test("the transparent positioning wrapper absorbs edge presses without starting 
         assert.equal(started.length, 0);
     }
     assert.equal(tree.props.children.props.style.pointerEvents, "auto");
-    assert.equal(tree.props.children.props.style.width, 24);
-    assert.equal(tree.props.children.props.style.height, 24);
+    assert.equal(tree.props.children.props.style.width, 22);
+    assert.equal(tree.props.children.props.style.height, 22);
     assert.equal(typeof tree.props.children.props.onPointerDown, "function");
     assert.equal(renderHandle(false).tree.props.style.pointerEvents, "none");
     assert.equal(renderHandle(false).tree.props.children.props.style.pointerEvents, "none");
@@ -97,11 +97,11 @@ test("compatibility mousedown never starts another connection after pointerdown"
     assert.equal(started.length, 0);
 });
 
-test("connection circle retains a 24 screen-pixel diameter at different canvas zoom levels", () => {
-    for (const scale of [0.1, 0.5, 1, 2]) {
+test("connection circle is 22 screen pixels at 100% and shrinks with the canvas down to 16", () => {
+    for (const [scale, px] of [[0.1, 16], [0.5, 16], [0.8, 17.6], [1, 22], [2, 22]]) {
         const { tree } = renderHandle(true, scale);
-        assert.equal(tree.props.children.props.style.width * scale, 24);
-        assert.equal(tree.props.children.props.style.height * scale, 24);
+        assert.ok(Math.abs(tree.props.children.props.style.width * scale - px) < 1e-9, `zoom ${scale}`);
+        assert.ok(Math.abs(tree.props.children.props.style.height * scale - px) < 1e-9, `zoom ${scale}`);
     }
 });
 

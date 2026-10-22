@@ -11,7 +11,7 @@ test("the start screen is covered by the split entry page once the account state
 });
 
 test("the sign-in page keeps the same forms and shows Kitty silhouettes on white", () => {
-    assert.match(ui, /<h1>无限画布 无限创作<br>把想法变成图片<\/h1>/);
+    assert.match(ui, /<h1>无限画布 无限创作<\/h1>/);
     assert.match(ui, /mode === "register" \? "创建账号" : mode === "reset" \? "找回密码" : "欢迎回来"/);
     assert.match(ui, /\.lw-gate-kitties i\{[^}]*mask:url\(\.\/kitty\.png\)/);
     assert.match(ui, /\.lw-gate-kitties\{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none\}/);

@@ -56,6 +56,8 @@ body:has(.pointer-events-auto.flex.w-14.flex-col button:hover) .ant-tooltip{disp
 .dark .lw-keys kbd{border-color:var(--lw-stone-700);background:var(--lw-stone-800);color:var(--lw-stone-200)}
 
 .ant-message{top:16px!important}
+:root{--laowu-handle-bg:var(--lw-white);--laowu-handle-bg-hover:var(--lw-ui-gray-100);--laowu-handle-ink:var(--lw-ui-gray-600);--laowu-handle-ink-hover:var(--lw-ui-gray-900);--laowu-handle-border:var(--lw-ui-gray-200)}
+.dark{--laowu-handle-bg:var(--lw-stone-800);--laowu-handle-bg-hover:var(--lw-stone-700);--laowu-handle-ink:var(--lw-stone-300);--laowu-handle-ink-hover:var(--lw-stone-50);--laowu-handle-border:var(--lw-stone-600)}
 .laowu-node-tip .ant-tooltip-inner,.laowu-node-tip .ant-tooltip-container{color:var(--lw-tooltip-text)!important;border:1px solid var(--lw-ui-gray-200)}
 .dark .laowu-node-tip .ant-tooltip-inner,.dark .laowu-node-tip .ant-tooltip-container{border-color:var(--lw-stone-700)}
 .ant-message .ant-message-notice{padding:0!important;background:transparent!important;box-shadow:none!important;border:0!important}

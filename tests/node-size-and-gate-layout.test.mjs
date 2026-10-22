@@ -22,3 +22,13 @@ test("the entry page centres the headline with the brand on top", () => {
     assert.match(ui, /\.lw-gate-caption\{position:absolute;left:10%;right:10%;top:50%;translate:0 -50%;color:#fff;text-align:center\}/);
     assert.match(ui, /<div class="lw-gate-shade"><\/div>\s*<div class="lw-gate-brand">/);
 });
+
+test("connection handles stay 16-22px on screen, sit close to the node and follow the theme", () => {
+    assert.match(bundle, /lwPx=Math\.min\(22,Math\.max\(16,22\*i\)\),l=lwPx\/i,d=\(lwPx\+12\)\/i,f=-\(lwPx\+12\)\/i;/);
+    assert.match(bundle, /background:o\?"var\(--laowu-handle-bg-hover\)":"var\(--laowu-handle-bg\)"/);
+});
+
+test("the entry headline is a single line", () => {
+    assert.match(ui, /<h1>无限画布 无限创作<\/h1>/);
+    assert.doesNotMatch(ui, /把想法变成图片/);
+});
