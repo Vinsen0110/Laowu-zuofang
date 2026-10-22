@@ -59,6 +59,7 @@ body:has(.pointer-events-auto.flex.w-14.flex-col button:hover) .ant-tooltip,body
 .dark .lw-keys kbd{border-color:var(--lw-stone-700);background:var(--lw-stone-800);color:var(--lw-stone-200)}
 
 .ant-message{top:16px!important}
+.ant-message .ant-message-notice{padding:0!important;background:transparent!important;box-shadow:none!important;border:0!important}
 .ant-message .ant-message-notice-wrapper{padding:10px 16px!important;border:1px solid var(--lw-ui-gray-200)!important;border-radius:12px!important;background:var(--lw-white)!important;color:var(--lw-ui-gray-900)!important;font-size:13px!important;font-weight:500;box-shadow:0 10px 30px rgb(var(--lw-slate-900-rgb) / .12)!important}
 .ant-message .ant-message-notice-icon-error{color:var(--lw-red-600)!important}
 .ant-message .ant-message-notice-icon-success{color:var(--lw-green-600)!important}
