@@ -1,8 +1,14 @@
 export const CLOUDINARY_MAX_BYTES = 10_000_000;
 export const CLOUDINARY_TARGET_BYTES = 9_500_000;
 export const CLOUDINARY_MAX_PIXELS = 25_000_000;
+// Upload copies only (the canvas keeps the original): models read references at
+// well under 3072px, so larger photos are shrunk to that before upload.
+export const REFERENCE_MAX_EDGE = 3072;
+export const REFERENCE_KEEP_BYTES = 2_500_000;
 const UPLOAD_TIMEOUT_MS = 180_000;
-const QUALITIES = [0.94, 0.88, 0.8, 0.7, 0.6];
+const QUALITIES = [0.92, 0.88, 0.8, 0.7, 0.6];
+const UPLOADED_KEY = "lw-cloudinary-references-v1";
+const UPLOADED_LIMIT = 300;
 
 export function usesCloudinaryReferenceHost(config) {
     let hostname = "";
@@ -85,10 +91,11 @@ export async function prepareCloudinaryReferenceBlob(original, options = {}) {
         if (!(width > 0 && height > 0 && Number.isFinite(width * height))) {
             throw new Error("参考图尺寸无效");
         }
-        if (original.size <= CLOUDINARY_MAX_BYTES && width * height <= CLOUDINARY_MAX_PIXELS) {
+        const fits = original.size <= CLOUDINARY_MAX_BYTES && width * height <= CLOUDINARY_MAX_PIXELS;
+        if (fits && Math.max(width, height) <= REFERENCE_MAX_EDGE && original.size <= REFERENCE_KEEP_BYTES) {
             return original;
         }
-        let scale = Math.min(1, Math.sqrt(CLOUDINARY_MAX_PIXELS / (width * height)));
+        let scale = Math.min(1, REFERENCE_MAX_EDGE / Math.max(width, height), Math.sqrt(CLOUDINARY_MAX_PIXELS / (width * height)));
         const encode = options.encodeImage || encodeImage;
         for (let step = 0; step < 12; step += 1) {
             const targetWidth = Math.max(1, Math.floor(width * scale));
@@ -97,6 +104,8 @@ export async function prepareCloudinaryReferenceBlob(original, options = {}) {
                 checkAbort(signal);
                 const blob = await encode(decoded.image, targetWidth, targetHeight, quality);
                 checkAbort(signal);
+                // Re-encoding at full size can come out larger; then the original is the better upload.
+                if (fits && scale === 1 && blob?.size >= original.size) return original;
                 if (blob?.size > 0 && blob.size <= CLOUDINARY_TARGET_BYTES
                     && ["image/webp", "image/png"].includes(blob.type)) return blob;
             }
@@ -146,8 +155,54 @@ export async function signCloudinaryUpload(config) {
     return { cloudName, apiKey, params, signature };
 }
 
+// The same reference image is uploaded once per Cloudinary account; later
+// generations reuse its link (kept in memory and, when allowed, localStorage).
+const uploaded = new Map();
+
+export function forgetCloudinaryReferences() {
+    uploaded.clear();
+    try { globalThis.localStorage?.removeItem(UPLOADED_KEY); } catch {}
+}
+
+function storedUploads() {
+    try { return JSON.parse(globalThis.localStorage?.getItem(UPLOADED_KEY) || "{}") || {}; } catch { return {}; }
+}
+
+function rememberUpload(key, url) {
+    uploaded.set(key, url);
+    try {
+        if (!globalThis.localStorage) return;
+        const entries = Object.entries(storedUploads()).filter(([k]) => k !== key);
+        entries.push([key, url]);
+        globalThis.localStorage.setItem(UPLOADED_KEY, JSON.stringify(Object.fromEntries(entries.slice(-UPLOADED_LIMIT))));
+    } catch {}
+}
+
+async function uploadKey(credentials, blob) {
+    const digest = await crypto.subtle.digest("SHA-256", await blob.arrayBuffer());
+    const hash = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+    return `${credentials.cloudName}:${credentials.apiKey}:${hash}`;
+}
+
 export async function uploadCloudinaryReferenceBlob(config, original, options = {}) {
     const credentials = cloudinaryCredentials(config);
+    let key = "";
+    try {
+        if (original?.size && globalThis.crypto?.subtle) key = await uploadKey(credentials, original);
+    } catch {}
+    const known = key && (uploaded.get(key) || storedUploads()[key]);
+    if (known && isCloudinaryImageUrl(known) && new URL(known).pathname.split("/")[1] === credentials.cloudName) {
+        checkAbort(options.signal);
+        uploaded.set(key, known);
+        options.onProgress?.({ stage: "uploading", progress: 10 });
+        return known;
+    }
+    const url = await uploadNewCloudinaryReference(credentials, original, options);
+    if (key) rememberUpload(key, url);
+    return url;
+}
+
+async function uploadNewCloudinaryReference(credentials, original, options) {
     const uploadConfig = {
         cloudinaryCloudName: credentials.cloudName,
         cloudinaryApiKey: credentials.apiKey,
