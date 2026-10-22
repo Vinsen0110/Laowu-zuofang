@@ -77,6 +77,25 @@ async function openNeon(url) {
     };
 }
 
+// Self-hosted Postgres (the Hong Kong server) uses the regular pg driver.
+async function openPg(url) {
+    const { default: pg } = await import("pg");
+    const pool = new pg.Pool({ connectionString: url, max: 10 });
+    return {
+        kind: "pg",
+        async query(text, params = []) {
+            const result = await pool.query(text, params);
+            return result.rows;
+        },
+        async exec(text) {
+            await pool.query(text);
+        },
+        async close() {
+            await pool.end();
+        },
+    };
+}
+
 async function openPglite(dataDir) {
     const { PGlite } = await import("@electric-sql/pglite");
     if (dataDir) {
@@ -103,7 +122,7 @@ async function openPglite(dataDir) {
 export async function openDatabase(options = {}) {
     const url = options.url ?? process.env.DATABASE_URL;
     const db = url
-        ? await openNeon(url)
+        ? (process.env.LW_DB_DRIVER === "pg" || !/neon\.tech/i.test(url) ? await openPg(url) : await openNeon(url))
         : await openPglite(options.dataDir ?? process.env.LW_LOCAL_DB_DIR ?? ".local-data/pglite");
     await db.exec(SCHEMA);
     await db.exec(CHANNEL_SCHEMA);

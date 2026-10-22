@@ -119,6 +119,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
   let prices = [];
   let catalog = [];
   let cloud = { cloudName: "", apiKey: "", apiSecret: "" };
+  let mail = { hasKey: false, keyPreview: "", fromEnv: false };
   let fx = 6.7;
   let markup = 2;
   const draft = new Map(); // "channel|model|spec" -> price string being edited
@@ -133,7 +134,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
         <p><a href="/">返回老屋作坊</a></p></div>`;
       return;
     }
-    await Promise.all([loadStats(), loadUsers(), loadCodes(), loadChannels(), loadPrices(), loadCloud()]);
+    await Promise.all([loadStats(), loadUsers(), loadCodes(), loadChannels(), loadPrices(), loadCloud(), loadMail()]);
     render();
     checkBalances();
   }
@@ -143,6 +144,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
   async function loadUsers(q) { users = (await api("/admin/users" + (q ? "?q=" + encodeURIComponent(q) : ""))).items; }
   async function loadCodes() { codes = (await api("/admin/codes")).items; }
   async function loadCloud() { cloud = await api("/admin/cloudinary"); }
+  async function loadMail() { mail = await api("/admin/mail"); }
   async function loadChannels() { channels = (await api("/admin/channels")).items; }
   async function loadPrices() {
     const r = await api("/admin/price-catalog");
@@ -247,6 +249,16 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
           </div>`;
         }).join("")}</div>
         ${msg(flash.channels)}
+      </section>
+
+      <section class="card">
+        <h2>邮件 Resend <span class="muted" style="font-weight:400;font-size:13px">（注册、找回密码的验证码邮件；${mail.fromEnv ? "当前由环境变量提供" : mail.hasKey ? "已设置" : "未设置时验证码直接显示在页面上，仅适合测试"}）</span></h2>
+        <form class="row" id="mail-form">
+          <label class="muted" for="mail-key">API Key</label><input id="mail-key" name="apiKey" type="password" autocomplete="new-password" style="width:320px" placeholder="${mail.hasKey ? "已设置 " + esc(mail.keyPreview) + "，留空不修改" : "粘贴 Resend API Key（re_ 开头）"}">
+          <button type="submit">保存</button>
+          <a class="muted" href="https://resend.com/api-keys" target="_blank" rel="noopener" style="font-size:12px">去 Resend 创建 ↗</a>
+        </form>
+        ${msg(flash.mail)}
       </section>
 
       <section class="card">
@@ -361,6 +373,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
         await loadChannels();
         checkBalances();
 
+      } else if (form.id === "mail-form") {
+        const key = new FormData(form).get("apiKey");
+        if (!key) throw new Error("请粘贴 Resend API Key");
+        mail = await api("/admin/mail", { apiKey: key });
+        flash.mail = { text: "已保存，之后的验证码会通过邮件发送" };
       } else if (form.id === "cloud-form") {
         const data = Object.fromEntries(new FormData(form).entries());
         cloud = await api("/admin/cloudinary", data);
@@ -374,6 +391,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
     } catch (err) {
       if (form.id === "codes-form") flash.codes = { err: true, text: err.message };
       else if (form.id === "cloud-form") flash.cloud = { err: true, text: err.message };
+      else if (form.id === "mail-form") flash.mail = { err: true, text: err.message };
       else if (form.dataset.channel) flash.channels = { err: true, text: err.message };
       else flash.users = { err: true, text: err.message };
     }

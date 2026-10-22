@@ -4,8 +4,19 @@
 // Local preview without RESEND_API_KEY: nothing is sent; the code is printed in
 // the terminal and shown on the page so the flow can be tested.
 
+// The Resend key comes from the environment (Vercel) or from the admin page
+// (self-hosted server); http.js loads the saved one into memory.
+let savedKey = "";
+export function setResendKey(key) {
+    savedKey = String(key || "").trim();
+}
+
+function resendKey() {
+    return String(process.env.RESEND_API_KEY || savedKey || "").trim();
+}
+
 export function mailConfigured() {
-    return Boolean(String(process.env.RESEND_API_KEY || "").trim());
+    return Boolean(resendKey());
 }
 
 // Show codes on the page only when no mail service is set up AND we are not on Vercel.
@@ -36,7 +47,7 @@ export async function sendCodeEmail(to, code, purpose, { fetchImpl = fetch } = {
     const res = await fetchImpl("https://api.resend.com/emails", {
         method: "POST",
         headers: {
-            Authorization: `Bearer ${String(process.env.RESEND_API_KEY).trim()}`,
+            Authorization: `Bearer ${resendKey()}`,
             "Content-Type": "application/json",
         },
         body: JSON.stringify({ from, to: [to], subject, text, html }),
@@ -60,7 +71,7 @@ export async function sendAdminMail(to, { subject, text, html }, { fetchImpl = f
     const from = String(process.env.LW_MAIL_FROM || "老屋作坊 <onboarding@resend.dev>").trim();
     const res = await fetchImpl("https://api.resend.com/emails", {
         method: "POST",
-        headers: { Authorization: `Bearer ${String(process.env.RESEND_API_KEY).trim()}`, "Content-Type": "application/json" },
+        headers: { Authorization: `Bearer ${resendKey()}`, "Content-Type": "application/json" },
         body: JSON.stringify({ from, to: recipients, subject, text, html }),
     });
     if (!res.ok) {

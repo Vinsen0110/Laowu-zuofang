@@ -308,3 +308,21 @@ export async function saveCloudinary(db, input) {
     );
     return next;
 }
+
+// ---------- mail (Resend) key, for the self-hosted server ----------
+export async function getMailSettings(db) {
+    const rows = await db.query("SELECT value FROM lw_settings WHERE key = 'resend_api_key'");
+    const key = String(rows[0]?.value || "");
+    return { key, hasKey: Boolean(key), keyPreview: maskKey(key), fromEnv: Boolean(String(process.env.RESEND_API_KEY || "").trim()) };
+}
+
+export async function saveMailSettings(db, input) {
+    const key = String(input?.apiKey ?? "").trim();
+    if (key && !/^re_[A-Za-z0-9_]{10,}$/.test(key)) throw new AccountError(400, "bad_resend_key", "Resend API Key 格式不正确（应以 re_ 开头）");
+    await db.query(
+        `INSERT INTO lw_settings (key, value) VALUES ('resend_api_key', $1)
+         ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = now()`,
+        [key],
+    );
+    return getMailSettings(db);
+}
