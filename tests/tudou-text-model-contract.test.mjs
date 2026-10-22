@@ -5,9 +5,8 @@ import test from "node:test";
 const bundle = await readFile(new URL("../assets/index-B2KJ37fm.js", import.meta.url), "utf8");
 const priceTable = await readFile(new URL("../canvas-price-table.js", import.meta.url), "utf8");
 
-test("Tudou does not expose Gemini 3.8 Flash as a text model", () => {
-    assert.match(bundle, /TUDOU_TEXT_MODELS=\[\]/);
-    assert.doesNotMatch(bundle, /tudou::gemini-3\.8-flash/);
+test("Tudou offers Gemini 3.8 Flash as its text model; the default stays on 渠道 2", () => {
+    assert.match(bundle, /TUDOU_TEXT_MODELS=\["gemini-3\.8-flash"\]/);
     assert.match(
         bundle,
         /function siteTextModelNames\(e\)\{return e===RUNNINGHUB_SITE_ID\?RUNNINGHUB_TEXT_MODELS:e===TUDOU_SITE_ID\?TUDOU_TEXT_MODELS:e===GRSAI_SITE_ID\?GRSAI_TEXT_MODELS:e===APIMART_SITE_ID\?APIMART_TEXT_MODELS:e===SOON_SITE_ID\?\[\]:RUNNINGHUB_TEXT_MODELS\}/,
