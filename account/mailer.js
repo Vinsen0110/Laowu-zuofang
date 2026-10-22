@@ -61,7 +61,7 @@ export async function sendCodeEmail(to, code, purpose, { fetchImpl = fetch } = {
 }
 
 // Notices for the site owner (e.g. a supplier balance running low).
-export async function sendAdminMail(to, { subject, text, html }, { fetchImpl = fetch } = {}) {
+export async function sendAdminMail(to, { subject, text, html, attachments }, { fetchImpl = fetch } = {}) {
     const recipients = (Array.isArray(to) ? to : [to]).filter(Boolean);
     if (!recipients.length) return { delivered: false };
     if (!mailConfigured()) {
@@ -72,7 +72,7 @@ export async function sendAdminMail(to, { subject, text, html }, { fetchImpl = f
     const res = await fetchImpl("https://api.resend.com/emails", {
         method: "POST",
         headers: { Authorization: `Bearer ${resendKey()}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ from, to: recipients, subject, text, html }),
+        body: JSON.stringify({ from, to: recipients, subject, text, html, ...(attachments?.length ? { attachments } : {}) }),
     });
     if (!res.ok) {
         const detail = await res.text().catch(() => "");
