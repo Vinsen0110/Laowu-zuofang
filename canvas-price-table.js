@@ -319,8 +319,8 @@
       const groupHead = document.createElement("div");
       groupHead.className = "canvas-price-table-group-head";
       const siteName = document.createElement("span");
-      const advantages = { RH: "快速稳定", Mart: "需要魔法", Tudou: "经济实惠", Grsai: "备选一", Soon: "备选二" };
-      const notes = { tudou: "推荐 · 性价比高", apimart: "便宜 · 需开魔法", grsai: "备用", runninghub: "最稳定 · 价格较高", soon: "备用" };
+      const advantages = { RH: "快速稳定", Mart: "价格便宜", Tudou: "经济实惠", Grsai: "备选一", Soon: "备选二" };
+      const notes = { tudou: "推荐 · 性价比高", apimart: "便宜", grsai: "备用", runninghub: "最稳定 · 价格较高", soon: "备用" };
       const note = isAdmin ? advantages[site] : notes[siteRows[0]?.providerId];
       siteName.textContent = note ? `${site} · ${note}` : site;
       const count = document.createElement("span");

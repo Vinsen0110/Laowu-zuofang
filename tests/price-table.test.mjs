@@ -24,7 +24,7 @@ test("canvas price table is loaded as a local module and keeps provider currency
   assert.doesNotMatch(script, /name\.append\(model, quality\)/);
   assert.match(script, /fullWidthNote: prices\.every\(\(value\) => value == null\)/);
   assert.match(script, /RH: "快速稳定"/);
-  assert.match(script, /Mart: "需要魔法"/);
+  assert.match(script, /Mart: "价格便宜"/);
   assert.match(script, /Tudou: "经济实惠"/);
   assert.match(script, /Grsai: "备选一"/);
   assert.match(script, /Soon: "备选二"/);
