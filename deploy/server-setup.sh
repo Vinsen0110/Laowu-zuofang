@@ -53,7 +53,7 @@ TRUST_PROXY=1
 DATABASE_URL=postgres://laowu:$DB_PASS@127.0.0.1:5432/laowu
 LW_DB_DRIVER=pg
 LW_ADMIN_EMAILS=1649341617@qq.com
-LW_MAIL_FROM=老屋作坊 <no-reply@send.vinsen.top>
+LW_MAIL_FROM="老屋作坊 <no-reply@send.vinsen.top>"
 LW_IMG_SECRET=$(openssl rand -hex 32)
 ENV
     chmod 640 "$ENV_FILE" && chown root:"$APP_USER" "$ENV_FILE"
