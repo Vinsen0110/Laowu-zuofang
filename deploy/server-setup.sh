@@ -91,10 +91,12 @@ SITE
 systemctl reload caddy || systemctl restart caddy
 
 # Daily: Postgres backup (kept 14 days), an emailed copy for the admin, and the supplier balance check.
+# Every 5 minutes: settle generation tasks whose page was closed (refunds failed or stuck ones).
 cat > /etc/cron.d/laowu <<'CRON'
 SHELL=/bin/bash
 15 3 * * * postgres pg_dump -Fc laowu > /srv/laowu/backups/laowu-$(date +\%F).dump && find /srv/laowu/backups -name 'laowu-*.dump' -mtime +14 -delete
 20 3 * * * laowu cd /srv/laowu/app && set -a && . /etc/laowu/laowu.env && node deploy/mail-backup.mjs >/dev/null
+*/5 * * * * laowu cd /srv/laowu/app && set -a && . /etc/laowu/laowu.env && node deploy/sweep-tasks.mjs 2>&1 | logger -t laowu-sweep
 0 9 * * * laowu curl -fsS http://127.0.0.1:4173/api/account/cron/balances >/dev/null
 CRON
 chown postgres:postgres /srv/laowu/backups

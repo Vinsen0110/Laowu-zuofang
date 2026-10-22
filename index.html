@@ -161,9 +161,10 @@
                 var relayStart = function () { window.__lwRelay.inflight++; window.__lwRelay.last = Date.now(); };
                 var relayEnd = function () { window.__lwRelay.inflight = Math.max(0, window.__lwRelay.inflight - 1); window.__lwRelay.last = Date.now(); };
                 // The relay sends x-lw-refund when a failed generation was paid back.
-                var reportRefund = function (value) {
+                var reportRefund = function (value, code) {
                     var amount = Number(value);
                     if (amount > 0) window.dispatchEvent(new CustomEvent("lw-refunded", { detail: { amount: amount } }));
+                    if (code === "insufficient") window.dispatchEvent(new CustomEvent("lw-insufficient"));
                 };
                 var proxiedFetch = function (input, init) {
                     var method = String((init && init.method) || (input && input.method) || "GET").toUpperCase();
@@ -181,7 +182,7 @@
                                         relayInit.body = buffer;
                                         relayStart();
                                         return nativeFetch(relayUrl(rawUrl), relayInit).finally(relayEnd).then(function (response) {
-                                            reportRefund(response.headers.get("x-lw-refund"));
+                                            reportRefund(response.headers.get("x-lw-refund"), response.headers.get("x-lw-code"));
                                             return response;
                                         });
                                     });
@@ -189,7 +190,7 @@
                             }
                             relayStart();
                             return nativeFetch(relayUrl(rawUrl), relayInit).finally(relayEnd).then(function (response) {
-                                reportRefund(response.headers.get("x-lw-refund"));
+                                reportRefund(response.headers.get("x-lw-refund"), response.headers.get("x-lw-code"));
                                 if (method === "POST") window.dispatchEvent(new CustomEvent("lw-balance-changed", { detail: { url: String(rawUrl) } }));
                                 return response;
                             });
@@ -249,7 +250,7 @@
                     if (state && state.relay) {
                         relayStart();
                         this.addEventListener("loadend", relayEnd, { once: true });
-                        this.addEventListener("loadend", function () { reportRefund(this.getResponseHeader("x-lw-refund")); }, { once: true });
+                        this.addEventListener("loadend", function () { reportRefund(this.getResponseHeader("x-lw-refund"), this.getResponseHeader("x-lw-code")); }, { once: true });
                         if (String(state.method).toUpperCase() === "POST") {
                             var doneUrl = state.url;
                             this.addEventListener("loadend", function () { window.dispatchEvent(new CustomEvent("lw-balance-changed", { detail: { url: doneUrl } })); }, { once: true });
@@ -695,7 +696,7 @@
       <script type="module" src="./display-model-names.js?v=20261008-nano21-01"></script>
       <script type="module" src="./canvas-price-table.js?v=20261022-mart-01"></script>
       <script src="./prevent-canvas-drag-download.js?v=20260827-01"></script>
-      <script src="./account-ui.js?v=20261022-refund-01"></script>
+      <script src="./account-ui.js?v=20261022-notice-02"></script>
       <link rel="stylesheet" crossorigin href="./assets/index-DT58oPsm.css">
       <link rel="stylesheet" href="./theme.css?v=20261015-direct-01">
       <link rel="stylesheet" href="./startup-entry.css?v=20261015-theme-03">

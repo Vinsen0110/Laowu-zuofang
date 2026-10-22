@@ -89,7 +89,9 @@
 .lw-acct-chip.is-admin .lw-acct-avatar{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#111827}
 .lw-acct-sitestack{display:flex;flex-direction:column;align-items:flex-end;gap:4px;margin-top:6px}
 .lw-refund-note{position:fixed;top:64px;left:50%;z-index:2147483001;max-width:calc(100vw - 32px);padding:10px 16px;border:1px solid var(--lw-green-teal-200,#b7e4cf);border-radius:12px;background:var(--lw-green-teal-50,#ecfdf5);color:var(--lw-green-teal-800,#1b604a);font:600 13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;box-shadow:0 10px 30px rgb(15 23 42 / .12);opacity:0;transform:translate(-50%,-8px);pointer-events:none;transition:opacity .2s,transform .2s}
-.lw-refund-note.is-on{opacity:1;transform:translate(-50%,0)}
+.lw-refund-note.is-on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.lw-refund-note.is-warn{border-color:var(--lw-amber-200,#fde68a);background:var(--lw-amber-50,#fffbeb);color:var(--lw-amber-800,#92400e)}
+.lw-refund-note a{color:inherit;font-weight:800;text-decoration:underline}
 .lw-acct-siterow{position:relative;display:flex;align-items:center;justify-content:space-between;gap:14px;min-width:138px;height:28px;padding:0 12px 0 22px;border:1px solid var(--a-border);border-radius:10px;background:color-mix(in srgb,var(--a-bg) 88%,transparent);backdrop-filter:blur(8px);color:var(--a-text);font-size:12px;text-decoration:none;box-shadow:0 4px 12px rgb(15 23 42 / .08);transition:border-color .15s,transform .15s}
 .lw-acct-siterow::before{content:"";position:absolute;left:10px;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:var(--a-primary)}
 a.lw-acct-siterow:hover{transform:translateX(-2px)}
@@ -291,9 +293,7 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
 
   // The relay reports money it gave back (failed generation); say so and show the new balance.
   let refundNoteTimer = null;
-  window.addEventListener("lw-refunded", (event) => {
-    const amount = Number(event.detail?.amount);
-    if (!user || !(amount > 0)) return;
+  function showNote(html, warn) {
     let note = document.querySelector(".lw-refund-note");
     if (!note) {
       note = document.createElement("div");
@@ -301,10 +301,21 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
       note.setAttribute("role", "status");
       document.body.appendChild(note);
     }
-    note.textContent = `生成失败，本次费用 ${money(amount)} 已退回你的余额`;
+    note.innerHTML = html;
+    note.classList.toggle("is-warn", Boolean(warn));
     note.classList.add("is-on");
     clearTimeout(refundNoteTimer);
-    refundNoteTimer = setTimeout(() => note.classList.remove("is-on"), 6000);
+    refundNoteTimer = setTimeout(() => note.classList.remove("is-on"), warn ? 8000 : 6000);
+  }
+  window.addEventListener("lw-refunded", (event) => {
+    const amount = Number(event.detail?.amount);
+    if (!user || !(amount > 0)) return;
+    showNote(esc(`生成失败，本次费用 ${money(amount)} 已退回你的余额`));
+    refresh();
+  });
+  window.addEventListener("lw-insufficient", () => {
+    if (!user) return;
+    showNote(`余额不足，没有扣费。当前余额 ${esc(money(user.balance))}，<a href="${BUY_URL}" target="_blank" rel="noopener noreferrer">购买兑换码</a>后在右上角充值`, true);
     refresh();
   });
 
