@@ -21,11 +21,8 @@
 .lw-tip kbd{margin-left:8px;padding:1px 5px;border-radius:4px;background:var(--lw-ui-gray-100);color:var(--lw-ui-gray-600);font:inherit;font-size:11px}
 .dark .lw-tip{border-color:var(--lw-stone-700);background:var(--lw-stone-900);color:var(--lw-stone-100)}
 .dark .lw-tip kbd{background:var(--lw-stone-800);color:var(--lw-stone-300)}
-body:has(.pointer-events-auto.flex.w-14.flex-col button:hover) .ant-tooltip,body:has(.lw-keys-btn:hover) .ant-tooltip{display:none!important}
-.lw-keys-btn{display:grid;place-items:center;width:28px;height:28px;margin:0 4px 0 2px;border:0;border-radius:999px;background:transparent;color:var(--lw-ui-gray-600);font:700 13px/1 -apple-system,BlinkMacSystemFont,sans-serif;cursor:pointer}
-.lw-keys-btn:hover{background:var(--lw-ui-gray-100);color:var(--lw-ui-gray-900)}
-.dark .lw-keys-btn{color:var(--lw-stone-300)}
-.dark .lw-keys-btn:hover{background:var(--lw-stone-800);color:var(--lw-stone-50)}
+body:has(.pointer-events-auto.flex.w-14.flex-col button:hover) .ant-tooltip{display:none!important}
+.laowu-keys-glyph{display:grid;place-items:center;width:18px;height:18px;border:1.6px solid currentColor;border-radius:999px;font:700 11px/1 -apple-system,BlinkMacSystemFont,sans-serif}
 
 .lw-empty{position:fixed;inset:0;z-index:30;display:grid;place-items:center;pointer-events:none}
 .lw-empty-card{display:flex;flex-direction:column;align-items:center;max-width:560px;padding:0 24px;text-align:center;animation:lw-empty-in .5s cubic-bezier(.2,.7,.2,1) both}
@@ -59,6 +56,8 @@ body:has(.pointer-events-auto.flex.w-14.flex-col button:hover) .ant-tooltip,body
 .dark .lw-keys kbd{border-color:var(--lw-stone-700);background:var(--lw-stone-800);color:var(--lw-stone-200)}
 
 .ant-message{top:16px!important}
+.laowu-node-tip .ant-tooltip-inner,.laowu-node-tip .ant-tooltip-container{color:var(--lw-tooltip-text)!important;border:1px solid var(--lw-ui-gray-200)}
+.dark .laowu-node-tip .ant-tooltip-inner,.dark .laowu-node-tip .ant-tooltip-container{border-color:var(--lw-stone-700)}
 .ant-message .ant-message-notice{padding:0!important;background:transparent!important;box-shadow:none!important;border:0!important}
 .ant-message .ant-message-notice-wrapper{padding:10px 16px!important;border:1px solid var(--lw-ui-gray-200)!important;border-radius:12px!important;background:var(--lw-white)!important;color:var(--lw-ui-gray-900)!important;font-size:13px!important;font-weight:500;box-shadow:0 10px 30px rgb(var(--lw-slate-900-rgb) / .12)!important}
 .ant-message .ant-message-notice-icon-error{color:var(--lw-red-600)!important}
@@ -84,6 +83,7 @@ body:has(.pointer-events-auto.flex.w-14.flex-col button:hover) .ant-tooltip,body
     "深色": ["切换深色模式"],
     "浅色": ["切换浅色模式"],
     "设置": ["设置"],
+    "快捷键": ["快捷键", "?"],
     "打开小地图": ["打开小地图"],
     "关闭小地图": ["关闭小地图"],
   };
@@ -94,12 +94,11 @@ body:has(.pointer-events-auto.flex.w-14.flex-col button:hover) .ant-tooltip,body
   function tipText(button) {
     const label = button.getAttribute("aria-label") || "";
     if (label.startsWith("选择站点")) return ["切换渠道"];
-    if (button.classList.contains("lw-keys-btn")) return ["快捷键", "?"];
     return TIPS[label] || (label ? [label] : null);
   }
   document.addEventListener("pointerover", (event) => {
     const button = event.target.closest?.("button");
-    const zone = button && (button.closest(".pointer-events-auto.flex.w-14.flex-col") ? "left" : button.closest(".flex.h-11.items-center.overflow-hidden.rounded-full, .lw-keys-btn") ? "bottom" : null);
+    const zone = button && (button.closest(".pointer-events-auto.flex.w-14.flex-col") ? "left" : button.closest(".flex.h-11.items-center.overflow-hidden.rounded-full") ? "bottom" : null);
     if (!zone) { if (tipFor && !tipFor.contains(event.target)) hideTip(); return; }
     const text = tipText(button);
     if (!text) return;
@@ -201,26 +200,13 @@ body:has(.pointer-events-auto.flex.w-14.flex-col button:hover) .ant-tooltip,body
   // This script runs from <head>; attach to the page once <body> exists.
   function start() {
   document.body.appendChild(tip);
-  // A visible "?" in the bottom bar opens the shortcut panel.
-  function placeKeysButton() {
-    const bar = document.querySelector(".canvas-site-switch-button")?.closest(".flex.h-11.items-center.overflow-hidden.rounded-full");
-    if (!bar || bar.querySelector(".lw-keys-btn")) return;
-    const sep = document.createElement("span");
-    sep.className = "mx-1 h-6 w-px lw-keys-sep";
-    sep.style.background = "var(--lw-ui-gray-200)";
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "lw-keys-btn";
-    btn.setAttribute("aria-label", "快捷键");
-    btn.textContent = "?";
-    btn.addEventListener("click", (event) => { event.stopPropagation(); hideTip(); toggleKeys(); });
-    bar.append(sep, btn);
-  }
+  // The "?" under 设置 in the left toolbar (drawn by the bundle) opens the panel.
+  globalThis.__lwToggleKeys = () => { hideTip(); toggleKeys(); };
   let pending = false;
   new MutationObserver(() => {
     if (pending) return;
     pending = true;
-    requestAnimationFrame(() => { pending = false; renderEmpty(); placeKeysButton(); if (tipFor && !document.contains(tipFor)) hideTip(); });
+    requestAnimationFrame(() => { pending = false; renderEmpty(); if (tipFor && !document.contains(tipFor)) hideTip(); });
   }).observe(document.body, { childList: true, subtree: true });
   // The canvas registers __lwStartFromPrompt a moment after its last DOM change; check again shortly.
   setInterval(renderEmpty, 1000);

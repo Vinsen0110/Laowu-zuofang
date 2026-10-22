@@ -38,14 +38,14 @@ test("toolbar hover tips, the ? shortcut panel and one look for pop-up messages"
 test("tips follow the theme, replace the native title, and a visible ? opens the shortcuts", () => {
     assert.match(polish, /\.dark \.lw-tip\{/);
     assert.match(polish, /button\.dataset\.lwTitle = button\.title; button\.removeAttribute\("title"\);/);
-    assert.match(polish, /btn\.className = "lw-keys-btn";/);
-    assert.match(html, /button\[aria-label="快捷键"\]:not\(\.lw-keys-btn\)/);
+    assert.match(polish, /globalThis\.__lwToggleKeys = \(\) => \{ hideTip\(\); toggleKeys\(\); \};/);
+    assert.match(bundle, /y\.jsx\(tg,\{id:"tool-keys",label:"\\u5FEB\\u6377\\u952E",[^}]*onClick:\(\)=>globalThis\.__lwToggleKeys\?\.\(\)/);
 });
 
 test("image nodes, uploaded or generated, show the hover toolbar with crop and friends", () => {
     assert.match(bundle, /pv=vc&&!Ye&&!\(QM\(vc\)&&!vc\.metadata\?\.content\)&&Yt===vc\.id\?vc:null/);
     assert.match(bundle, /if\(lwNode\?\.type===Ne\.Image&&lwNode\.metadata\?\.content\)\{Zt\(K\),cv\(K\);return\}/);
-    assert.match(bundle, /ge=new Set\(\["download","copyPrompt","reversePrompt","doodle","crop","split","upscale","view"\]\)/);
+    assert.match(bundle, /ge=new Set\(\["reversePrompt","crop","split"\]\)/);
 });
 
 test("the settings modal has a single frame on the newer antd markup", () => {
@@ -58,4 +58,13 @@ test("only one tooltip: the bundle's own toolbar label is switched off", () => {
 
 test("toasts are a single pill, without antd's outer white box", () => {
     assert.match(polish, /\.ant-message \.ant-message-notice\{padding:0!important;background:transparent!important;box-shadow:none!important;border:0!important\}/);
+});
+
+test("node toolbar tips use the theme's text colour instead of antd's white", () => {
+    assert.match(bundle, /mouseEnterDelay:\.2,rootClassName:"laowu-node-tip",color:"var\(--lw-tooltip-bg\)"/);
+    assert.match(polish, /\.laowu-node-tip \.ant-tooltip-inner,\.laowu-node-tip \.ant-tooltip-container\{color:var\(--lw-tooltip-text\)!important/);
+});
+
+test("the left toolbar has no undo button (Cmd+Z still works)", () => {
+    assert.doesNotMatch(bundle, /id:"tool-undo"/);
 });
