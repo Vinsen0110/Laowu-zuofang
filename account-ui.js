@@ -169,6 +169,56 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
 .lw-am-item .lw-am-kbd{margin-left:auto;color:var(--a-muted)}
 .lw-am-item.is-danger:hover{color:var(--a-err)}
 .lw-am-item.is-danger:hover svg{color:var(--a-err)}
+/* ---------- split sign-in page (signed out) ---------- */
+.lw-gate{--g-ink:var(--lw-ink-cool-900,#16181d);--g-muted:var(--lw-slate-cool-500,#6b7280);--g-line:var(--lw-cool-gray-180,#e6e7eb);--g-bg:var(--lw-white,#fff);--g-brand:var(--lw-green-teal-700,#1f7a55);position:fixed;inset:0;z-index:2147482000;display:grid;grid-template-columns:1.1fr 1fr;background:var(--g-bg);color:var(--g-ink);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+.dark .lw-gate{--g-ink:var(--lw-cool-gray-60,#f1f5f9);--g-muted:var(--lw-cool-gray-350,#94a3b8);--g-line:var(--lw-ink-cool-700,#334155);--g-bg:var(--lw-ink-cool-950,#11151c);--g-brand:var(--lw-green-teal-600,#2e9a6d)}
+.lw-gate-art{position:relative;overflow:hidden;background:#0f1115}
+.lw-gate-wall{position:absolute;inset:-60px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:14px;transform:rotate(-6deg) scale(1.08)}
+.lw-gate-col{display:flex;flex-direction:column;gap:14px;animation:lw-gate-drift 60s linear infinite}
+.lw-gate-col:nth-child(2){animation-duration:72s;animation-direction:reverse}
+@keyframes lw-gate-drift{to{transform:translateY(-50%)}}
+@media (prefers-reduced-motion:reduce){.lw-gate-col{animation:none}}
+.lw-gate-tile{flex:0 0 auto;border-radius:14px;box-shadow:0 10px 30px rgb(0 0 0 / .35)}
+.lw-gate-tile.t1{height:260px;background:radial-gradient(120% 90% at 20% 20%,#ffd29d,transparent 60%),radial-gradient(100% 80% at 80% 80%,#ff6b8b,transparent 60%),#3b1f5c}
+.lw-gate-tile.t2{height:200px;background:radial-gradient(90% 80% at 70% 30%,#9be7d5,transparent 60%),radial-gradient(100% 90% at 20% 90%,#3a7bd5,transparent 55%),#0c2340}
+.lw-gate-tile.t3{height:300px;background:linear-gradient(160deg,#f6d365 0%,#fda085 45%,#7b4397 100%)}
+.lw-gate-tile.t4{height:220px;background:radial-gradient(80% 70% at 30% 30%,#c3f0ca,transparent 60%),radial-gradient(90% 90% at 90% 70%,#2e8b57,transparent 60%),#10261c}
+.lw-gate-tile.t5{height:240px;background:radial-gradient(100% 80% at 50% 0%,#ffe9a8,transparent 55%),linear-gradient(180deg,#b5651d,#3e1f0d)}
+.lw-gate-tile.t6{height:190px;background:conic-gradient(from 210deg at 60% 40%,#ff9a9e,#fad0c4,#a1c4fd,#c2e9fb,#ff9a9e)}
+.lw-gate-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgb(10 11 14 / .1),rgb(10 11 14 / .82))}
+.lw-gate-caption{position:absolute;left:48px;right:48px;bottom:48px;color:#fff}
+.lw-gate-brand{display:flex;align-items:center;gap:10px;margin-bottom:22px;font-weight:600;font-size:15px}
+.lw-gate-brand img,.lw-gate-mobile-brand img{width:34px;height:34px;padding:3px;border-radius:10px;background:#fff}
+.lw-gate-caption h1{margin:0 0 10px;font-size:34px;line-height:1.25;font-weight:650;letter-spacing:-.01em;color:#fff}
+.lw-gate-caption p{margin:0;color:rgb(255 255 255 / .72);font-size:15px}
+.lw-gate-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.lw-gate-tags span{padding:5px 10px;border:1px solid rgb(255 255 255 / .2);border-radius:999px;background:rgb(255 255 255 / .08);color:rgb(255 255 255 / .85);font-size:12px;backdrop-filter:blur(6px)}
+.lw-gate-side{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;overflow:auto}
+.lw-gate-slot{width:100%;max-width:360px}
+.lw-gate-side{position:relative;isolation:isolate}
+.lw-gate-kitties{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.lw-gate-kitties i{position:absolute;display:block;background:linear-gradient(140deg,var(--g-kitty-a),var(--g-kitty-b));-webkit-mask:url(./kitty.png) center/contain no-repeat;mask:url(./kitty.png) center/contain no-repeat}
+.lw-gate{--g-kitty-a:#fce7f3;--g-kitty-b:#ede9fe}
+.dark .lw-gate{--g-kitty-a:#3a2232;--g-kitty-b:#2a2540}
+.lw-gate-mobile-brand{display:none;align-items:center;gap:10px;margin-bottom:28px;font-weight:600;font-size:15px}
+.lw-gate .lw-entry-acct,.lw-gate .lw-entry-acct.is-guest{--a-bg:var(--g-bg);--a-text:var(--g-ink);--a-muted:var(--g-muted);--a-border:var(--g-line);--a-primary:var(--g-ink);--a-primary-hover:var(--g-ink);margin:0;padding:0;border:0;border-radius:0;background:transparent}
+.lw-gate .lw-entry-acct .lw-entry-title{margin:0 0 6px;font-size:26px;font-weight:650;letter-spacing:-.01em}
+.lw-gate .lw-entry-acct .lw-entry-sub{margin:0 0 26px;font-size:14px}
+.lw-gate .lw-entry-acct .lw-acct-tabs{display:flex;gap:22px;padding:0;margin:0 0 22px;border-radius:0;border-bottom:1px solid var(--g-line);background:none}
+.lw-gate .lw-entry-acct .lw-acct-tab{height:auto;padding:0 0 10px;margin-bottom:-1px;border-radius:0;border-bottom:2px solid transparent;font-size:14px;font-weight:500;box-shadow:none}
+.lw-gate .lw-entry-acct .lw-acct-tab[aria-selected="true"]{background:none;color:var(--g-ink);border-color:var(--g-ink);box-shadow:none}
+.lw-gate .lw-entry-acct .lw-acct-form{gap:16px}
+.lw-gate .lw-entry-acct .lw-acct-label{gap:6px;color:var(--g-ink);font-size:13px;font-weight:500}
+.lw-gate .lw-entry-acct .lw-acct-input{height:44px;padding:0 14px;border-radius:10px;font-size:14.5px}
+.lw-gate .lw-entry-acct .lw-acct-input:focus{border-color:var(--g-ink);box-shadow:0 0 0 4px rgb(22 24 29 / .06)}
+.lw-gate .lw-entry-acct .lw-acct-btn{height:46px;border-radius:10px;background:var(--g-ink);color:var(--g-bg);font-size:15px;font-weight:600}
+.lw-gate .lw-entry-acct .lw-acct-btn:hover{opacity:.9}
+.lw-gate .lw-entry-acct .lw-acct-btn.is-ghost{height:44px;background:transparent;color:var(--g-ink);border:1px solid var(--g-line);font-size:13px}
+.lw-gate .lw-entry-acct .lw-acct-forgot{align-self:center;margin-top:-4px;color:var(--g-muted)}
+.lw-gate-foot{margin:24px 0 0;color:var(--g-muted);font-size:12.5px;text-align:center}
+.lw-gate-foot a{color:var(--g-brand);font-weight:600;text-decoration:none}
+.lw-gate-foot a:hover{text-decoration:underline}
+@media (max-width:860px){.lw-gate{grid-template-columns:1fr}.lw-gate-art{display:none}.lw-gate-side{justify-content:flex-start;padding:48px 24px}.lw-gate-mobile-brand{display:flex}}
 .lw-start .lw-acct{display:none}
 .canvas-balance-stack{display:none !important}
 .startup-entry.lw-gated .startup-entry-workspace>h2,.startup-entry.lw-gated .startup-entry-actions{display:none}
@@ -620,8 +670,9 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
   function entryView() {
     if (!loaded) return `<div class="lw-entry-sub" style="margin:0">正在检查登录状态…</div>`;
     if (!user) {
-      return `<h2 class="lw-entry-title">${mode === "register" ? "注册老屋作坊账号" : mode === "reset" ? "找回密码" : "登录老屋作坊"}</h2>
-        <p class="lw-entry-sub">${mode === "reset" ? "输入注册时用的邮箱，收到验证码后设置新密码。" : mode === "register" ? "用邮箱注册，验证码会发送到你的邮箱。生成费用从账户余额扣除。" : "登录后即可新建或打开工程，生成费用从账户余额扣除。"}</p>${guestView()}`;
+      return `<h2 class="lw-entry-title">${mode === "register" ? "创建账号" : mode === "reset" ? "找回密码" : "欢迎回来"}</h2>
+        <p class="lw-entry-sub">${mode === "reset" ? "输入注册时用的邮箱，收到验证码后设置新密码" : mode === "register" ? "用邮箱注册，建议使用 QQ / 163 邮箱接收验证码" : "登录后继续你的画布工程"}</p>${guestView()}
+        <p class="lw-gate-foot">还没有算力？<a href="${BUY_URL}" target="_blank" rel="noopener noreferrer">购买兑换码</a>，登录后在右上角充值</p>`;
     }
     return `<div class="lw-entry-user">
         <span class="lw-acct-avatar" aria-hidden="true">${avatarImg()}</span>
@@ -642,21 +693,53 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
         </div>${msgView()}</form>` : ""}`;
   }
 
+  // Signed-out visitors see a full-screen split sign-in page (artwork wall + form)
+  // over the start screen; the same entry card and forms live in its right half.
+  let gate = null;
+  const GATE_TILES = ["t1", "t4", "t6", "t2", "t5", "t3"];
+  // Soft Kitty silhouettes scattered around the form: [left %, top %, size px, rotation, opacity].
+  const GATE_KITTIES = [[6, 8, 92, -14, 1], [78, 5, 64, 12, 0.9], [86, 38, 110, -8, 0.8], [4, 62, 70, 10, 0.9], [70, 80, 84, -16, 1], [18, 88, 52, 18, 0.8], [44, 3, 46, 6, 0.75]];
+  function gateArt() {
+    const col = (shift) => `<div class="lw-gate-col">${[...GATE_TILES.slice(shift), ...GATE_TILES.slice(0, shift), ...GATE_TILES].map((t) => `<div class="lw-gate-tile ${t}"></div>`).join("")}</div>`;
+    return `<section class="lw-gate-art" aria-hidden="true">
+        <div class="lw-gate-wall">${col(0)}${col(2)}${col(4)}</div>
+        <div class="lw-gate-shade"></div>
+        <div class="lw-gate-caption">
+          <div class="lw-gate-brand"><img src="./kitty.png" alt="">老屋作坊</div>
+          <h1>一张无限画布，<br>把想法变成图片</h1>
+          <p>文生图、图生图、多图参考与局部修改，在同一张画布上完成。</p>
+          <div class="lw-gate-tags"><span>Nano Banana Pro</span><span>GPT Image 2.5</span><span>最高 4K</span><span>失败自动退回</span></div>
+        </div>
+      </section>`;
+  }
+  function gateSide() {
+    if (!gate) {
+      gate = document.createElement("div");
+      gate.className = "lw-gate";
+      gate.innerHTML = `${gateArt()}<main class="lw-gate-side"><div class="lw-gate-kitties" aria-hidden="true">${GATE_KITTIES.map(([x, y, size, rot, op]) => `<i style="left:${x}%;top:${y}%;width:${size}px;height:${size}px;rotate:${rot}deg;opacity:${op}"></i>`).join("")}</div><div class="lw-gate-mobile-brand"><img src="./kitty.png" alt="">老屋作坊</div><div class="lw-gate-slot"></div></main>`;
+      document.body.appendChild(gate);
+    }
+    return gate.querySelector(".lw-gate-slot");
+  }
+
   function renderEntry(force) {
     const workspace = document.querySelector(".startup-entry-workspace");
     const screen = workspace && workspace.closest(".startup-entry");
     document.documentElement.classList.toggle("lw-start", Boolean(workspace));
+    const gated = Boolean(workspace) && loaded && !user;
+    if (!gated && gate) { gate.remove(); gate = null; }
     if (!workspace) { entry = null; return; }
+    const target = gated ? gateSide() : workspace;
     let created = false;
-    if (!entry || !workspace.contains(entry)) {
+    if (!entry) {
       created = true;
       entry = document.createElement("div");
       entry.className = "lw-entry-acct";
       entry.addEventListener("click", onClick);
       entry.addEventListener("submit", onSubmit);
-      workspace.appendChild(entry);
     }
-    screen.classList.toggle("lw-gated", loaded && !user);
+    if (!target.contains(entry)) { target.appendChild(entry); created = true; }
+    screen.classList.toggle("lw-gated", gated);
     entry.classList.toggle("is-guest", !user);
     if (force || created) paint(entry, entryView());
   }
