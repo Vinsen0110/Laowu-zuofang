@@ -71,19 +71,19 @@ test("RH stops starting queries after ten minutes and submits only one billable 
         /RH 图像生成超时/,
     );
     assert.equal(task.submissions().length, 1);
-    assert.equal(task.queries().length, 200);
+    assert.equal(task.queries().length, 399);
     assert.equal(task.queries()[0].at, 2_000);
     assert.equal(task.queries().at(-1).at, 599_000);
     assert.ok(task.queries().every(request => request.at < 600_000));
-    assert.equal(task.elapsed(), 602_000, "the normal 3s sleep may cross the limit, but no extra query starts");
+    assert.equal(task.elapsed(), 600_500, "the normal 1.5s sleep may cross the limit, but no extra query starts");
     assert.ok(task.queries().every(request => request.body.taskId === task.taskId));
 });
 
-test("RH keeps its first 2s delay and normal 3s query interval", async () => {
+test("RH keeps its first 2s delay and normal 1.5s query interval", async () => {
     const task = clockedTask({ completesAt: 8_000 });
     await runRunningHubImageGeneration(config, "draw", [], task.options);
-    assert.deepEqual(task.sleeps, [2_000, 3_000, 3_000]);
-    assert.deepEqual(task.queries().map(request => request.at), [2_000, 5_000, 8_000]);
+    assert.deepEqual(task.sleeps, [2_000, 1_500, 1_500, 1_500, 1_500]);
+    assert.deepEqual(task.queries().map(request => request.at), [2_000, 3_500, 5_000, 6_500, 8_000]);
     assert.equal(task.submissions().length, 1);
 });
 
@@ -105,6 +105,6 @@ test("an explicit RH task timeout still overrides the longer default", async () 
         runRunningHubImageGeneration(config, "draw", [], { ...task.options, timeoutMs: 7_000 }),
         /RH 图像生成超时/,
     );
-    assert.deepEqual(task.queries().map(request => request.at), [2_000, 5_000]);
+    assert.deepEqual(task.queries().map(request => request.at), [2_000, 3_500, 5_000, 6_500]);
     assert.equal(task.submissions().length, 1);
 });

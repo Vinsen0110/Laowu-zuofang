@@ -356,7 +356,7 @@ export async function runRunningHubImageGeneration(config, prompt, imageUrls = [
         } catch (error) {
             if (options.signal?.aborted || !retryableQueryError(error) || ++consecutiveErrors > 3) throw error;
         }
-        await sleep(consecutiveErrors ? Math.min(10_000, 3_000 * (consecutiveErrors + 1)) : 3_000, options.signal);
+        await sleep(consecutiveErrors ? Math.min(10_000, 3_000 * (consecutiveErrors + 1)) : 1_500, options.signal);
     }
     throw new Error("RH 图像生成超时，请稍后重试");
 }
