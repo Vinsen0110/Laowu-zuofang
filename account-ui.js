@@ -120,6 +120,52 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
 .lw-acct-foot>*{flex:1}
 .lw-acct-link{display:grid;place-items:center;height:38px;border:1px solid var(--a-border);border-radius:9px;color:var(--a-text);font-size:13px;font-weight:600;text-decoration:none}
 .lw-acct-link:hover{background:var(--a-soft)}
+/* ---------- account menu (signed in) ---------- */
+.lw-acct-panel.is-menu{width:296px;padding:6px;border-radius:12px;box-shadow:0 1px 2px rgb(15 23 42 / .06),0 12px 32px rgb(15 23 42 / .14)}
+.lw-am-sec{padding:10px 10px}
+.lw-am-sep{height:1px;margin:2px 4px;background:var(--a-border)}
+.lw-am-who{display:flex;align-items:center;gap:10px}
+.lw-am-avatar{flex:0 0 auto;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--a-soft);border:1px solid var(--a-border);color:var(--a-text);font-size:13px;font-weight:600}
+.lw-am-id{min-width:0;flex:1}
+.lw-am-name{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:600;line-height:18px}
+.lw-am-name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lw-am-email{overflow:hidden;color:var(--a-muted);font-size:12px;line-height:16px;text-overflow:ellipsis;white-space:nowrap}
+.lw-am-icon{display:inline-grid;place-items:center;width:22px;height:22px;padding:0;border:0;border-radius:6px;background:none;color:var(--a-muted);cursor:pointer;opacity:.5;transition:opacity .12s,background .12s,color .12s}
+.lw-am-who:hover .lw-am-icon,.lw-am-icon:focus-visible{opacity:1}
+.lw-am-icon:hover{background:var(--a-soft);color:var(--a-text)}
+.lw-am-rename{display:flex;gap:6px;flex:1}
+.lw-am-rename .lw-am-field{height:30px}
+.lw-am-label{color:var(--a-muted);font-size:12px;line-height:16px}
+.lw-am-balance{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:2px}
+.lw-am-amount{font-size:22px;font-weight:600;line-height:28px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.lw-am-amount.is-low{color:var(--a-err)}
+.lw-am-buy{display:inline-flex;align-items:center;gap:4px;height:26px;padding:0 9px;border:1px solid var(--a-border);border-radius:7px;color:var(--a-text);font-size:12px;font-weight:500;text-decoration:none;transition:background .12s,border-color .12s}
+.lw-am-buy:hover{background:var(--a-soft);border-color:var(--a-muted)}
+.lw-am-redeem{margin-top:10px}
+.lw-am-inputwrap{display:flex;align-items:center;height:34px;padding:0 3px 0 10px;border:1px solid var(--a-border);border-radius:8px;background:var(--a-bg);transition:border-color .12s,box-shadow .12s}
+.lw-am-inputwrap:focus-within{border-color:var(--a-primary);box-shadow:0 0 0 3px rgb(34 121 90 / .12)}
+.lw-am-inputwrap svg{flex:0 0 auto;color:var(--a-muted)}
+.lw-am-field{flex:1;min-width:0;height:32px;padding:0 8px;border:0;background:transparent;color:var(--a-text);font:500 12.5px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.02em;text-transform:uppercase;outline:none}
+.lw-am-field::placeholder{color:var(--a-muted);opacity:.6;text-transform:none;font-family:inherit;letter-spacing:0}
+.lw-am-rename .lw-am-field{padding:0 9px;border:1px solid var(--a-border);border-radius:7px;font-family:inherit;font-size:13px;font-weight:500;text-transform:none;letter-spacing:0}
+.lw-am-submit{flex:0 0 auto;height:26px;padding:0 10px;border:0;border-radius:6px;background:var(--a-text);color:var(--a-bg);font-family:inherit;font-size:12px;font-weight:600;line-height:1;cursor:pointer;transition:opacity .12s}
+.lw-am-submit:hover{opacity:.85}
+.lw-am-submit:disabled{opacity:.4;cursor:default}
+.lw-am-note{margin-top:6px;color:var(--a-muted);font-size:11.5px;line-height:16px}
+.lw-am-redeem .lw-acct-msg{margin-top:8px}
+.lw-am-ledger{margin-top:4px;max-height:168px;overflow:auto}
+.lw-am-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:5px 0;font-size:12px}
+.lw-am-row-note{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lw-am-row-time{margin-left:6px;color:var(--a-muted);font-size:11px}
+.lw-am-row-amt{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--a-muted)}
+.lw-am-row-amt.is-plus{color:var(--a-primary)}
+.lw-am-empty{padding:4px 0;color:var(--a-muted);font-size:12px}
+.lw-am-item{display:flex;align-items:center;gap:10px;width:100%;height:32px;padding:0 10px;border:0;border-radius:7px;background:none;color:var(--a-text);font-family:inherit;font-size:13px;font-weight:500;line-height:1;text-align:left;text-decoration:none;cursor:pointer;transition:background .1s}
+.lw-am-item:hover,.lw-am-item:focus-visible{background:var(--a-soft);outline:none}
+.lw-am-item svg{flex:0 0 auto;color:var(--a-muted)}
+.lw-am-item .lw-am-kbd{margin-left:auto;color:var(--a-muted)}
+.lw-am-item.is-danger:hover{color:var(--a-err)}
+.lw-am-item.is-danger:hover svg{color:var(--a-err)}
 .lw-start .lw-acct{display:none}
 .canvas-balance-stack{display:none !important}
 .startup-entry.lw-gated .startup-entry-workspace>h2,.startup-entry.lw-gated .startup-entry-actions{display:none}
@@ -425,41 +471,54 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
     return `<div class="lw-acct-msg ${message.type === "error" ? "is-error" : "is-ok"}" role="${message.type === "error" ? "alert" : "status"}">${esc(message.text)}</div>`;
   }
 
+  const ICON = {
+    pencil: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+    ticket: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9a3 3 0 0 0 0 6v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a3 3 0 0 0 0-6V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1Z"/><path d="M13 5v2M13 17v2M13 11v2"/></svg>',
+    out: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>',
+    admin: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>',
+    ext: '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>',
+  };
+
   function userView() {
+    const isAdmin = user.role === "admin";
+    const initial = esc((user.displayName || user.email).slice(0, 1).toUpperCase());
     const rows = ledgerItems.length
       ? ledgerItems.map((i) => `
-        <div class="lw-acct-ledger-row">
-          <span class="lw-acct-ledger-note"><span>${esc(i.note || KIND_TEXT[i.kind] || i.kind)}</span><span class="lw-acct-ledger-time">${esc(timeText(i.createdAt))}</span></span>
-          <span class="lw-acct-ledger-amt ${i.amount > 0 ? "is-plus" : ""}">${i.amount > 0 ? "+" : "−"}${esc(money(Math.abs(i.amount)).slice(1))}</span>
+        <div class="lw-am-row">
+          <span class="lw-am-row-note" title="${esc(i.note || KIND_TEXT[i.kind] || i.kind)}">${esc(i.note || KIND_TEXT[i.kind] || i.kind)}<span class="lw-am-row-time">${esc(timeText(i.createdAt))}</span></span>
+          <span class="lw-am-row-amt ${i.amount > 0 ? "is-plus" : ""}">${i.amount > 0 ? "+" : "−"}${esc(money(Math.abs(i.amount)).slice(1))}</span>
         </div>`).join("")
-      : `<div class="lw-acct-empty">还没有记录</div>`;
+      : `<div class="lw-am-empty">还没有记录</div>`;
+    const who = editingName
+      ? `<form class="lw-am-rename" data-form="name"><input class="lw-am-field" name="displayName" maxlength="20" value="${esc(user.displayName || "")}" aria-label="昵称" autocomplete="off"><button class="lw-am-submit" type="submit">保存</button></form>`
+      : `<div class="lw-am-id"><div class="lw-am-name"><span>${esc(user.displayName || user.email)}</span><button type="button" class="lw-am-icon" data-act="rename" title="改名" aria-label="改名">${ICON.pencil}</button></div><div class="lw-am-email">${esc(user.email)}</div></div>`;
     return `
-      <div class="lw-acct-head">
-        <span class="lw-acct-avatar" aria-hidden="true">${esc((user.displayName || user.email).slice(0, 1).toUpperCase())}</span>
-        <span class="lw-acct-who">${editingName
-          ? `<form class="lw-acct-name-form" data-form="name"><input class="lw-acct-input" name="displayName" maxlength="20" value="${esc(user.displayName || "")}" aria-label="昵称" autocomplete="off"><button class="lw-acct-btn" type="submit">保存</button></form>`
-          : `<div class="lw-acct-name">${esc(user.displayName || user.email)} <button type="button" class="lw-acct-linkbtn lw-acct-rename" data-act="rename">改名</button></div>`}<div class="lw-acct-role">${esc(user.email)}</div></span>
-      </div>
-      <div class="lw-acct-balance">
-        <div class="lw-acct-balance-top"><span class="lw-acct-balance-label">账户余额</span>${user.role === "admin" ? "" : `<a class="lw-acct-buy" href="${BUY_URL}" target="_blank" rel="noopener noreferrer">购买兑换码 ↗</a>`}</div>
-        <div class="lw-acct-balance-value">${esc(money(user.balance))}</div>
-      </div>
-      <form class="lw-acct-form" data-form="redeem">
-        <label class="lw-acct-label" for="lw-acct-code">兑换码充值</label>
-        <div class="lw-acct-row">
-          <input class="lw-acct-input" id="lw-acct-code" name="code" placeholder="LW-XXXX-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false" required>
-          <button class="lw-acct-btn" type="submit" ${busy ? "disabled" : ""}>兑换</button>
+      <div class="lw-am-sec lw-am-who"><span class="lw-am-avatar" aria-hidden="true">${initial}</span>${who}</div>
+      <div class="lw-am-sep"></div>
+      <div class="lw-am-sec">
+        <div class="lw-am-label">余额</div>
+        <div class="lw-am-balance">
+          <span class="lw-am-amount ${!isAdmin && user.balance < LOW_BALANCE ? "is-low" : ""}">${esc(money(user.balance))}</span>
+          ${isAdmin ? "" : `<a class="lw-am-buy" href="${BUY_URL}" target="_blank" rel="noopener noreferrer">购买兑换码${ICON.ext}</a>`}
         </div>
-        ${msgView()}
-      </form>
-      <div class="lw-acct-howto">生成时按价格表从余额扣费。生成失败一般会自动退回，没有退回的请联系管理员。</div>
-      ${user.role === "admin" ? `<div class="lw-acct-section">
-        <div class="lw-acct-section-title">最近记录</div>
-        <div class="lw-acct-ledger">${rows}</div>
+        <form class="lw-am-redeem" data-form="redeem">
+          <label class="lw-am-inputwrap" for="lw-acct-code">${ICON.ticket}
+            <input class="lw-am-field" id="lw-acct-code" name="code" placeholder="输入兑换码充值" autocomplete="off" spellcheck="false" required aria-label="兑换码">
+            <button class="lw-am-submit" type="submit" ${busy ? "disabled" : ""}>兑换</button>
+          </label>
+          ${msgView()}
+          <div class="lw-am-note">按价格表扣费，生成失败会自动退回。</div>
+        </form>
+      </div>
+      ${isAdmin ? `<div class="lw-am-sep"></div>
+      <div class="lw-am-sec">
+        <div class="lw-am-label">最近记录</div>
+        <div class="lw-am-ledger">${rows}</div>
       </div>` : ""}
-      <div class="lw-acct-foot">
-        ${user.role === "admin" ? `<a class="lw-acct-link" href="/admin.html" target="_blank" rel="noopener">管理后台</a>` : ""}
-        <button type="button" class="lw-acct-btn is-ghost" data-act="logout">退出登录</button>
+      <div class="lw-am-sep"></div>
+      <div style="padding:4px 0">
+        ${isAdmin ? `<a class="lw-am-item" href="/admin.html" target="_blank" rel="noopener">${ICON.admin}管理后台<span class="lw-am-kbd">${ICON.ext}</span></a>` : ""}
+        <button type="button" class="lw-am-item is-danger" data-act="logout">${ICON.out}退出登录</button>
       </div>`;
   }
 
@@ -475,7 +534,7 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
              : `<span class="lw-acct-wallet" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1 0-4h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg></span><span class="lw-acct-bal">${esc(money(user.balance))}</span>`}
          </button>${user.role === "admin" ? siteBalanceStack() : ""}`
       : `<button type="button" class="lw-acct-chip is-guest" data-act="toggle" aria-expanded="${open}">${loaded ? `<span class="lw-acct-label-text">登录 / 注册</span><span aria-hidden="true" class="lw-acct-label-short">账户</span>` : "…"}</button>`;
-    paint(host, `${chip}<div class="lw-acct-panel" role="dialog" aria-label="账户">${user ? userView() : guestView()}</div>`);
+    paint(host, `${chip}<div class="lw-acct-panel${user ? " is-menu" : ""}" role="dialog" aria-label="账户">${user ? userView() : guestView()}</div>`);
     host.classList.toggle("is-open", open);
     if (entry || document.querySelector(".startup-entry-workspace")) renderEntry(true);
   }
