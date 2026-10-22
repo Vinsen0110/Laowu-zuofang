@@ -6,84 +6,187 @@
 <meta name="robots" content="noindex">
 <title>老屋作坊 · 管理后台</title>
 <link rel="icon" type="image/png" href="./kitty.png">
+<script src="./avatar.js?v=20261022-avatar-01"></script>
 <style>
-:root{--bg:#f8fafc;--card:#fff;--text:#1f2937;--muted:#64748b;--border:#e2e8f0;--soft:#f1f5f9;--primary:#22795a;--primary-h:#1b604a;--danger:#b91c1c;--danger-bg:#fef2f2}
-@media (prefers-color-scheme:dark){:root{--bg:#11151c;--card:#1a1f29;--text:#f1f5f9;--muted:#94a3b8;--border:#2c3442;--soft:#222937;--primary:#26875f;--primary-h:#2e9a6d;--danger:#fca5a5;--danger-bg:#3b0d0d}}
+:root{
+  --bg:#f7f7f8;--panel:#fff;--text:#18181b;--text-2:#3f3f46;--muted:#71717a;--faint:#a1a1aa;
+  --border:#e4e4e7;--border-2:#efeff1;--soft:#f4f4f5;--hover:#fafafa;
+  --primary:#1f7a55;--primary-h:#196647;--primary-soft:rgb(31 122 85 / .09);
+  --danger:#c2410c;--danger-soft:#fff4ed;--danger-line:#fed7aa;
+  --radius:10px;--shadow:0 1px 2px rgb(24 24 27 / .04),0 1px 1px rgb(24 24 27 / .02);
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0d0d0f;--panel:#151518;--text:#f4f4f5;--text-2:#d4d4d8;--muted:#a1a1aa;--faint:#71717a;
+  --border:#27272a;--border-2:#1f1f23;--soft:#1c1c20;--hover:#18181c;
+  --primary:#34a874;--primary-h:#46b984;--primary-soft:rgb(52 168 116 / .12);
+  --danger:#fb923c;--danger-soft:#2a1709;--danger-line:#7c2d12;--shadow:none;
+}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif}
-.wrap{max-width:1120px;margin:0 auto;padding:24px 16px 64px}
-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
-h1{display:flex;align-items:center;gap:10px;margin:0;font-size:22px}
-h1 img{width:36px;height:36px}
-h2{margin:0 0 12px;font-size:16px}
+html{-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--bg);color:var(--text);font:13.5px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;letter-spacing:-.003em}
+a{color:inherit}
 .muted{color:var(--muted)}
-.card{padding:18px;margin-bottom:16px;border:1px solid var(--border);border-radius:14px;background:var(--card)}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
-.stat{padding:14px 16px;border:1px solid var(--border);border-radius:12px;background:var(--card)}
-.stat b{display:block;margin-top:2px;font-size:24px;font-variant-numeric:tabular-nums}
+code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+
+/* shell */
+.shell{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:2px;padding:16px 12px;border-right:1px solid var(--border);background:var(--panel)}
+.brand{display:flex;align-items:center;gap:9px;padding:4px 8px 16px;font-weight:600;font-size:14px}
+.brand img{width:26px;height:26px}
+.brand small{display:block;color:var(--muted);font-weight:400;font-size:11.5px;line-height:1.2}
+.nav{display:flex;align-items:center;gap:9px;height:32px;padding:0 9px;border-radius:7px;color:var(--text-2);font-weight:500;text-decoration:none;transition:background .1s,color .1s}
+.nav:hover{background:var(--soft);color:var(--text)}
+.nav.is-on{background:var(--soft);color:var(--text);box-shadow:inset 0 0 0 1px var(--border)}
+.nav svg{flex:0 0 auto;color:var(--muted)}
+.nav.is-on svg{color:var(--primary)}
+.nav .count{margin-left:auto;color:var(--faint);font-size:11.5px;font-variant-numeric:tabular-nums}
+.nav .dot{margin-left:auto;width:7px;height:7px;border-radius:50%;background:var(--danger)}
+.side-foot{margin-top:auto;display:flex;align-items:center;gap:9px;padding:10px 8px 2px;border-top:1px solid var(--border-2)}
+.side-foot img{width:28px;height:28px;border-radius:50%}
+.side-foot .who{min-width:0;font-size:12px;line-height:1.3}
+.side-foot .who b{display:block;overflow:hidden;font-weight:600;text-overflow:ellipsis;white-space:nowrap}
+.side-foot .who a{color:var(--muted);text-decoration:none}
+.side-foot .who a:hover{color:var(--text)}
+.main{min-width:0;padding:28px 36px 64px}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px}
+.page-head h1{margin:0;font-size:20px;font-weight:600;letter-spacing:-.015em}
+.page-head p{margin:4px 0 0;color:var(--muted);font-size:13px}
+.page{max-width:1080px}
+
+/* panels */
+.card{margin-bottom:16px;border:1px solid var(--border);border-radius:var(--radius);background:var(--panel);box-shadow:var(--shadow)}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border-2)}
+.card-head h2{margin:0;font-size:14px;font-weight:600}
+.card-head .sub{margin-left:8px;color:var(--muted);font-size:12.5px;font-weight:400}
+.card-body{padding:16px}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-input,select{height:36px;padding:0 10px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font:inherit}
-input:focus{outline:2px solid rgb(34 121 90 / .35);border-color:var(--primary)}
-button{height:36px;padding:0 14px;border:0;border-radius:8px;background:var(--primary);color:#fff;font-weight:600;font-size:13px;font-family:inherit;cursor:pointer}
-button:hover{background:var(--primary-h)}
-button.ghost{background:transparent;color:var(--text);border:1px solid var(--border)}
-button.ghost:hover{background:var(--soft)}
-button.danger{background:transparent;color:var(--danger);border:1px solid var(--border)}
-button.small{height:30px;padding:0 10px;font-size:12px}
-.table-box{overflow-x:auto;border:1px solid var(--border);border-radius:10px}
+
+/* kpis */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:16px;border:1px solid var(--border);border-radius:var(--radius);background:var(--panel);box-shadow:var(--shadow);overflow:hidden}
+.stat{padding:14px 16px;border-left:1px solid var(--border-2)}
+.stat:first-child{border-left:0}
+.stat span{color:var(--muted);font-size:12px}
+.stat b{display:block;margin-top:4px;font-size:22px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+
+/* controls */
+input,select{height:32px;padding:0 10px;border:1px solid var(--border);border-radius:7px;background:var(--panel);color:var(--text);font:inherit;transition:border-color .12s,box-shadow .12s}
+input::placeholder{color:var(--faint)}
+input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+input:disabled{background:var(--soft);color:var(--muted)}
+button{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 12px;border:1px solid transparent;border-radius:7px;background:var(--text);color:var(--panel);font:inherit;font-weight:500;font-size:13px;white-space:nowrap;cursor:pointer;transition:background .12s,border-color .12s,opacity .12s}
+button:hover{opacity:.88}
+button:disabled{opacity:.45;cursor:default}
+button.primary{background:var(--primary);color:#fff}
+button.primary:hover{background:var(--primary-h);opacity:1}
+button.ghost{background:var(--panel);color:var(--text);border-color:var(--border)}
+button.ghost:hover{background:var(--soft);opacity:1}
+button.quiet{background:transparent;color:var(--muted)}
+button.quiet:hover{background:var(--soft);color:var(--text);opacity:1}
+button.danger{background:transparent;color:var(--danger);border-color:transparent}
+button.danger:hover{background:var(--danger-soft);opacity:1}
+button.small{height:28px;padding:0 9px;font-size:12.5px}
+label.field{display:flex;flex-direction:column;gap:5px;color:var(--muted);font-size:12px;font-weight:500}
+
+/* tables */
+.table-box{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{padding:9px 12px;border-top:1px solid var(--border);text-align:left;white-space:nowrap}
-thead th{border-top:0;background:var(--soft);color:var(--muted);font-weight:600;font-size:12px}
+th,td{padding:10px 16px;border-top:1px solid var(--border-2);text-align:left;white-space:nowrap;vertical-align:middle}
+thead th{border-top:0;color:var(--muted);font-weight:500;font-size:12px;background:var(--panel)}
+tbody tr:hover td{background:var(--hover)}
 td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
-.tag{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--soft);color:var(--muted);font-size:12px}
-.tag.ok{background:rgb(34 121 90 / .14);color:var(--primary)}
-.tag.off{background:var(--danger-bg);color:var(--danger)}
-.msg{margin-top:10px;padding:8px 12px;border-radius:8px;font-size:13px}
-.msg.err{background:var(--danger-bg);color:var(--danger)}
-.msg.ok{background:rgb(34 121 90 / .12);color:var(--primary)}
-textarea{width:100%;min-height:140px;margin-top:10px;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--soft);color:var(--text);font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace}
-.gate{max-width:420px;margin:12vh auto;text-align:center}
+.tag{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px;border-radius:5px;background:var(--soft);color:var(--muted);font-size:11.5px;font-weight:500}
+.tag::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.7}
+.tag.ok{background:var(--primary-soft);color:var(--primary)}
+.tag.off{background:var(--danger-soft);color:var(--danger)}
+.tag.plain::before{display:none}
+.msg{margin:12px 16px 0;padding:8px 12px;border-radius:7px;font-size:12.5px}
+.card-body .msg{margin:12px 0 0}
+.msg:last-child{margin-bottom:16px}
+.card-body .msg:last-child{margin-bottom:0}
+.msg.err{background:var(--danger-soft);color:var(--danger)}
+.msg.ok{background:var(--primary-soft);color:var(--primary)}
+textarea{width:100%;min-height:150px;margin-top:10px;padding:10px 12px;border:1px solid var(--border);border-radius:7px;background:var(--soft);color:var(--text);font:12.5px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace}
+.gate{max-width:380px;margin:16vh auto;padding:28px;text-align:center}
+.gate h1{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 6px;font-size:18px}
+.gate h1 img{width:30px;height:30px}
 .gate a{color:var(--primary)}
-dialog{width:min(560px,calc(100vw - 32px));padding:20px;border:1px solid var(--border);border-radius:14px;background:var(--card);color:var(--text)}
-dialog::backdrop{background:rgb(15 23 42 / .45)}
-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-.alert{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;margin-bottom:16px;border-radius:12px;background:var(--danger-bg);color:var(--danger);font-weight:600}
-.channels{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
-.ch{display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--card)}
-.ch.is-low{border-color:var(--danger);box-shadow:0 0 0 3px var(--danger-bg)}
+dialog{width:min(600px,calc(100vw - 32px));padding:0;border:1px solid var(--border);border-radius:12px;background:var(--panel);color:var(--text);box-shadow:0 24px 64px rgb(0 0 0 / .18)}
+dialog::backdrop{background:rgb(9 9 11 / .4);backdrop-filter:blur(2px)}
+.alert{display:flex;align-items:center;gap:10px;padding:10px 14px;margin-bottom:16px;border:1px solid var(--danger-line);border-radius:var(--radius);background:var(--danger-soft);color:var(--danger);font-weight:500}
+
+/* channels */
+.channels{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.ch{display:flex;flex-direction:column;gap:12px;padding:14px;border:1px solid var(--border);border-radius:var(--radius);background:var(--panel)}
+.ch.is-low{border-color:var(--danger-line);background:linear-gradient(var(--danger-soft),var(--panel) 60%)}
 .ch-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.ch-name{font-weight:700}
-.ch-label{margin-left:4px;padding:1px 7px;border-radius:999px;background:var(--soft);color:var(--muted);font-size:12px;font-weight:600}
-.ch-bal-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.ch-bal{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
-.ch-topup{display:inline-flex;align-items:center;height:30px;padding:0 12px;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap}
+.ch-name{font-weight:600}
+.ch-label{margin-left:6px;color:var(--muted);font-size:12px;font-weight:400}
+.ch-bal-row{display:flex;justify-content:space-between;align-items:flex-end;gap:8px}
+.ch-bal{font-size:22px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.ch-topup{display:inline-flex;align-items:center;gap:4px;height:26px;padding:0 9px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;white-space:nowrap}
 .ch-topup:hover{background:var(--soft)}
 .ch.is-low .ch-topup{border-color:var(--danger);background:var(--danger);color:#fff}
-.ch-sub{color:var(--muted);font-size:12px;min-height:16px}
-.ch form{display:flex;flex-direction:column;gap:6px;padding-top:8px;border-top:1px dashed var(--border)}
-.ch label{display:flex;flex-direction:column;gap:3px;color:var(--muted);font-size:12px}
+.ch-sub{margin-top:-6px;color:var(--muted);font-size:12px;min-height:16px}
+.ch form{display:flex;flex-direction:column;gap:8px;padding-top:12px;border-top:1px solid var(--border-2)}
 .ch input{width:100%}
-.ch .row label input{flex:none;width:100%}
-.pt-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
-.pt-group{margin-top:14px}
-.pt-group h3{margin:0 0 8px;font-size:14px}
-.pt td{vertical-align:top}
+.ch-save{display:flex;gap:8px;align-items:flex-end}
+.ch-save label{flex:1}
+
+/* price table */
+.pt-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border-2)}
+.pt-tools .grow{flex:1}
+.pt-site{border-top:1px solid var(--border-2)}
+.pt-site:first-of-type{border-top:0}
+.pt-site>summary{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;list-style:none;user-select:none}
+.pt-site>summary::-webkit-details-marker{display:none}
+.pt-site>summary:hover{background:var(--hover)}
+.pt-site>summary .chev{color:var(--faint);transition:transform .15s}
+.pt-site[open]>summary .chev{transform:rotate(90deg)}
+.pt-site>summary b{font-weight:600}
+.pt-site>summary .meta{color:var(--muted);font-size:12px}
+.pt-site>summary .bar{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.pt-site>summary .bar i{display:block;width:72px;height:4px;border-radius:2px;background:var(--soft);overflow:hidden}
+.pt-site>summary .bar i::after{content:"";display:block;height:100%;width:var(--p);background:var(--primary)}
+.pt-site>summary .dirty{color:var(--primary);font-weight:500}
+.pt-site .table-box{border-top:1px solid var(--border-2)}
+.pt td{vertical-align:middle}
 .pt .cost-col{color:var(--muted);font-variant-numeric:tabular-nums}
-.pt th.cost-head{text-align:center;border-left:1px solid var(--border)}
-.pt th.price-head{text-align:center;border-left:1px solid var(--border);color:var(--primary)}
-.pt td:nth-child(2),.pt td:nth-child(5){border-left:1px solid var(--border)}
-.pt input{width:96px;height:30px;padding:0 8px;text-align:right;font-variant-numeric:tabular-nums}
-.pt input.is-dirty{border-color:var(--primary);background:rgb(34 121 90 / .08)}
-.pt .label{font-weight:600}
-.pt .key{display:block;color:var(--muted);font-size:11px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.pt th.cost-head,.pt th.price-head{text-align:center}
+.pt th.price-head{color:var(--primary)}
+.pt td:nth-child(2),.pt td:nth-child(5),.pt th.cost-head,.pt th.price-head,.pt tr:nth-child(2) th:nth-child(1),.pt tr:nth-child(2) th:nth-child(4){border-left:1px solid var(--border-2)}
+.pt input{width:84px;height:28px;padding:0 8px;text-align:right;font-variant-numeric:tabular-nums}
+.pt input.is-dirty{border-color:var(--primary);background:var(--primary-soft)}
+.pt .label{font-weight:500}
+.pt .key{display:block;color:var(--faint);font-size:11px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+
+/* users */
+.user{display:flex;align-items:center;gap:10px;min-width:0}
+.user img{flex:0 0 auto;width:30px;height:30px;border-radius:50%;object-fit:cover}
+.user .nm{font-weight:500}
+.user .em{color:var(--muted);font-size:12px}
+.acts{display:flex;justify-content:flex-end;gap:2px}
+tr.adjust-row td{background:var(--hover)}
+tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.search{position:relative}
+.search svg{position:absolute;left:9px;top:50%;translate:0 -50%;color:var(--faint)}
+.search input{width:240px;padding-left:30px}
+
+@media (max-width:860px){
+  .shell{grid-template-columns:1fr}
+  .side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;border-right:0;border-bottom:1px solid var(--border)}
+  .brand{padding:4px 8px}
+  .side-foot{display:none}
+  .main{padding:20px 16px 48px}
+  .stat{border-left:0;border-top:1px solid var(--border-2)}
+}
 </style>
 </head>
 <body>
-<div class="wrap" id="app"><p class="muted">加载中…</p></div>
+<div id="app"><p class="muted" style="padding:28px">加载中…</p></div>
 
 <dialog id="ledger-dialog">
-  <div class="row" style="justify-content:space-between;margin-bottom:12px"><h2 id="ledger-title" style="margin:0">余额记录</h2><button class="ghost small" type="button" onclick="this.closest('dialog').close()">关闭</button></div>
-  <div class="table-box"><table><thead><tr><th>时间</th><th>说明</th><th class="num">变动</th><th class="num">余额</th></tr></thead><tbody id="ledger-body"></tbody></table></div>
+  <div class="card-head"><h2 id="ledger-title">余额记录</h2><button class="quiet small" type="button" onclick="this.closest('dialog').close()">关闭</button></div>
+  <div class="table-box" style="max-height:60vh"><table><thead><tr><th>时间</th><th>说明</th><th class="num">变动</th><th class="num">余额</th></tr></thead><tbody id="ledger-body"></tbody></table></div>
 </dialog>
 
 <script>
@@ -123,13 +226,23 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
   let fx = 6.7;
   let markup = 2;
   const draft = new Map(); // "channel|model|spec" -> price string being edited
+  const TABS = ["overview", "prices", "users", "codes", "settings"];
+  let tab = TABS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "overview";
+  const openSites = new Set(["tudou"]); // price-table groups left open
+  let adjustUser = null; // user id whose balance form is open
+  let userQ = "";
+  const userQuery = () => (document.getElementById("user-q")?.value ?? userQ).trim();
+  window.addEventListener("hashchange", () => {
+    const next = location.hash.slice(1);
+    if (TABS.includes(next) && next !== tab) { tab = next; render(); window.scrollTo(0, 0); }
+  });
 
   function msg(m) { return m ? `<div class="msg ${m.err ? "err" : "ok"}" role="${m.err ? "alert" : "status"}">${esc(m.text)}</div>` : ""; }
 
   async function load() {
     me = (await api("/me")).user;
     if (!me || me.role !== "admin") {
-      app.innerHTML = `<div class="gate card"><h1 style="justify-content:center"><img src="./kitty.png" alt="">管理后台</h1>
+      app.innerHTML = `<div class="gate card"><h1><img src="./kitty.png" alt="">管理后台</h1>
         <p class="muted">${me ? "当前账号没有管理员权限。" : "请先在老屋作坊首页登录管理员账号。"}</p>
         <p><a href="/">返回老屋作坊</a></p></div>`;
       return;
@@ -162,6 +275,19 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 
   const SITE_ORDER = ["tudou", "apimart", "runninghub", "grsai", "soon"];
   const SITE_NAME = { tudou: "Tudou", apimart: "Mart", runninghub: "RH", grsai: "Grsai", soon: "Soon" };
+  const CHANNEL_NAME = { tudou: "渠道 1", apimart: "渠道 2", grsai: "渠道 3", runninghub: "渠道 4", soon: "渠道 5" };
+  const svg = (d, size = 16) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+  const ICON = {
+    overview: svg('<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>'),
+    prices: svg('<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.5"/>'),
+    users: svg('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/>'),
+    codes: svg('<path d="M3 9a3 3 0 0 0 0 6v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a3 3 0 0 0 0-6V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1Z"/><path d="M13 5v2M13 17v2M13 11v2"/>'),
+    settings: svg('<path d="M12.2 2h-.4a2 2 0 0 0-2 2v.2a2 2 0 0 1-1 1.7l-.4.3a2 2 0 0 1-2 0l-.2-.1a2 2 0 0 0-2.7.7l-.2.4a2 2 0 0 0 .7 2.7l.2.1a2 2 0 0 1 1 1.7v.6a2 2 0 0 1-1 1.7l-.2.1a2 2 0 0 0-.7 2.7l.2.4a2 2 0 0 0 2.7.7l.2-.1a2 2 0 0 1 2 0l.4.3a2 2 0 0 1 1 1.7v.2a2 2 0 0 0 2 2h.4a2 2 0 0 0 2-2v-.2a2 2 0 0 1 1-1.7l.4-.3a2 2 0 0 1 2 0l.2.1a2 2 0 0 0 2.7-.7l.2-.4a2 2 0 0 0-.7-2.7l-.2-.1a2 2 0 0 1-1-1.7v-.6a2 2 0 0 1 1-1.7l.2-.1a2 2 0 0 0 .7-2.7l-.2-.4a2 2 0 0 0-2.7-.7l-.2.1a2 2 0 0 1-2 0l-.4-.3a2 2 0 0 1-1-1.7V4a2 2 0 0 0-2-2Z"/><circle cx="12" cy="12" r="3"/>'),
+    chev: svg('<path d="m9 18 6-6-6-6"/>', 14).replace("<svg", '<svg class="chev"'),
+    search: svg('<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>', 14),
+    ext: svg('<path d="M7 17 17 7"/><path d="M8 7h9v9"/>', 12),
+  };
+  const avatarOf = (u) => (typeof lwAvatarUrl === "function" ? lwAvatarUrl({ ...u, email: u.email || u.username }) : "");
 
   function priceTables() {
     const costCell = (r) => r
@@ -178,7 +304,13 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
       const rows = catalog.filter((r) => r.channel === ch);
       if (!rows.length) return "";
       const labels = [...new Set(rows.map((r) => r.label))];
-      return `<div class="pt-group"><h3>${esc(SITE_NAME[ch])}</h3><div class="table-box"><table class="pt">
+      const priced = rows.filter((r) => { const k = priceKey(r); return draft.has(k) ? draft.get(k).trim() !== "" : Boolean(savedPrice(r)); }).length;
+      const dirty = rows.filter((r) => draft.has(priceKey(r))).length;
+      const pct = Math.round((priced / rows.length) * 100);
+      return `<details class="pt-site" data-site="${ch}" ${openSites.has(ch) ? "open" : ""}>
+        <summary>${ICON.chev}<b>${esc(SITE_NAME[ch])}</b><span class="meta">${esc(CHANNEL_NAME[ch] || "")} · ${labels.length} 个模型</span>
+          <span class="bar">${dirty ? `<span class="dirty">${dirty} 处未保存</span>` : ""}已定价 ${priced}/${rows.length}<i style="--p:${pct}%"></i></span></summary>
+        <div class="table-box"><table class="pt">
         <thead>
           <tr><th rowspan="2">模型</th><th colspan="3" class="cost-head">原价（元/张）</th><th colspan="3" class="price-head">客户价（元/张）</th></tr>
           <tr><th class="num">1K</th><th class="num">2K</th><th class="num">4K</th><th>1K</th><th>2K</th><th>4K</th></tr>
@@ -190,7 +322,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
           const res = ["1k", "2k", "4k"];
           return `<tr><td><span class="label">${esc(label)}</span><span class="key">${esc(items[0].model)}${single ? " · 不分分辨率" : ""}</span></td>
             ${res.map((x) => costCell(byRes(x))).join("")}${res.map((x) => priceCell(byRes(x))).join("")}</tr>`;
-        }).join("")}</tbody></table></div></div>`;
+        }).join("")}</tbody></table></div></details>`;
     }).join("") + extraPrices();
   }
 
@@ -199,161 +331,174 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
     const known = new Set(catalog.map(priceKey));
     const extra = prices.filter((p) => !known.has(priceKey(p)));
     if (!extra.length) return "";
-    return `<div class="pt-group"><h3>其他已保存的价格</h3><div class="table-box"><table>
+    return `<details class="pt-site" open><summary>${ICON.chev}<b>其他已保存的价格</b><span class="meta">不在内置模型列表里</span></summary><div class="table-box"><table>
       <thead><tr><th>渠道</th><th>模型</th><th>规格</th><th class="num">售价</th><th></th></tr></thead>
       <tbody>${extra.map((r) => `<tr><td>${esc(SITE_NAME[r.channel] || r.channel)}</td><td>${esc(r.model)}</td><td>${esc(r.spec)}</td><td class="num">${money(r.price)}</td>
-        <td><button class="danger small" type="button" data-del-price="${r.id}">删除</button></td></tr>`).join("")}</tbody></table></div></div>`;
+        <td><button class="danger small" type="button" data-del-price="${r.id}">删除</button></td></tr>`).join("")}</tbody></table></div></details>`;
   }
 
   function render() {
     const s = statsData || {};
-    const q = document.getElementById("user-q")?.value || "";
-    app.innerHTML = `
-      <header><h1><img src="./kitty.png" alt="">老屋作坊 · 管理后台</h1><span class="muted">${esc(me.username)} · <a href="/" style="color:inherit">返回首页</a></span></header>
+    const low = (balances?.items || []).filter((b) => b.status === "low");
+    const nav = (id, label, extra = "") => `<a class="nav ${tab === id ? "is-on" : ""}" href="#${id}">${ICON[id]}${label}${extra}</a>`;
+    const head = (title, sub, right = "") => `<div class="page-head"><div><h1>${title}</h1>${sub ? `<p>${sub}</p>` : ""}</div>${right}</div>`;
+    app.innerHTML = `<div class="shell">
+      <aside class="side">
+        <div class="brand"><img src="./kitty.png" alt=""><span>老屋作坊<small>管理后台</small></span></div>
+        ${nav("overview", "概览", low.length ? '<span class="dot" title="有渠道该充值了"></span>' : "")}
+        ${nav("prices", "价格表", draft.size ? `<span class="count">${draft.size} 未保存</span>` : "")}
+        ${nav("users", "用户", `<span class="count">${s.users ?? users.length}</span>`)}
+        ${nav("codes", "兑换码", `<span class="count">${s.unusedCodes ?? 0}</span>`)}
+        ${nav("settings", "设置")}
+        <div class="side-foot"><img src="${esc(avatarOf(me))}" alt=""><span class="who"><b>${esc(me.displayName || me.username)}</b><a href="/">返回画布 ↗</a></span></div>
+      </aside>
+      <main class="main"><div class="page">${PAGES[tab]({ s, low, head })}</div></main>
+    </div>`;
+  }
+
+  const PAGES = {
+    overview: ({ s, low, head }) => `
+      ${head("概览", "收入、余额和各渠道状态")}
       <div class="stats">
-        <div class="stat"><span class="muted">用户数</span><b>${s.users ?? 0}</b></div>
-        <div class="stat"><span class="muted">累计充值</span><b>${money(s.totalTopup ?? 0)}</b></div>
-        <div class="stat"><span class="muted">累计消费</span><b>${money(s.totalUsage ?? 0)}</b></div>
-        <div class="stat"><span class="muted">用户余额合计</span><b>${money(s.totalBalance ?? 0)}</b></div>
-        <div class="stat"><span class="muted">未使用兑换码</span><b>${s.unusedCodes ?? 0}</b></div>
+        <div class="stat"><span>用户数</span><b>${s.users ?? 0}</b></div>
+        <div class="stat"><span>累计充值</span><b>${money(s.totalTopup ?? 0)}</b></div>
+        <div class="stat"><span>累计消费</span><b>${money(s.totalUsage ?? 0)}</b></div>
+        <div class="stat"><span>用户余额合计</span><b>${money(s.totalBalance ?? 0)}</b></div>
+        <div class="stat"><span>未使用兑换码</span><b>${s.unusedCodes ?? 0}</b></div>
       </div>
-
-      ${(() => {
-        const low = (balances?.items || []).filter((b) => b.status === "low");
-        return low.length ? `<div class="alert" role="alert">⚠ 该充值了：${low.map((b) => `${esc(b.name)}（剩 ${fmtBal(b.balance, b.unit)}，低于提醒线 ${b.unit}${b.alertThreshold}）`).join("；")}</div>` : "";
-      })()}
-
+      ${low.length ? `<div class="alert" role="alert">该充值了：${low.map((b) => `${esc(b.name)}（剩 ${fmtBal(b.balance, b.unit)}，低于提醒线 ${b.unit}${b.alertThreshold}）`).join("；")}</div>` : ""}
       <section class="card">
-        <div class="row" style="justify-content:space-between;margin-bottom:12px">
-          <h2 style="margin:0">渠道余额</h2>
-          <span class="row"><span class="muted" style="font-size:12px">${balances ? "上次查询 " + esc(time(balances.checkedAt)) : ""}</span>
-          <button class="ghost small" type="button" id="check-balances" ${balancesLoading ? "disabled" : ""}>${balancesLoading ? "查询中…" : "刷新余额"}</button></span>
-        </div>
-        <div class="channels">${channels.map((c) => {
+        <div class="card-head"><h2>渠道余额<span class="sub">${balances ? "上次查询 " + esc(time(balances.checkedAt)) : ""}</span></h2>
+          <button class="ghost small" type="button" id="check-balances" ${balancesLoading ? "disabled" : ""}>${balancesLoading ? "查询中…" : "刷新余额"}</button></div>
+        <div class="card-body"><div class="channels">${channels.map((c) => {
           const b = (balances?.items || []).find((x) => x.id === c.id);
-          const status = !b ? (balancesLoading ? "查询中…" : "") : b.status === "ok" ? "正常" : b.status === "low" ? "该充值了" : b.status === "no_key" ? "未设置 Key" : "查询失败";
+          const status = !b ? (balancesLoading ? "查询中" : "") : b.status === "ok" ? "正常" : b.status === "low" ? "该充值了" : b.status === "no_key" ? "未设置 Key" : "查询失败";
           const tag = !b ? "" : b.status === "ok" ? "ok" : b.status === "low" || b.status === "error" ? "off" : "";
           return `<div class="ch ${b?.status === "low" ? "is-low" : ""}">
-            <div class="ch-head"><span class="ch-name">${esc(c.name)}${c.channelLabel ? ` <span class="ch-label">${esc(c.channelLabel)}</span>` : ""}</span>${status ? `<span class="tag ${tag}">${status}</span>` : ""}</div>
+            <div class="ch-head"><span class="ch-name">${esc(c.name)}${c.channelLabel ? `<span class="ch-label">${esc(c.channelLabel)}</span>` : ""}</span>${status ? `<span class="tag ${tag}">${status}</span>` : ""}</div>
             <div class="ch-bal-row"><div class="ch-bal">${b && b.balance !== undefined ? fmtBal(b.balance, c.unit) : c.lastBalance != null ? fmtBal(c.lastBalance, c.unit) : "--"}</div>
-              ${c.topupUrl ? `<a class="ch-topup" href="${esc(c.topupUrl)}" target="_blank" rel="noopener noreferrer">去充值 ↗</a>` : ""}</div>
+              ${c.topupUrl ? `<a class="ch-topup" href="${esc(c.topupUrl)}" target="_blank" rel="noopener noreferrer">去充值${ICON.ext}</a>` : ""}</div>
             <div class="ch-sub">${esc(b?.detail || b?.message || (c.lastCheckedAt ? "上次 " + time(c.lastCheckedAt) : ""))}</div>
             <form data-channel="${c.id}">
-              <label>API Key ${c.keySource === "env" ? "（由环境变量提供）" : ""}
+              <label class="field">API Key ${c.keySource === "env" ? "（由环境变量提供）" : ""}
                 <input name="apiKey" type="password" autocomplete="off" placeholder="${c.hasKey ? "已设置 " + esc(c.keyPreview) + "，留空不修改" : "粘贴这个渠道的 API Key"}" ${c.keySource === "env" ? "disabled" : ""}></label>
-              ${c.extraKey ? `<label>${esc(c.extraKey)}
+              ${c.extraKey ? `<label class="field">${esc(c.extraKey)}
                 <input name="apiKey2" type="password" autocomplete="off" placeholder="${c.hasKey2 ? "已设置 " + esc(c.key2Preview) + "，留空不修改" : "没有可以不填"}"></label>` : ""}
-              <div class="row"><label style="flex:1">余额低于多少提醒（${c.unit}）<input name="alertThreshold" type="number" step="0.01" min="0" value="${c.alertThreshold}"></label>
-              <button class="small" type="submit" style="align-self:flex-end">保存</button></div>
+              <div class="ch-save"><label class="field">余额低于多少提醒（${c.unit}）<input name="alertThreshold" type="number" step="0.01" min="0" value="${c.alertThreshold}"></label>
+              <button class="ghost" type="submit">保存</button></div>
             </form>
           </div>`;
-        }).join("")}</div>
-        ${msg(flash.channels)}
-      </section>
+        }).join("")}</div>${msg(flash.channels)}</div>
+      </section>`,
 
+    prices: ({ head }) => `
+      ${head("价格表", "原价 = 上游成本；客户价 = 用户每张扣的钱；留空 = 不开放这个规格")}
       <section class="card">
-        <h2>邮件 Resend <span class="muted" style="font-weight:400;font-size:13px">（注册、找回密码的验证码邮件；${mail.fromEnv ? "当前由环境变量提供" : mail.hasKey ? "已设置" : "未设置时验证码直接显示在页面上，仅适合测试"}）</span></h2>
-        <form class="row" id="mail-form">
-          <label class="muted" for="mail-key">API Key</label><input id="mail-key" name="apiKey" type="password" autocomplete="new-password" style="width:320px" placeholder="${mail.hasKey ? "已设置 " + esc(mail.keyPreview) + "，留空不修改" : "粘贴 Resend API Key（re_ 开头）"}">
-          <button type="submit">保存</button>
-          <a class="muted" href="https://resend.com/api-keys" target="_blank" rel="noopener" style="font-size:12px">去 Resend 创建 ↗</a>
-        </form>
-        ${msg(flash.mail)}
-      </section>
-
-      <section class="card">
-        <h2>图床 Cloudinary <span class="muted" style="font-weight:400;font-size:13px">（管理员账号带参考图生成时用；普通用户在画布 设置 → 图床设置 里填自己的）</span></h2>
-        <form class="row" id="cloud-form">
-          <label class="muted" for="cl-name">Cloud Name</label><input id="cl-name" name="cloudName" value="${esc(cloud.cloudName)}" style="width:160px" autocomplete="off">
-          <label class="muted" for="cl-key">API Key</label><input id="cl-key" name="apiKey" value="${esc(cloud.apiKey)}" style="width:180px" autocomplete="off">
-          <label class="muted" for="cl-secret">API Secret</label><input id="cl-secret" name="apiSecret" type="password" placeholder="${cloud.apiSecret ? "已设置，留空不修改" : "粘贴 API Secret"}" style="width:200px" autocomplete="new-password">
-          <button type="submit">保存</button>
-          <a class="muted" href="https://console.cloudinary.com/settings/api-keys" target="_blank" rel="noopener" style="font-size:12px">在哪里找 ↗</a>
-        </form>
-        ${msg(flash.cloud)}
-      </section>
-
-      <section class="card">
-        <h2>价格表 <span class="muted" style="font-weight:400;font-size:13px">（原价 = 上游成本；客户价 = 用户每张扣的钱，留空 = 不开放这个规格）</span></h2>
         <div class="pt-tools">
-          <span class="muted">原价已按 1 美元 = ${fx} 元换算</span>
+          <span class="muted">原价按 1 美元 = ${fx} 元换算</span><span class="grow"></span>
           <label class="muted" for="pt-markup">倍率</label>
-          <input id="pt-markup" type="number" step="0.1" min="1" value="${markup}" style="width:80px">
-          <button class="ghost" type="button" id="pt-fill">按 原价 × 倍率 填入空白客户价</button>
-          <button type="button" id="pt-save">保存价格表${draft.size ? `（${draft.size} 处修改）` : ""}</button>
+          <input id="pt-markup" type="number" step="0.1" min="1" value="${markup}" style="width:72px">
+          <button class="ghost" type="button" id="pt-fill">按 原价 × 倍率 填空白</button>
+          <button class="primary" type="button" id="pt-save">保存价格表${draft.size ? `（${draft.size} 处修改）` : ""}</button>
         </div>
         ${priceTables()}
         ${msg(flash.prices)}
-      </section>
+      </section>`,
 
+    users: ({ head }) => `
+      ${head("用户", "余额调整会记入用户的余额记录", `<button class="ghost small" type="button" id="renumber-users" title="按注册先后把用户编号改成 1、2、3…，余额和记录都会跟着走">重新编号用户 ID</button>`)}
       <section class="card">
-        <div class="row" style="justify-content:space-between;margin-bottom:12px"><h2 style="margin:0">用户</h2>
-          <button class="ghost small" type="button" id="renumber-users" title="按注册先后把用户编号改成 1、2、3…，余额和记录都会跟着走">重新编号用户 ID</button></div>
-        <form class="row" id="search-form" style="margin-bottom:12px">
-          <label for="user-q" class="muted">搜索</label>
-          <input id="user-q" placeholder="邮箱或昵称" value="${esc(q)}">
-          <button class="ghost" type="submit">搜索</button>
-        </form>
+        <div class="card-head"><form class="row" id="search-form">
+          <span class="search">${ICON.search}<input id="user-q" placeholder="搜索邮箱或昵称" value="${esc(userQ)}" aria-label="搜索用户"></span>
+          <button class="ghost small" type="submit">搜索</button>
+        </form><span class="muted" style="font-size:12px">共 ${users.length} 个</span></div>
         <div class="table-box"><table>
-          <thead><tr><th>ID</th><th>昵称</th><th>邮箱</th><th>状态</th><th class="num">余额</th><th class="num">已消费</th><th>注册时间</th><th>调整余额（元，负数为扣减）</th><th></th></tr></thead>
+          <thead><tr><th style="width:40px">ID</th><th>用户</th><th>状态</th><th class="num">余额</th><th class="num">已消费</th><th>注册时间</th><th class="num">操作</th></tr></thead>
           <tbody>${users.map((u) => `
             <tr>
-              <td>${u.id}</td>
-              <td>${u.customName ? esc(u.customName) : '<span class="muted">未设置</span>'}</td>
-              <td>${esc(u.username)} ${u.role === "admin" ? '<span class="tag ok">管理员</span>' : ""}</td>
-              <td>${u.disabled ? '<span class="tag off">已停用</span>' : '<span class="tag">正常</span>'}</td>
+              <td class="muted">${u.id}</td>
+              <td><div class="user"><img src="${esc(avatarOf(u))}" alt=""><div><div class="nm">${u.customName ? esc(u.customName) : esc(u.username.split("@")[0])} ${u.role === "admin" ? '<span class="tag ok plain">管理员</span>' : ""}</div><div class="em">${esc(u.username)}</div></div></div></td>
+              <td>${u.disabled ? '<span class="tag off">已停用</span>' : '<span class="tag ok">正常</span>'}</td>
               <td class="num">${money(u.balance)}</td>
-              <td class="num">${money(u.spent)}</td>
-              <td>${esc(time(u.createdAt))}</td>
-              <td><form class="row" data-adjust="${u.id}" style="flex-wrap:nowrap">
-                <input name="amount" type="number" step="0.01" placeholder="如 50 或 -10" aria-label="给 ${esc(u.username)} 调整的金额" style="width:120px">
-                <input name="note" placeholder="备注（可选）" aria-label="备注" style="width:120px">
-                <button class="small" type="submit">确定</button>
-              </form></td>
-              <td class="row" style="flex-wrap:nowrap">
-                <button class="ghost small" type="button" data-ledger="${u.id}" data-name="${esc(u.username)}">记录</button>
-                ${u.balance > 0 ? `<button class="ghost small" type="button" data-zero="${u.id}">余额清零</button>` : ""}
-                ${u.id === me.id ? "" : `<button class="${u.disabled ? "ghost" : "danger"} small" type="button" data-disable="${u.id}" data-to="${!u.disabled}">${u.disabled ? "启用" : "停用"}</button>`}
+              <td class="num muted">${money(u.spent)}</td>
+              <td class="muted">${esc(time(u.createdAt))}</td>
+              <td><div class="acts">
+                <button class="quiet small" type="button" data-adjust-open="${u.id}">调整余额</button>
+                <button class="quiet small" type="button" data-ledger="${u.id}" data-name="${esc(u.username)}">记录</button>
+                ${u.balance > 0 ? `<button class="quiet small" type="button" data-zero="${u.id}">清零</button>` : ""}
+                ${u.id === me.id ? "" : `<button class="${u.disabled ? "quiet" : "danger"} small" type="button" data-disable="${u.id}" data-to="${!u.disabled}">${u.disabled ? "启用" : "停用"}</button>`}
                 ${u.id === me.id || u.role === "admin" ? "" : `<button class="danger small" type="button" data-delete-user="${u.id}">删除</button>`}
-              </td>
-            </tr>`).join("") || `<tr><td colspan="9" class="muted">没有用户</td></tr>`}</tbody>
+              </div></td>
+            </tr>
+            ${adjustUser === u.id ? `<tr class="adjust-row"><td></td><td colspan="6"><form data-adjust="${u.id}">
+              <span class="muted">给 ${esc(u.username)} 调整余额</span>
+              <input name="amount" type="number" step="0.01" placeholder="金额，如 50 或 -10" aria-label="调整的金额" style="width:170px" autofocus>
+              <input name="note" placeholder="备注（可选）" aria-label="备注" style="width:200px">
+              <button class="primary small" type="submit">确定</button>
+              <button class="quiet small" type="button" data-adjust-open="${u.id}">取消</button>
+            </form></td></tr>` : ""}`).join("") || `<tr><td colspan="7" class="muted">没有用户</td></tr>`}</tbody>
         </table></div>
         ${msg(flash.users)}
-      </section>
+      </section>`,
 
+    codes: ({ head }) => `
+      ${head("兑换码", "生成后复制到卡密平台出售")}
       <section class="card">
-        <h2>生成兑换码</h2>
-        <form class="row" id="codes-form">
-          <label class="muted" for="c-amount">面额（元）</label><input id="c-amount" name="amountYuan" type="number" step="0.01" min="0.01" required style="width:110px" placeholder="如 20">
-          <label class="muted" for="c-count">数量</label><input id="c-count" name="count" type="number" min="1" max="500" value="10" required style="width:90px">
-          <label class="muted" for="c-batch">批次备注</label><input id="c-batch" name="batch" placeholder="如 16688-10月" style="width:160px">
-          <button type="submit">生成</button>
-        </form>
-        ${lastBatch ? `<p class="muted" style="margin:12px 0 0">已生成 ${lastBatch.codes.length} 个 ${money(lastBatch.amount)} 兑换码（批次：${esc(lastBatch.batch)}），每行一个，可直接复制到卡密平台：</p>
-          <textarea readonly id="new-codes" aria-label="新生成的兑换码">${esc(lastBatch.codes.join("\n"))}</textarea>
-          <div class="row" style="margin-top:8px"><button class="ghost" type="button" id="copy-codes">复制全部</button><button class="ghost" type="button" id="dl-codes">下载 CSV</button></div>` : ""}
-        ${msg(flash.codes)}
+        <div class="card-head"><h2>生成兑换码</h2></div>
+        <div class="card-body">
+          <form class="row" id="codes-form" style="align-items:flex-end">
+            <label class="field">面额（算力）<input id="c-amount" name="amountYuan" type="number" step="0.01" min="0.01" required style="width:120px" placeholder="如 60"></label>
+            <label class="field">数量<input id="c-count" name="count" type="number" min="1" max="500" value="10" required style="width:90px"></label>
+            <label class="field">批次备注<input id="c-batch" name="batch" placeholder="如 常用装-10月" style="width:180px"></label>
+            <button class="primary" type="submit">生成</button>
+          </form>
+          ${lastBatch ? `<p class="muted" style="margin:14px 0 0">已生成 ${lastBatch.codes.length} 个 ${money(lastBatch.amount)} 兑换码（批次：${esc(lastBatch.batch)}），每行一个：</p>
+            <textarea readonly id="new-codes" aria-label="新生成的兑换码">${esc(lastBatch.codes.join("\n"))}</textarea>
+            <div class="row" style="margin-top:8px"><button class="ghost" type="button" id="copy-codes">复制全部</button><button class="ghost" type="button" id="dl-codes">下载 CSV</button></div>` : ""}
+          ${msg(flash.codes)}
+        </div>
       </section>
-
       <section class="card">
-        <h2>兑换码记录 <span class="muted" style="font-weight:400;font-size:13px">（最近 200 个）</span></h2>
+        <div class="card-head"><h2>兑换码记录<span class="sub">最近 200 个</span></h2></div>
         <div class="table-box"><table>
           <thead><tr><th>兑换码</th><th class="num">面额</th><th>批次</th><th>状态</th><th>使用者</th><th>生成时间</th></tr></thead>
           <tbody>${codes.map((c) => `<tr>
             <td><code>${esc(c.code)}</code></td><td class="num">${money(c.amount)}</td><td>${esc(c.batch)}</td>
             <td>${c.usedAt ? '<span class="tag">已使用</span>' : '<span class="tag ok">未使用</span>'}</td>
             <td>${esc(c.usedBy || "")}${c.usedAt ? ` <span class="muted">${esc(time(c.usedAt))}</span>` : ""}</td>
-            <td>${esc(time(c.createdAt))}</td></tr>`).join("") || `<tr><td colspan="6" class="muted">还没有兑换码</td></tr>`}</tbody>
+            <td class="muted">${esc(time(c.createdAt))}</td></tr>`).join("") || `<tr><td colspan="6" class="muted">还没有兑换码</td></tr>`}</tbody>
         </table></div>
-      </section>`;
-  }
+      </section>`,
+
+    settings: ({ head }) => `
+      ${head("设置", "邮件和图床")}
+      <section class="card">
+        <div class="card-head"><h2>邮件 Resend<span class="sub">注册、找回密码的验证码邮件 · ${mail.fromEnv ? "由环境变量提供" : mail.hasKey ? "已设置" : "未设置（验证码会直接显示在页面上，仅适合测试）"}</span></h2>
+          <a class="ch-topup" href="https://resend.com/api-keys" target="_blank" rel="noopener">去 Resend 创建${ICON.ext}</a></div>
+        <div class="card-body"><form class="row" id="mail-form" style="align-items:flex-end">
+          <label class="field" for="mail-key">API Key<input id="mail-key" name="apiKey" type="password" autocomplete="new-password" style="width:340px" placeholder="${mail.hasKey ? "已设置 " + esc(mail.keyPreview) + "，留空不修改" : "粘贴 Resend API Key（re_ 开头）"}"></label>
+          <button class="primary" type="submit">保存</button>
+        </form>${msg(flash.mail)}</div>
+      </section>
+      <section class="card">
+        <div class="card-head"><h2>图床 Cloudinary<span class="sub">管理员账号带参考图生成时用；普通用户在画布 设置 → 图床设置 里填自己的</span></h2>
+          <a class="ch-topup" href="https://console.cloudinary.com/settings/api-keys" target="_blank" rel="noopener">在哪里找${ICON.ext}</a></div>
+        <div class="card-body"><form class="row" id="cloud-form" style="align-items:flex-end">
+          <label class="field" for="cl-name">Cloud Name<input id="cl-name" name="cloudName" value="${esc(cloud.cloudName)}" style="width:170px" autocomplete="off"></label>
+          <label class="field" for="cl-key">API Key<input id="cl-key" name="apiKey" value="${esc(cloud.apiKey)}" style="width:190px" autocomplete="off"></label>
+          <label class="field" for="cl-secret">API Secret<input id="cl-secret" name="apiSecret" type="password" placeholder="${cloud.apiSecret ? "已设置，留空不修改" : "粘贴 API Secret"}" style="width:210px" autocomplete="new-password"></label>
+          <button class="primary" type="submit">保存</button>
+        </form>${msg(flash.cloud)}</div>
+      </section>`,
+  };
 
   app.addEventListener("submit", async (e) => {
     const form = e.target;
     e.preventDefault();
     try {
       if (form.id === "search-form") {
-        await loadUsers(form.querySelector("#user-q").value.trim());
+        userQ = form.querySelector("#user-q").value.trim();
+        await loadUsers(userQ);
         flash.users = null;
       } else if (form.dataset.adjust) {
         const amount = form.amount.value.trim();
@@ -362,7 +507,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
         if (!confirm(`确认给 ${u.username} ${Number(amount) > 0 ? "充值" : "扣减"} ${money(Math.abs(Number(amount)))}？`)) return;
         const r = await api("/admin/balance", { userId: u.id, amountYuan: amount, note: form.note.value.trim() });
         flash.users = { text: `${u.username} 当前余额 ${money(r.balance)}` };
-        await Promise.all([loadUsers(document.getElementById("user-q").value.trim()), loadStats()]);
+        adjustUser = null;
+        await Promise.all([loadUsers(userQuery()), loadStats()]);
       } else if (form.dataset.channel) {
         const data = Object.fromEntries(new FormData(form).entries());
         const body = { id: form.dataset.channel, alertThreshold: data.alertThreshold };
@@ -411,10 +557,23 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
     if (save) save.textContent = "保存价格表" + (draft.size ? `（${draft.size} 处修改）` : "");
   });
 
+  app.addEventListener("toggle", (e) => {
+    const site = e.target.dataset?.site;
+    if (!site) return;
+    if (e.target.open) openSites.add(site); else openSites.delete(site);
+  }, true);
+
   app.addEventListener("click", async (e) => {
     const b = e.target.closest("button");
     if (!b) return;
     try {
+      if (b.dataset.adjustOpen) {
+        const id = Number(b.dataset.adjustOpen);
+        adjustUser = adjustUser === id ? null : id;
+        render();
+        document.querySelector(`[data-adjust="${id}"] input[name="amount"]`)?.focus();
+        return;
+      }
       if (b.id === "check-balances") { checkBalances(); return; }
       if (b.id === "pt-fill") {
         markup = Number(document.getElementById("pt-markup").value) || markup;
@@ -456,27 +615,27 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
         const to = b.dataset.to === "true";
         if (to && !confirm("停用后该用户会被立即退出且无法登录，确认？")) return;
         await api("/admin/disable", { userId: Number(b.dataset.disable), disabled: to });
-        await loadUsers(document.getElementById("user-q").value.trim());
+        await loadUsers(userQuery());
         render();
       } else if (b.id === "renumber-users") {
         if (!confirm("把所有用户按注册先后重新编号成 1、2、3…？\n余额、余额记录、兑换码使用记录、登录状态都会跟着新编号，用户不会被退出。")) return;
         const r = await api("/admin/renumber-users", {});
         flash.users = { text: `已重新编号 ${r.users} 个用户` };
-        await Promise.all([loadUsers(document.getElementById("user-q").value.trim()), loadStats()]);
+        await Promise.all([loadUsers(userQuery()), loadStats()]);
         render();
       } else if (b.dataset.zero) {
         const u = users.find((x) => x.id === Number(b.dataset.zero));
         if (!confirm(`把 ${u.username} 的余额 ${money(u.balance)} 清零？会记入余额记录。`)) return;
         const r = await api("/admin/balance", { userId: u.id, amountYuan: -u.balance, note: "管理员清零" });
         flash.users = { text: `${u.username} 余额已清零（当前 ${money(r.balance)}）` };
-        await Promise.all([loadUsers(document.getElementById("user-q").value.trim()), loadStats()]);
+        await Promise.all([loadUsers(userQuery()), loadStats()]);
         render();
       } else if (b.dataset.deleteUser) {
         const u = users.find((x) => x.id === Number(b.dataset.deleteUser));
         if (!confirm(`永久删除 ${u.username}？该账号的登录和余额记录会一起删除，无法恢复。`)) return;
         await api("/admin/delete-user", { userId: u.id });
         flash.users = { text: `已删除 ${u.username}` };
-        await Promise.all([loadUsers(document.getElementById("user-q").value.trim()), loadStats()]);
+        await Promise.all([loadUsers(userQuery()), loadStats()]);
         render();
       } else if (b.id === "copy-codes") {
         await navigator.clipboard.writeText(lastBatch.codes.join("\n"));
