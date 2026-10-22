@@ -173,19 +173,15 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
 .lw-gate{--g-ink:var(--lw-ink-cool-900,#16181d);--g-muted:var(--lw-slate-cool-500,#6b7280);--g-line:var(--lw-cool-gray-180,#e6e7eb);--g-bg:var(--lw-white,#fff);--g-brand:var(--lw-green-teal-700,#1f7a55);position:fixed;inset:0;z-index:2147482000;display:grid;grid-template-columns:1.1fr 1fr;background:var(--g-bg);color:var(--g-ink);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
 .dark .lw-gate{--g-ink:var(--lw-cool-gray-60,#f1f5f9);--g-muted:var(--lw-cool-gray-350,#94a3b8);--g-line:var(--lw-ink-cool-700,#334155);--g-bg:var(--lw-ink-cool-950,#11151c);--g-brand:var(--lw-green-teal-600,#2e9a6d)}
 .lw-gate-art{position:relative;overflow:hidden;background:#0f1115}
-.lw-gate-wall{position:absolute;inset:-60px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:14px;transform:rotate(-6deg) scale(1.08)}
-.lw-gate-col{display:flex;flex-direction:column;gap:14px;animation:lw-gate-drift 60s linear infinite}
-.lw-gate-col:nth-child(2){animation-duration:72s;animation-direction:reverse}
-@keyframes lw-gate-drift{to{transform:translateY(-50%)}}
+.lw-gate-wall{position:absolute;inset:-90px;display:grid;grid-template-columns:repeat(4,1fr);align-items:start;gap:12px;padding:12px;transform:rotate(-8deg) scale(1.12)}
+.lw-gate-col{display:flex;flex-direction:column;gap:12px;animation:lw-gate-drift 90s linear infinite;will-change:transform;backface-visibility:hidden}
+.lw-gate-col:nth-child(2){animation-duration:110s;animation-direction:reverse;margin-top:-140px}
+.lw-gate-col:nth-child(3){animation-duration:100s;margin-top:-60px}
+.lw-gate-col:nth-child(4){animation-duration:120s;animation-direction:reverse;margin-top:-200px}
+@keyframes lw-gate-drift{from{transform:translate3d(0,0,0)}to{transform:translate3d(0,calc(-50% - 6px),0)}}
 @media (prefers-reduced-motion:reduce){.lw-gate-col{animation:none}}
-.lw-gate-tile{flex:0 0 auto;border-radius:14px;box-shadow:0 10px 30px rgb(0 0 0 / .35)}
-.lw-gate-tile.t1{height:260px;background:radial-gradient(120% 90% at 20% 20%,#ffd29d,transparent 60%),radial-gradient(100% 80% at 80% 80%,#ff6b8b,transparent 60%),#3b1f5c}
-.lw-gate-tile.t2{height:200px;background:radial-gradient(90% 80% at 70% 30%,#9be7d5,transparent 60%),radial-gradient(100% 90% at 20% 90%,#3a7bd5,transparent 55%),#0c2340}
-.lw-gate-tile.t3{height:300px;background:linear-gradient(160deg,#f6d365 0%,#fda085 45%,#7b4397 100%)}
-.lw-gate-tile.t4{height:220px;background:radial-gradient(80% 70% at 30% 30%,#c3f0ca,transparent 60%),radial-gradient(90% 90% at 90% 70%,#2e8b57,transparent 60%),#10261c}
-.lw-gate-tile.t5{height:240px;background:radial-gradient(100% 80% at 50% 0%,#ffe9a8,transparent 55%),linear-gradient(180deg,#b5651d,#3e1f0d)}
-.lw-gate-tile.t6{height:190px;background:conic-gradient(from 210deg at 60% 40%,#ff9a9e,#fad0c4,#a1c4fd,#c2e9fb,#ff9a9e)}
-.lw-gate-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgb(10 11 14 / .1),rgb(10 11 14 / .82))}
+.lw-gate-tile{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:12px;box-shadow:0 10px 26px rgb(0 0 0 / .4)}
+.lw-gate-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgb(10 11 14 / .05),rgb(10 11 14 / .25) 45%,rgb(10 11 14 / .85))}
 .lw-gate-caption{position:absolute;left:48px;right:48px;bottom:48px;color:#fff}
 .lw-gate-brand{display:flex;align-items:center;gap:10px;margin-bottom:22px;font-weight:600;font-size:15px}
 .lw-gate-brand img,.lw-gate-mobile-brand img{width:34px;height:34px;padding:3px;border-radius:10px;background:#fff}
@@ -215,6 +211,25 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
 .lw-gate .lw-entry-acct .lw-acct-btn:hover{opacity:.9}
 .lw-gate .lw-entry-acct .lw-acct-btn.is-ghost{height:44px;background:transparent;color:var(--g-ink);border:1px solid var(--g-line);font-size:13px}
 .lw-gate .lw-entry-acct .lw-acct-forgot{align-self:center;margin-top:-4px;color:var(--g-muted)}
+.lw-gate-center{text-align:center}
+.lw-gate-remember{display:flex;flex-direction:column;align-items:center;gap:4px;margin:0 0 6px}
+.lw-gate-remember img{width:72px;height:72px;margin-bottom:10px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 4px var(--g-bg),0 0 0 5px var(--g-line)}
+.lw-gate-remember b{font-size:20px;font-weight:650}
+.lw-gate-remember small{max-width:100%;overflow:hidden;color:var(--g-muted);font-size:13px;text-overflow:ellipsis;white-space:nowrap}
+.lw-gate-other{display:block;width:100%;margin-top:14px;padding:10px;border:1px dashed var(--g-line);border-radius:10px;background:none;color:var(--g-muted);font:inherit;font-size:13px;cursor:pointer}
+.lw-gate-other:hover{color:var(--g-ink);border-color:var(--g-muted)}
+.lw-gate-me-avatar{display:block;width:72px;height:72px;margin:0 auto 16px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 4px var(--g-bg),0 0 0 5px var(--g-line)}
+.lw-gate-admin{color:var(--g-brand);font-weight:600}
+.lw-gate-balance{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;margin:0 0 16px;border:1px solid var(--g-line);border-radius:12px;font-size:14px;text-align:left}
+.lw-gate-balance b{font-size:18px;font-weight:650;font-variant-numeric:tabular-nums}
+.lw-gate-balance-acts{display:flex;gap:14px;font-size:13px}
+.lw-gate-balance-acts a{color:var(--g-brand);font-weight:600;text-decoration:none}
+.lw-gate .lw-entry-redeem{margin:-6px 0 16px}
+.lw-gate-projects{display:grid;gap:10px}
+.lw-gate-me .lw-acct-msg{margin-top:12px}
+.lw-gate-links{display:flex;justify-content:center;gap:20px;margin-top:22px;font-size:13px}
+.lw-gate-links a{color:var(--g-ink);text-decoration:none;font-weight:500}
+.lw-gate-links a:hover{text-decoration:underline}
 .lw-gate-foot{margin:24px 0 0;color:var(--g-muted);font-size:12.5px;text-align:center}
 .lw-gate-foot a{color:var(--g-brand);font-weight:600;text-decoration:none}
 .lw-gate-foot a:hover{text-decoration:underline}
@@ -339,9 +354,22 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
     }).join("")}</div>`;
   }
 
+  // The last account signed in on this device, kept after sign-out so the sign-in page can offer it.
+  const LAST_ACCOUNT_KEY = "lw-last-account";
+  let useOtherAccount = false;
+  function lastAccount() {
+    try { const a = JSON.parse(localStorage.getItem(LAST_ACCOUNT_KEY) || "null"); return a && a.email ? a : null; } catch (_) { return null; }
+  }
+  function rememberAccount(u) {
+    try {
+      localStorage.setItem(LAST_ACCOUNT_KEY, JSON.stringify({ email: u.email, name: u.displayName || u.email, avatar: String(u.avatar || "").length < 60000 ? u.avatar || "" : "" }));
+    } catch (_) { /* storage blocked */ }
+  }
+
   function setUser(next) {
     const sameUser = Boolean(user && next && user.id === next.id && user.role === next.role);
     user = next;
+    if (next) { rememberAccount(next); useOtherAccount = false; }
     loaded = true;
     applyRole();
     if (sameUser) {
@@ -669,6 +697,40 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
 
   function entryView() {
     if (!loaded) return `<div class="lw-entry-sub" style="margin:0">正在检查登录状态…</div>`;
+    if (!user && gate && mode === "login" && !useOtherAccount && lastAccount()) {
+      const last = lastAccount();
+      const pic = typeof globalThis.lwAvatarUrl === "function" ? globalThis.lwAvatarUrl({ email: last.email, avatar: last.avatar }) : "";
+      return `<div class="lw-gate-center">
+        <div class="lw-gate-remember">${pic ? `<img src="${esc(pic)}" alt="">` : ""}<b>${esc(last.name)}</b><small>${esc(last.email)}</small></div>
+        <p class="lw-entry-sub">输入密码，继续使用这个账号</p></div>
+        <form class="lw-acct-form" data-form="login" novalidate>
+          <input type="hidden" name="email" value="${esc(last.email)}">
+          <input class="lw-acct-input" name="password" type="password" autocomplete="current-password" required minlength="8" placeholder="输入密码" aria-label="密码" autofocus>
+          ${msgView()}
+          <button class="lw-acct-btn" type="submit" ${busy ? "disabled" : ""}>${busy ? "请稍候…" : "登录"}</button>
+          <button type="button" class="lw-acct-linkbtn lw-acct-forgot" data-act="mode-reset">忘记密码？</button>
+        </form>
+        <button type="button" class="lw-gate-other" data-act="use-other">使用其他账号</button>
+        <p class="lw-gate-foot">还没有算力？<a href="${BUY_URL}" target="_blank" rel="noopener noreferrer">购买兑换码</a>，登录后在右上角充值</p>`;
+    }
+    if (user && gate) {
+      const isAdmin = user.role === "admin";
+      const opening = lastProjectState.startsWith("true");
+      const projectError = lastProjectState.split("|").slice(1).join("|");
+      return `<div class="lw-gate-me lw-gate-center">
+          <img class="lw-gate-me-avatar" src="${esc(globalThis.lwAvatarUrl ? globalThis.lwAvatarUrl(user) : "")}" alt="">
+          <h2 class="lw-entry-title">欢迎回来，${esc(user.displayName || user.email)}</h2>
+          <p class="lw-entry-sub">${esc(user.email)}${isAdmin ? ' · <span class="lw-gate-admin">管理员</span>' : ""}</p>
+          ${isAdmin ? "" : `<div class="lw-gate-balance"><span>余额 <b>${esc(money(user.balance))}</b></span><span class="lw-gate-balance-acts"><a href="${BUY_URL}" target="_blank" rel="noopener noreferrer">购买</a><button type="button" class="lw-acct-linkbtn" data-act="entry-redeem" aria-expanded="${entryRedeemOpen}">充值</button></span></div>
+          ${entryRedeemOpen ? `<form class="lw-acct-form lw-entry-redeem" data-form="redeem"><div class="lw-acct-row"><input class="lw-acct-input" name="code" aria-label="兑换码" placeholder="输入兑换码" autocomplete="off" spellcheck="false" required><button class="lw-acct-btn" type="submit" ${busy ? "disabled" : ""}>兑换</button></div>${msgView()}</form>` : ""}`}
+          <div class="lw-gate-projects">
+            <button type="button" class="lw-acct-btn" data-act="project-blank" ${opening ? "disabled" : ""}>${opening ? "正在打开…" : "新建空白工程"}</button>
+            <button type="button" class="lw-acct-btn is-ghost" data-act="project-import" ${opening ? "disabled" : ""}>打开已有工程</button>
+          </div>
+          ${projectError ? `<div class="lw-acct-msg is-error" role="alert">${esc(projectError)}</div>` : ""}
+          <div class="lw-gate-links">${isAdmin ? `<a href="/admin.html" target="_blank" rel="noopener">管理后台 ↗</a>` : ""}<button type="button" class="lw-acct-linkbtn" data-act="logout">退出登录</button></div>
+        </div>`;
+    }
     if (!user) {
       return `<h2 class="lw-entry-title">${mode === "register" ? "创建账号" : mode === "reset" ? "找回密码" : "欢迎回来"}</h2>
         <p class="lw-entry-sub">${mode === "reset" ? "输入注册时用的邮箱，收到验证码后设置新密码" : mode === "register" ? "用邮箱注册，建议使用 QQ / 163 邮箱接收验证码" : "登录后继续你的画布工程"}</p>${guestView()}
@@ -696,13 +758,20 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
   // Signed-out visitors see a full-screen split sign-in page (artwork wall + form)
   // over the start screen; the same entry card and forms live in its right half.
   let gate = null;
-  const GATE_TILES = ["t1", "t4", "t6", "t2", "t5", "t3"];
+  let lastProjectState = "";
   // Soft Kitty silhouettes scattered around the form: [left %, top %, size px, rotation, opacity].
   const GATE_KITTIES = [[6, 8, 92, -14, 1], [78, 5, 64, 12, 0.9], [86, 38, 110, -8, 0.8], [4, 62, 70, 10, 0.9], [70, 80, 84, -16, 1], [18, 88, 52, 18, 0.8], [44, 3, 46, 6, 0.75]];
+  // Showcase pictures for the sign-in page, shown as a tilted, slowly drifting wall.
+  const GATE_SLIDES = ["01-perfume", "09-watch", "02-portrait", "10-jewelry", "03-architecture", "11-interior", "04-lake", "12-dancer", "05-tea", "13-dunes", "06-sneaker", "14-dessert", "07-city", "15-menswear", "08-ikebana", "16-bloom"];
   function gateArt() {
-    const col = (shift) => `<div class="lw-gate-col">${[...GATE_TILES.slice(shift), ...GATE_TILES.slice(0, shift), ...GATE_TILES].map((t) => `<div class="lw-gate-tile ${t}"></div>`).join("")}</div>`;
+    // Each column lists the pictures twice so the drift can loop without a seam.
+    // Each column shows 8 different pictures; with 4 columns every picture appears twice.
+    const col = (shift) => {
+      const order = [...GATE_SLIDES.slice(shift), ...GATE_SLIDES.slice(0, shift)].filter((_, i) => i % 2 === 0);
+      return `<div class="lw-gate-col">${[...order, ...order].map((name) => `<img class="lw-gate-tile" src="./login/${name}.jpg?v=3" alt="" decoding="async" draggable="false">`).join("")}</div>`;
+    };
     return `<section class="lw-gate-art" aria-hidden="true">
-        <div class="lw-gate-wall">${col(0)}${col(2)}${col(4)}</div>
+        <div class="lw-gate-wall">${col(0)}${col(1)}${col(4)}${col(7)}</div>
         <div class="lw-gate-shade"></div>
         <div class="lw-gate-caption">
           <div class="lw-gate-brand"><img src="./kitty.png" alt="">老屋作坊</div>
@@ -726,7 +795,7 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
     const workspace = document.querySelector(".startup-entry-workspace");
     const screen = workspace && workspace.closest(".startup-entry");
     document.documentElement.classList.toggle("lw-start", Boolean(workspace));
-    const gated = Boolean(workspace) && loaded && !user;
+    const gated = Boolean(workspace) && loaded;
     if (!gated && gate) { gate.remove(); gate = null; }
     if (!workspace) { entry = null; return; }
     const target = gated ? gateSide() : workspace;
@@ -741,6 +810,11 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
     if (!target.contains(entry)) { target.appendChild(entry); created = true; }
     screen.classList.toggle("lw-gated", gated);
     entry.classList.toggle("is-guest", !user);
+    // Mirror the start screen's own folder state (opening / error) into the page on top of it.
+    const projectError = screen.querySelector(".startup-entry-error")?.textContent || "";
+    const projectBusy = Boolean(screen.querySelector(".startup-entry-primary.ant-btn-loading"));
+    const projectState = `${projectBusy}|${projectError}`;
+    if (projectState !== lastProjectState) { lastProjectState = projectState; force = true; }
     if (force || created) paint(entry, entryView());
   }
 
@@ -869,6 +943,11 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
     }
     else if (act === "send-code") sendCode(el);
     else if (act === "avatar-pick") { pickAvatar(); }
+    else if (act === "project-blank" || act === "project-import") {
+      // The folder picker needs this click's user activation, so press the start screen's own button now.
+      document.querySelector(`.startup-entry [data-project-action="${act === "project-blank" ? "blank" : "import"}"]`)?.click();
+    }
+    else if (act === "use-other") { useOtherAccount = true; message = null; render(); }
     else if (act === "avatar-reset") { saveAvatar(""); }
     else if (act === "rename") { editingName = true; render(); host.querySelector('input[name="displayName"]')?.focus(); }
 
