@@ -543,9 +543,11 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
     if (force || created) paint(entry, entryView());
   }
 
-  const TRANSIENT = '.laowu-canvas-viewport > .origin-top-left, [data-notification-index], [class*="notification"], [role="alert"], [role="status"], .lw-refund-note';
+  const TRANSIENT = '.canvas-image-viewer, .ant-modal-wrap, .laowu-canvas-viewport > .origin-top-left, [data-notification-index], [class*="notification"], [role="alert"], [role="status"], .lw-refund-note';
   function placeChip() {
     if (!host || document.documentElement.classList.contains("lw-start")) return;
+    // While hidden (image preview, settings) the corner holds that overlay's buttons; keep the last spot.
+    if (getComputedStyle(host).display === "none") return;
     let right = 12;
     const y = 26;
     for (let x = window.innerWidth - 8; x > window.innerWidth - 420; x -= 24) {
