@@ -42,9 +42,9 @@ test("tips follow the theme, replace the native title, and a visible ? opens the
     assert.match(bundle, /y\.jsx\(tg,\{id:"tool-keys",label:"\\u5FEB\\u6377\\u952E",[^}]*onClick:\(\)=>globalThis\.__lwToggleKeys\?\.\(\)/);
 });
 
-test("image nodes, uploaded or generated, show the hover toolbar with crop and friends", () => {
-    assert.match(bundle, /pv=vc&&!Ye&&!\(QM\(vc\)&&!vc\.metadata\?\.content\)&&Yt===vc\.id\?vc:null/);
-    assert.match(bundle, /if\(lwNode\?\.type===Ne\.Image&&lwNode\.metadata\?\.content\)\{Zt\(K\),cv\(K\);return\}/);
+test("image input nodes (not generation nodes) show the hover toolbar with crop and friends", () => {
+    assert.match(bundle, /pv=vc&&!Ye&&!QM\(vc\)&&Yt===vc\.id\?vc:null/);
+    assert.match(bundle, /if\(lwNode\?\.type===Ne\.Image&&lwNode\.metadata\?\.content&&!QM\(lwNode\)\)\{Zt\(K\),cv\(K\);return\}/);
     assert.match(bundle, /ge=new Set\(\["reversePrompt","crop","split"\]\)/);
 });
 
