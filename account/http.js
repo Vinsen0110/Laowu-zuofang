@@ -2,7 +2,8 @@
 // same code runs on Vercel and in the local preview server.
 
 import { USD_TO_CNY, priceCatalog } from "./catalog.js";
-import { channelBalances, deletePrice, getCloudinary, listChannels, listPrices, saveChannel, saveCloudinary, savePrice, savePrices } from "./channels.js";
+import { channelBalances, deletePrice, getCloudinary, getMailSettings, listChannels, listPrices, saveChannel, saveCloudinary, saveMailSettings, savePrice, savePrices } from "./channels.js";
+import { setResendKey } from "./mailer.js";
 import { getDatabase } from "./db.js";
 import { checkLowBalances } from "./alerts.js";
 import { relay } from "./relay.js";
@@ -33,6 +34,7 @@ import {
 } from "./service.js";
 
 const COOKIE = "lw_session";
+let mailKeyLoaded = false;
 
 function json(status, body, extraHeaders = {}) {
     return new Response(JSON.stringify(body), {
@@ -93,6 +95,10 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
             throw new AccountError(403, "bad_origin", "请求来源不被允许");
         }
         const db = injectedDb || (await getDatabase());
+        if (!mailKeyLoaded && !injectedDb) {
+            mailKeyLoaded = true;
+            setResendKey((await getMailSettings(db)).key);
+        }
         const token = readCookie(request, COOKIE);
 
         // ---- daily cron (vercel.json): supplier balance alerts ----
@@ -234,6 +240,16 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
             }
             if (path === "/admin/prices" && method === "POST") {
                 return json(200, { price: await savePrice(db, await body(request)) });
+            }
+            if (path === "/admin/mail" && method === "GET") {
+                const { key, ...rest } = await getMailSettings(db);
+                return json(200, rest);
+            }
+            if (path === "/admin/mail" && method === "POST") {
+                const saved = await saveMailSettings(db, await body(request));
+                setResendKey(saved.key);
+                const { key, ...rest } = saved;
+                return json(200, rest);
             }
             if (path === "/admin/cloudinary" && method === "GET") {
                 return json(200, await getCloudinary(db));

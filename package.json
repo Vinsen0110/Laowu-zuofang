@@ -8,7 +8,8 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.0",
-    "@vercel/functions": "^2.2.13"
+    "@vercel/functions": "^2.2.13",
+    "pg": "^8.23.1"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.3.0"

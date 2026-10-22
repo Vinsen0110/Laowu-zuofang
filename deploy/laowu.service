@@ -1,0 +1,16 @@
+[Unit]
+Description=老屋作坊 (web app and account API)
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+User=laowu
+WorkingDirectory=/srv/laowu/app
+EnvironmentFile=/etc/laowu/laowu.env
+ExecStart=/usr/bin/node local-preview-server.mjs
+Restart=always
+RestartSec=3
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

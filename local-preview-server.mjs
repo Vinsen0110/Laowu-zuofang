@@ -9,6 +9,8 @@ import { handleAccountRequest } from "./account/http.js";
 
 const root = resolve(process.cwd());
 const host = process.env.HOST || "127.0.0.1";
+// Behind Caddy on the server: trust its X-Forwarded-* headers for the public URL.
+const trustProxy = process.env.TRUST_PROXY === "1";
 const port = Number(process.env.PORT || 4173);
 const tudouOrigin = "https://api.ai-tudou.net";
 const allowedTudouPath = /^\/(?:images|tasks|v1|v1beta)(?:\/|$)/;
@@ -260,12 +262,18 @@ async function serveAccountApi(request, response, requestUrl) {
     for (const [name, value] of Object.entries(request.headers)) {
         if (typeof value === "string") headers.set(name, value);
     }
-    const body = method === "GET" || method === "HEAD" ? undefined : await readRequestBody(request, 64 * 1024);
-    const webResponse = await handleAccountRequest(new Request(requestUrl, { method, headers, body }));
+    // Generation requests carry prompts and reference images; everything else is small.
+    const isRelay = requestUrl.pathname === "/api/account/relay";
+    const body = method === "GET" || method === "HEAD" ? undefined : await readRequestBody(request, isRelay ? 40 * 1024 * 1024 : 64 * 1024);
+    const abort = new AbortController();
+    response.on("close", () => { if (!response.writableFinished) abort.abort(); });
+    const webResponse = await handleAccountRequest(new Request(requestUrl, { method, headers, body, signal: abort.signal }));
     const outHeaders = {};
     webResponse.headers.forEach((value, name) => { outHeaders[name] = value; });
     response.writeHead(webResponse.status, outHeaders);
-    response.end(Buffer.from(await webResponse.arrayBuffer()));
+    // Stream, so long generations (SSE) reach the browser as they arrive.
+    if (!webResponse.body) { response.end(); return; }
+    await pipeline(Readable.fromWeb(webResponse.body), response);
 }
 
 async function serveStatic(request, response, requestUrl) {
@@ -278,6 +286,10 @@ async function serveStatic(request, response, requestUrl) {
     }
 
     const relativePath = pathname === "/" ? "index.html" : pathname.replace(/^\/+/, "");
+    if (/^(?:\.|node_modules\/|tests\/|deploy\/|\.local-data)/.test(relativePath) || relativePath.includes("/.")) {
+        sendJson(response, 404, "Not found");
+        return;
+    }
     const isIconAsset = pathname === "/icons" || pathname.startsWith("/icons/");
     let filePath = resolve(root, relativePath);
     if (filePath !== root && !filePath.startsWith(`${root}${sep}`)) {
@@ -293,10 +305,15 @@ async function serveStatic(request, response, requestUrl) {
     }
 
     const info = await fs.stat(filePath);
+    // index.html is never cached; versioned files (?v=… or /assets/) are cached for good.
+    const isHtml = extname(filePath).toLowerCase() === ".html";
+    const versioned = requestUrl.searchParams.has("v") || pathname.startsWith("/assets/");
     response.writeHead(200, {
-        "Cache-Control": isIconAsset
+        "Cache-Control": isHtml
+            ? "no-store"
+            : isIconAsset || versioned
             ? "public, max-age=31536000, immutable"
-            : "no-store",
+            : "public, max-age=300",
         "Content-Length": info.size,
         "Content-Type": mimeTypes[extname(filePath).toLowerCase()] || "application/octet-stream",
     });
@@ -305,7 +322,8 @@ async function serveStatic(request, response, requestUrl) {
 }
 
 const server = createServer(async (request, response) => {
-    const requestUrl = new URL(request.url || "/", `http://${request.headers.host || `${host}:${port}`}`);
+    const proto = trustProxy && request.headers["x-forwarded-proto"] === "https" ? "https" : "http";
+    const requestUrl = new URL(request.url || "/", `${proto}://${request.headers.host || `${host}:${port}`}`);
     try {
         if (requestUrl.pathname === "/api/account" || requestUrl.pathname.startsWith("/api/account/")) {
             await serveAccountApi(request, response, requestUrl);
