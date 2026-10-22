@@ -139,7 +139,7 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
 .lw-am-rename{display:flex;gap:6px;flex:1}
 .lw-am-rename .lw-am-field{height:30px}
 .lw-am-label{color:var(--a-muted);font-size:12px;line-height:16px}
-.lw-am-balance{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:2px}
+.lw-am-balance{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .lw-am-amount{font-size:22px;font-weight:600;line-height:28px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 .lw-am-amount.is-low{color:var(--a-err)}
 .lw-am-buy{display:inline-flex;align-items:center;gap:4px;height:26px;padding:0 9px;border:1px solid var(--a-border);border-radius:7px;color:var(--a-text);font-size:12px;font-weight:500;text-decoration:none;transition:background .12s,border-color .12s}
@@ -686,12 +686,11 @@ button.lw-gate-face:hover{transform:scale(1.04)}
       : `<div class="lw-am-id"><div class="lw-am-name"><span>${esc(user.displayName || user.email)}</span><button type="button" class="lw-am-icon" data-act="rename" title="改名" aria-label="改名">${ICON.pencil}</button></div><div class="lw-am-email">${esc(user.email)}</div></div>`;
     return `
       <div class="lw-am-sec lw-am-who"><button type="button" class="lw-am-avatar" data-act="avatar-pick" title="更换头像" aria-label="更换头像">${avatarImg()}<span class="lw-am-avatar-edit" aria-hidden="true">${ICON.camera}</span></button>${who}</div>
-      <div class="lw-am-sep"></div>
+      ${isAdmin ? "" : `<div class="lw-am-sep"></div>
       <div class="lw-am-sec">
-        <div class="lw-am-label">余额</div>
         <div class="lw-am-balance">
-          <span class="lw-am-amount ${!isAdmin && user.balance < LOW_BALANCE ? "is-low" : ""}">${esc(money(user.balance))}</span>
-          ${isAdmin ? "" : `<a class="lw-am-buy" href="${BUY_URL}" target="_blank" rel="noopener noreferrer">购买兑换码${ICON.ext}</a>`}
+          <div class="lw-am-label">充值</div>
+          <a class="lw-am-buy" href="${BUY_URL}" target="_blank" rel="noopener noreferrer">购买兑换码${ICON.ext}</a>
         </div>
         <form class="lw-am-redeem" data-form="redeem">
           <label class="lw-am-inputwrap" for="lw-acct-code">${ICON.ticket}
@@ -701,7 +700,7 @@ button.lw-gate-face:hover{transform:scale(1.04)}
           ${msgView()}
           <div class="lw-am-note">按价格表扣费，生成失败会自动退回。</div>
         </form>
-      </div>
+      </div>`}
       ${isAdmin ? `<div class="lw-am-sep"></div>
       <div class="lw-am-sec">
         <div class="lw-am-label">最近记录</div>
@@ -815,8 +814,8 @@ button.lw-gate-face:hover{transform:scale(1.04)}
           ? `<span class="lw-entry-user-bal lw-acct-sites">${siteBalancesInline()}</span>`
           : `<span class="lw-entry-user-bal">余额 <b>${esc(money(user.balance))}</b></span>`}
         <span class="lw-entry-spacer"></span>
-        ${user.role === "admin" ? "" : `<a class="lw-entry-mini lw-entry-buy" href="${BUY_URL}" target="_blank" rel="noopener noreferrer">购买</a>`}
-        <button type="button" class="lw-entry-mini" data-act="entry-redeem" aria-expanded="${entryRedeemOpen}">充值</button>
+        ${user.role === "admin" ? "" : `<a class="lw-entry-mini lw-entry-buy" href="${BUY_URL}" target="_blank" rel="noopener noreferrer">购买</a>
+        <button type="button" class="lw-entry-mini" data-act="entry-redeem" aria-expanded="${entryRedeemOpen}">充值</button>`}
         ${user.role === "admin" ? `<a class="lw-entry-mini" style="display:inline-grid;place-items:center;text-decoration:none" href="/admin.html" target="_blank" rel="noopener">管理后台</a>` : ""}
         <button type="button" class="lw-entry-mini" data-act="logout">退出</button>
       </div>

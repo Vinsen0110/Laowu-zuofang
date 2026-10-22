@@ -51,3 +51,11 @@ test("image nodes, uploaded or generated, show the hover toolbar with crop and f
 test("the settings modal has a single frame on the newer antd markup", () => {
     assert.match(html, /\.laowu-config-modal \.ant-modal-content, \.laowu-config-modal \.ant-modal-container \{\s*overflow: hidden;\s*padding: 0 !important;/);
 });
+
+test("only one tooltip: the bundle's own toolbar label is switched off", () => {
+    assert.match(bundle, /function Eke\(\{label:e,y:t,theme:n\}\)\{return null;/);
+});
+
+test("toasts are a single pill, without antd's outer white box", () => {
+    assert.match(polish, /\.ant-message \.ant-message-notice\{padding:0!important;background:transparent!important;box-shadow:none!important;border:0!important\}/);
+});
