@@ -10,7 +10,7 @@ import { randomBytes } from "node:crypto";
 import { background, checkLowBalances } from "./alerts.js";
 import { channelConfig } from "./channels.js";
 import { describeRequest } from "./describe.js";
-import { CHANNEL_LABELS, rewriteUrls, scrubText, unmaskTarget } from "./mask.js";
+import { CHANNEL_LABELS, rewriteUrls, scrubText, unmaskTarget, verifyImageToken } from "./mask.js";
 import { AccountError, adjustBalance, milliToYuan } from "./service.js";
 import { findTaskId, recordTask, settleTask, taskOutcome } from "./tasks.js";
 import { inlineTudouGeminiReferences, isTudouGeminiImageTarget } from "../tudou-reference-images.js";
@@ -57,6 +57,18 @@ export async function findPrice(db, channel, model, spec) {
         [channel, model, spec, resolution],
     );
     return rows[0] ? Number(rows[0].price_milli) : null;
+}
+
+// Result and upload links reach users as /api/account/img?t=… (signed, sign-in
+// only). When a user sends one back as a reference, the supplier must get its
+// own original link, or its download is refused.
+const PROXIED_IMAGE = /https?:\/\/[^"'\s\\]+\/api\/account\/img\?t=([A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)/g;
+
+export function restoreImageUrls(raw) {
+    if (!raw) return raw;
+    const text = new TextDecoder().decode(raw);
+    if (!text.includes("/api/account/img?t=")) return raw;
+    return new TextEncoder().encode(text.replace(PROXIED_IMAGE, (link, token) => verifyImageToken(token) || link));
 }
 
 function forwardHeaders(request, apiKey) {
@@ -164,12 +176,12 @@ export async function relay(db, user, request, { fetchImpl = fetch } = {}) {
     }
 
     const raw = method === "POST" ? await request.arrayBuffer() : undefined;
-    let body = raw;
+    let body = /json/.test(request.headers.get("content-type") || "") ? restoreImageUrls(raw) : raw;
     if (raw && channel === "tudou" && isTudouGeminiImageTarget(target)) {
         // Gemini wants references inline: fetch the hosted copies here, next to the
         // image host, so the browser uploads each reference only once.
         let parsed = null;
-        try { parsed = JSON.parse(new TextDecoder().decode(raw)); } catch { /* left to the checks below */ }
+        try { parsed = JSON.parse(new TextDecoder().decode(body)); } catch { /* left to the checks below */ }
         if (parsed) {
             try {
                 const { payload: inlined, converted } = await inlineTudouGeminiReferences(target, parsed, { signal: request.signal, redirect: "follow", fetchImpl });

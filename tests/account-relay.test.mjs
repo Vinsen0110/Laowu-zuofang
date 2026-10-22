@@ -436,3 +436,19 @@ test("Tudou Gemini references are fetched by the relay, so the browser uploads t
     assert.equal(sent.length, 1);
     assert.deepEqual(sent[0].contents[0].parts[1], { inlineData: { mimeType: "image/webp", data: "AQID" } });
 });
+
+test("a proxied upload or result link sent back as a reference reaches the supplier as its original link", async () => {
+    const { imageToken } = await import("../account/mask.js");
+    await adjustBalance(db, user.id, 1000, { kind: "admin", note: "t" });
+    const original = "https://upload.apimart.ai/f/ref-1.png";
+    const proxied = `https://test.vinsen.top/api/account/img?t=${imageToken(original)}`;
+    const forged = "https://test.vinsen.top/api/account/img?t=AAAA.bbbb";
+    const sent = [];
+    await relay(db, { ...user, role: "user" }, relayRequest(GEN_URL, { body: {
+        model: "gemini-3-pro-image-preview", prompt: "x", image_urls: [proxied, forged],
+    } }), { fetchImpl: async (_url, init) => {
+        sent.push(JSON.parse(new TextDecoder().decode(init.body)));
+        return new Response(JSON.stringify({ data: { task_id: "t-ref-1" } }), { headers: { "Content-Type": "application/json" } });
+    } });
+    assert.deepEqual(sent[0].image_urls, [original, forged], "only links this server signed are restored");
+});
