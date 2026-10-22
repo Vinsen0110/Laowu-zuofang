@@ -27,7 +27,7 @@ test("the artwork side is a tilted drifting wall of the sixteen showcase picture
 
 test("signed-in visitors see their avatar, balance and the project buttons; admins keep the admin link", () => {
     assert.match(ui, /if \(user && gate\) \{/);
-    assert.match(ui, /<div class="lw-gate-me lw-gate-center">/);
+    assert.match(ui, /<div class="lw-gate-me lw-gate-center\$\{enter\}">/);
     assert.match(ui, /data-act="project-blank"/);
     assert.match(ui, /data-act="project-import"/);
     assert.match(ui, /document\.querySelector\(`\.startup-entry \[data-project-action="\$\{act === "project-blank" \? "blank" : "import"\}"\]`\)\?\.click\(\);/);
