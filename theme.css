@@ -416,6 +416,8 @@
   --lw-site-tudou: var(--lw-green-600);     /* 站点色：土豆（黑暗模式相同） */
   --lw-site-apimart: var(--lw-sky-500);     /* 站点色：APIMart（黑暗模式相同） */
   --lw-site-other: var(--lw-brand-violet-hex); /* 站点色：其他站点（黑暗模式相同） */
+  --lw-site-grsai: var(--lw-brand-violet-hex); /* 站点色：Grsai（黑暗模式相同） */
+  --lw-site-soon: var(--lw-pink-500);       /* 站点色：Soon（黑暗模式相同） */
   --lw-connection-line: var(--lw-warm-gray-400); /* 节点连线（黑暗模式相同） */
   --lw-connection-flow: var(--lw-pink-300); /* 节点连线流动动画（黑暗模式相同） */
   --lw-connection-draft: var(--lw-slate-500); /* 正在拖出的连线（黑暗模式相同） */
