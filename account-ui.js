@@ -517,7 +517,7 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
     const y = 26;
     for (let x = window.innerWidth - 8; x > window.innerWidth - 420; x -= 24) {
       const el = document.elementsFromPoint(x, y).find((n) => !host.contains(n) && n !== document.body && n !== document.documentElement && getComputedStyle(n).pointerEvents !== "none");
-      if (!el) continue;
+      if (!el || el.closest(".laowu-canvas-viewport > .origin-top-left")) continue; // canvas nodes are not toolbar buttons
       const box = el.getBoundingClientRect();
       if (box.width > window.innerWidth * 0.6 || box.height > 120) continue; // canvas / background layers
       right = Math.max(right, window.innerWidth - box.left + 8);
