@@ -7,7 +7,7 @@ import {
     CLOUDINARY_MAX_BYTES, CLOUDINARY_TARGET_BYTES, CLOUDINARY_MAX_PIXELS,
     usesCloudinaryReferenceHost, isCloudinaryImageUrl,
     prepareCloudinaryReferenceBlob, uploadCloudinaryReferenceBlob, cloudinaryReferenceSource,
-    cloudinaryCredentials, signCloudinaryUpload,
+    cloudinaryCredentials, signCloudinaryUpload, forgetCloudinaryReferences, REFERENCE_MAX_EDGE,
 } from "../cloudinary-reference-upload.js";
 import { inlineTudouGeminiReferences } from "../tudou-reference-images.js";
 
@@ -17,7 +17,10 @@ const config = {
     cloudinaryApiSecret: "synthetic-user-secret",
 };
 const input = new Blob(["original-image"], { type: "image/png" });
-const decodeImage = async () => ({ image: {}, width: 4096, height: 4096, dispose() {} });
+const decodeImage = async () => ({ image: {}, width: 2048, height: 2048, dispose() {} });
+const decode4k = async () => ({ image: {}, width: 4096, height: 4096, dispose() {} });
+test.beforeEach(() => forgetCloudinaryReferences());
+
 function responseImage(body, cloudName = config.cloudinaryCloudName) {
     const publicId = body.get("public_id");
     return {
@@ -51,11 +54,11 @@ test("host validators reject insecure, credentialed, non-image and lookalike URL
     ]) assert.equal(isCloudinaryImageUrl(url), false, url);
 });
 
-test("a compliant 4K original is returned by identity with no encoding or image mutation", async () => {
+test("a small reference within 3072px is returned by identity with no encoding or image mutation", async () => {
     let disposed = false;
     const before = await input.arrayBuffer();
     const result = await prepareCloudinaryReferenceBlob(input, {
-        decodeImage: async () => ({ image: {}, width: 4096, height: 4096, dispose: () => { disposed = true; } }),
+        decodeImage: async () => ({ image: {}, width: REFERENCE_MAX_EDGE, height: 2048, dispose: () => { disposed = true; } }),
         encodeImage: () => assert.fail("a compliant original must not be compressed"),
     });
     assert.equal(result, input);
@@ -63,11 +66,35 @@ test("a compliant 4K original is returned by identity with no encoding or image 
     assert.equal(disposed, true);
 });
 
+test("large photos are shrunk to a 3072px long edge for the upload copy only", async () => {
+    const original = new Blob([new Uint8Array(4_000_000)], { type: "image/jpeg" });
+    const calls = [];
+    const result = await prepareCloudinaryReferenceBlob(original, {
+        decodeImage: async () => ({ image: {}, width: 4000, height: 3000 }),
+        encodeImage: async (_image, width, height, quality) => {
+            calls.push({ width, height, quality });
+            return new Blob(["copy"], { type: "image/webp" });
+        },
+    });
+    assert.deepEqual(calls, [{ width: 3072, height: 2304, quality: 0.92 }]);
+    assert.equal(original.size, 4_000_000, "the canvas original is untouched");
+    assert.equal(result.type, "image/webp");
+});
+
+test("a heavy file already within 3072px keeps the original when re-encoding would not shrink it", async () => {
+    const original = new Blob([new Uint8Array(3_000_000)], { type: "image/png" });
+    const result = await prepareCloudinaryReferenceBlob(original, {
+        decodeImage: async () => ({ image: {}, width: 2000, height: 2000 }),
+        encodeImage: async () => ({ size: 3_500_000, type: "image/webp" }),
+    });
+    assert.equal(result, original);
+});
+
 test("overweight references are compressed at original dimensions first", async () => {
     const original = new Blob([new Uint8Array(CLOUDINARY_MAX_BYTES + 1)], { type: "image/png" });
     const calls = [];
     const result = await prepareCloudinaryReferenceBlob(original, {
-        decodeImage,
+        decodeImage: decode4k,
         encodeImage: async (_image, width, height, quality) => {
             calls.push({ width, height, quality });
             return new Blob(["copy"], { type: "image/webp" });
@@ -75,7 +102,7 @@ test("overweight references are compressed at original dimensions first", async 
     });
     assert.notEqual(result, original);
     assert.equal(original.size, CLOUDINARY_MAX_BYTES + 1);
-    assert.deepEqual(calls, [{ width: 4096, height: 4096, quality: 0.94 }]);
+    assert.deepEqual(calls, [{ width: 3072, height: 3072, quality: 0.92 }]);
     assert.equal(result.type, "image/webp");
 });
 
@@ -96,15 +123,15 @@ test("compression tries quality changes before reducing dimensions, and never ch
     const original = new Blob([new Uint8Array(CLOUDINARY_MAX_BYTES + 1)], { type: "image/png" });
     const calls = [];
     await prepareCloudinaryReferenceBlob(original, {
-        decodeImage,
+        decodeImage: decode4k,
         encodeImage: async (_image, width, height, quality) => {
             calls.push({ width, height, quality });
             return { size: calls.length <= 5 ? CLOUDINARY_TARGET_BYTES + 1 : 100, type: "image/webp" };
         },
     });
     assert.equal(calls.length, 6);
-    assert.ok(calls.slice(0, 5).every(item => item.width === 4096 && item.height === 4096));
-    assert.ok(calls[5].width < 4096);
+    assert.ok(calls.slice(0, 5).every(item => item.width === 3072 && item.height === 3072));
+    assert.ok(calls[5].width < 3072);
 });
 
 test("failed compression is bounded and does not overwrite the original", async () => {
@@ -370,4 +397,20 @@ test("neither client nor local server depends on a shared signing endpoint or se
     const server = await readFile(new URL("../local-preview-server.mjs", import.meta.url), "utf8");
     for (const source of [client, server]) assert.doesNotMatch(source, /cloudinary-signature|CLOUDINARY_API_SECRET|CLOUDINARY_UPLOAD_TOKEN_HASHES/);
     await assert.rejects(readFile(new URL("../api/cloudinary-signature.js", import.meta.url)), { code: "ENOENT" });
+});
+
+test("the same reference uploads once per Cloudinary account and is reused afterwards", async () => {
+    let uploads = 0;
+    const fetchImpl = async (_url, init) => { uploads++; return Response.json(responseImage(init.body)); };
+    const options = { decodeImage: async () => ({ image: {}, width: 1000, height: 1000 }), fetchImpl };
+    const first = await uploadCloudinaryReferenceBlob(config, input, options);
+    const again = await uploadCloudinaryReferenceBlob(config, new Blob(["original-image"], { type: "image/png" }), options);
+    assert.equal(again, first);
+    assert.equal(uploads, 1);
+    await uploadCloudinaryReferenceBlob(config, new Blob(["another-image"], { type: "image/png" }), options);
+    assert.equal(uploads, 2, "a different image is uploaded");
+    await uploadCloudinaryReferenceBlob({ ...config, cloudinaryCloudName: "other-cloud" }, input, {
+        ...options, fetchImpl: async (_url, init) => { uploads++; return Response.json(responseImage(init.body, "other-cloud")); },
+    });
+    assert.equal(uploads, 3, "another account never reuses this account's link");
 });

@@ -3,7 +3,7 @@ import{useCanvasGroups,createCanvasGroupComponents,remapClonedCanvasGroups,moveC
 import{observeMentionMenu,keepMentionVisible,remapImageMentions,reorderReferenceEdges,installCanvasFlowActivity,observeFlowLine}from"../canvas-reference-ui.js?v=20260922-01";
 installCanvasFlowActivity();
 import{appStateStorage,createDeferredStateWriter,showStorageError}from"../app-state-storage.js?v=20261015-theme-03";
-import{usesCloudinaryReferenceHost,cloudinaryReferenceSource,uploadCloudinaryReferenceBlob}from"../cloudinary-reference-upload.js?v=20261021-admin-01";
+import{usesCloudinaryReferenceHost,cloudinaryReferenceSource,uploadCloudinaryReferenceBlob}from"../cloudinary-reference-upload.js?v=20261022-ref-01";
 await appStateStorage.ready;
 
 import{RUNNINGHUB_ORIGIN,RUNNINGHUB_LLM_ORIGIN,RUNNINGHUB_SITE_ID,RUNNINGHUB_SITE_NAME,RUNNINGHUB_SITE_MODELS,RUNNINGHUB_IMAGE_MODELS,RUNNINGHUB_TEXT_MODELS,isRunningHubSite,runRunningHubImageGeneration,runningHubImagePrice,runningHubReferenceAspectRatio,runningHubSupportedAspectRatios,runningHubGpt25Mode,runningHubGpt25Variant,runningHubQuality,uploadRunningHubReferenceBlob,fetchRunningHubAccount}from"../runninghub-api.js?v=20261022-ratio-01";
