@@ -29,6 +29,13 @@ CREATE TABLE IF NOT EXISTS lw_sessions (
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS lw_sessions_user ON lw_sessions(user_id);
+CREATE TABLE IF NOT EXISTS lw_device_tokens (
+    token_hash  TEXT PRIMARY KEY,
+    user_id     BIGINT NOT NULL REFERENCES lw_users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    expires_at  TIMESTAMPTZ NOT NULL,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS lw_device_tokens_user ON lw_device_tokens(user_id);
 ALTER TABLE lw_users ADD COLUMN IF NOT EXISTS display_name TEXT NOT NULL DEFAULT '';
 ALTER TABLE lw_users ADD COLUMN IF NOT EXISTS avatar TEXT NOT NULL DEFAULT '';
 CREATE TABLE IF NOT EXISTS lw_ledger (
