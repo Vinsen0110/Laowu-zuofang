@@ -114,14 +114,14 @@ test("Tudou, RH, and Mart text generation use Chat Completions messages", async 
             provider: "runninghub",
             baseUrl: "https://www.runninghub.ai",
             apiKey: "test-key",
-            model: "google/gemini-3.7-flash",
+            model: "google/gemini-3.8-flash",
         },
         [{ role: "user", content: "生成一段文字" }],
     );
     assert.equal(requests.length, 3);
     assert.equal(requests[2].url, "https://llm.runninghub.ai/v1/chat/completions");
     const runningHubBody = JSON.parse(requests[2].init.body);
-    assert.equal(runningHubBody.model, "google/gemini-3.7-flash");
+    assert.equal(runningHubBody.model, "google/gemini-3.8-flash");
     assert.deepEqual(runningHubBody.messages, [{ role: "user", content: "生成一段文字" }]);
     assert.equal(runningHubBody.stream, false);
 

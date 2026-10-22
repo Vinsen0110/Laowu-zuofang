@@ -100,7 +100,7 @@ function textRows() {
     return [
         row("tudou", "文本 · Gemini 3.8 Flash", `${TUDOU_ORIGIN}/v1/chat/completions`, { model: "gemini-3.8-flash" }, null, "CNY"),
         row("apimart", "文本 · Gemini 3.8 Flash", `${APIMART_ORIGIN}/v1/chat/completions`, { model: "gemini-3.8-flash" }, null, "USD"),
-        row("runninghub", "文本 · Gemini 3.7 Flash", "https://llm.runninghub.ai/v1/chat/completions", { model: "google/gemini-3.7-flash" }, null, "USD"),
+        row("runninghub", "文本 · Gemini 3.8 Flash", "https://llm.runninghub.ai/v1/chat/completions", { model: "google/gemini-3.8-flash" }, null, "USD"),
     ];
 }
 

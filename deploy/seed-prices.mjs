@@ -16,7 +16,7 @@ const plan = {
     },
     apimart: { "Nano Banana 2.1": R(0.2, 0.2, 0.25), "Nano Banana Pro": R(0.3, 0.3, 0.45), "GPT Image 2.5 · 固定": R(0.15, 0.2, 0.3), "文本 · Gemini 3.8 Flash": 0.02 },
     grsai: { "Nano Banana 2.1": all(0.25), "Nano Banana Pro": all(0.35), "GPT Image 2 VIP": 0.4 },
-    runninghub: { "Nano Banana Pro": R(0.7, 0.7, 0.8), "GPT Image 2.5 · 固定": all(0.45), "文本 · Gemini 3.7 Flash": 0.02 },
+    runninghub: { "Nano Banana Pro": R(0.7, 0.7, 0.8), "GPT Image 2.5 · 固定": all(0.45), "文本 · Gemini 3.8 Flash": 0.02 },
     soon: { "Nano Banana Pro": R(0.45, 0.45, 0.6) },
 };
 for (const q of ["low", "medium", "high", "xhigh", "max"]) {
