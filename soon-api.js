@@ -16,7 +16,7 @@ const ORIGINS = new Set([
     SOON_ORIGIN, "https://api-hk.soonstudio.ai", "https://api-us.soonstudio.ai",
 ]);
 const TASK_TIMEOUT_MS = 10 * 60 * 1000;
-const POLL_INTERVAL_MS = 2500;
+const POLL_INTERVAL_MS = 1500;
 
 export function isSoonSite(config) {
     if (config?.provider) return config.provider === SOON_SITE_ID;

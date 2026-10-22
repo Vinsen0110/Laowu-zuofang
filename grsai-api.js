@@ -5,7 +5,7 @@ export const GRSAI_SITE_MODELS = ["nano-banana-2.1", "nano-banana-pro"];
 export const GRSAI_IMAGE_MODELS = GRSAI_SITE_MODELS;
 export const GRSAI_TEXT_MODELS = [];
 
-const POLL_INTERVAL_MS = 2500;
+const POLL_INTERVAL_MS = 1500;
 const TASK_TIMEOUT_MS = 5 * 60 * 1000;
 
 const VIP_RATIO_SIZES = {
