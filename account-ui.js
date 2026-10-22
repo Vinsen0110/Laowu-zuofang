@@ -256,6 +256,9 @@ button.lw-gate-face:hover{transform:scale(1.04)}
 .lw-gate-foot a:hover{text-decoration:underline}
 @media (max-width:860px){.lw-gate{grid-template-columns:1fr}.lw-gate-art{display:none}.lw-gate-side{justify-content:flex-start;padding:48px 24px}.lw-gate-mobile-brand{display:flex}}
 .lw-start .lw-acct{display:none}
+.startup-entry{visibility:hidden}
+.lw-gate-face-blank{display:block;width:72px;height:72px;border-radius:50%;background:var(--g-line)}
+.lw-gate-checking .lw-gate-signing-text{transition:none}
 .canvas-balance-stack{display:none !important}
 .startup-entry.lw-gated .startup-entry-workspace>h2,.startup-entry.lw-gated .startup-entry-actions{display:none}
 .lw-entry-acct{--a-bg:var(--entry-button,#fff);--a-text:var(--entry-text,#1f2937);--a-muted:var(--entry-muted,#64748b);--a-border:var(--entry-border,#e2e8f0);--a-soft:var(--entry-hover,#f1f5f9);--a-primary:var(--entry-primary,#22795a);--a-primary-hover:var(--entry-primary-hover,#1b604a);--a-err-bg:var(--entry-error-bg,#fef2f2);--a-err:var(--entry-error-text,#b91c1c);margin-top:18px;color:var(--a-text);font-family:inherit}
@@ -750,7 +753,15 @@ button.lw-gate-face:hover{transform:scale(1.04)}
   let entryRedeemOpen = false;
 
   function entryView() {
-    if (!loaded) return `<div class="lw-entry-sub" style="margin:0">正在检查登录状态…</div>`;
+    if (!loaded) {
+      // Shown for the moment the sign-in check takes: the remembered account if there is one.
+      const last = gate && lastAccount();
+      const pic = last && typeof globalThis.lwAvatarUrl === "function" ? globalThis.lwAvatarUrl({ email: last.email, avatar: last.avatar }) : "";
+      return `<div class="lw-gate-quick is-signing lw-gate-checking"><div class="lw-gate-center"><div class="lw-gate-remember">
+          <span class="lw-gate-face">${pic ? `<img src="${esc(pic)}" alt="">` : `<span class="lw-gate-face-blank"></span>`}</span>
+          ${last ? `<b>${esc(last.name)}</b><small>${esc(last.email)}</small>` : ""}<em class="lw-gate-signing-text">正在检查登录状态…</em>
+        </div></div></div>`;
+    }
     if (!user && gate && mode === "login" && !useOtherAccount && lastAccount()) {
       const last = lastAccount();
       const pic = typeof globalThis.lwAvatarUrl === "function" ? globalThis.lwAvatarUrl({ email: last.email, avatar: last.avatar }) : "";
@@ -856,7 +867,7 @@ button.lw-gate-face:hover{transform:scale(1.04)}
     const workspace = document.querySelector(".startup-entry-workspace");
     const screen = workspace && workspace.closest(".startup-entry");
     document.documentElement.classList.toggle("lw-start", Boolean(workspace));
-    const gated = Boolean(workspace) && loaded;
+    const gated = Boolean(workspace);
     if (!gated && gate) { gate.remove(); gate = null; }
     if (!workspace) { entry = null; return; }
     const target = gated ? gateSide() : workspace;
