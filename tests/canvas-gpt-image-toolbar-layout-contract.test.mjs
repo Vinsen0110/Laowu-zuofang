@@ -27,7 +27,7 @@ test("gpt-image-2 toolbar stays on one row and official mode gets enough width",
 test("generation cost is larger and keeps tabular digits", () => {
     assert.match(
         indexHtml,
-        /\.canvas-generation-toolbar \.canvas-generate-button \.bg-pink-100,\s*[^{]*\.lw-bg-accent-soft-strong \{[^}]*font-size: 12px !important;[^}]*font-weight: 800 !important;[^}]*font-variant-numeric: tabular-nums;/s,
+        /\.canvas-generation-toolbar \.canvas-generate-button \.bg-pink-100,\s*[^{]*\.lw-bg-accent-soft-strong \{[^}]*font-size: 12px !important;[^}]*font-weight: 600 !important;[^}]*font-variant-numeric: tabular-nums;/s,
     );
 });
 

@@ -6,7 +6,7 @@
         <meta name="description" content="老屋作坊创作工具" />
         <link rel="icon" type="image/png" href="./kitty.png" />
         <link rel="preload" href="./assets/index-DT58oPsm.css" as="style" crossorigin>
-        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261023-polish-01" crossorigin>
+        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261023-toolbar-01" crossorigin>
         <link rel="preload" href="./icons/gemini.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/openai.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/claude.svg" as="image" type="image/svg+xml" />
@@ -692,13 +692,13 @@
                 else document.addEventListener("DOMContentLoaded", observe, { once: true });
             })();
         </script>
-        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261023-polish-01"></script>
+        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261023-toolbar-01"></script>
       <script type="module" src="./display-model-names.js?v=20261008-nano21-01"></script>
       <script type="module" src="./canvas-price-table.js?v=20261022-mart-01"></script>
       <script src="./prevent-canvas-drag-download.js?v=20260827-01"></script>
       <script src="./avatar.js?v=20261022-avatar-01"></script>
-      <script src="./account-ui.js?v=20261022-noflash-01"></script>
-      <script src="./canvas-polish.js?v=20261023-polish-05"></script>
+      <script src="./account-ui.js?v=20261023-crisp-01"></script>
+      <script src="./canvas-polish.js?v=20261023-polish-06"></script>
       <link rel="stylesheet" crossorigin href="./assets/index-DT58oPsm.css">
       <link rel="stylesheet" href="./theme.css?v=20261022-sitemenu-01">
       <link rel="stylesheet" href="./startup-entry.css?v=20261015-theme-03">
@@ -866,8 +866,8 @@
           background: color-mix(in srgb, var(--site) 8%, transparent);
         }
         .canvas-site-menu-item:focus-visible { outline: 2px solid color-mix(in srgb, var(--site) 45%, transparent); outline-offset: -2px; }
-        .canvas-site-switch-button ~ button[aria-label="快捷键"],
-        .canvas-site-switch-button ~ span:has(+ button[aria-label="快捷键"]) {
+        .canvas-site-switch-button ~ button[aria-label="快捷键"]:not(.lw-keys-btn),
+        .canvas-site-switch-button ~ span:has(+ button[aria-label="快捷键"]:not(.lw-keys-btn)) {
           display: none !important;
         }
         button[aria-label="重做 Ctrl / Cmd + Shift + Z"] {
@@ -939,7 +939,7 @@
           max-width: calc(100vw - 32px) !important;
           padding-bottom: 0 !important;
         }
-        .laowu-config-modal .ant-modal-content {
+        .laowu-config-modal .ant-modal-content, .laowu-config-modal .ant-modal-container {
           overflow: hidden;
           padding: 0 !important;
           border: 1px solid var(--lw-cool-gray-150);
@@ -1868,7 +1868,9 @@
           padding-left: 7px !important;
           font-size: 12px !important;
           line-height: 16px !important;
-          font-weight: 800 !important;
+          font-weight: 600 !important;
+          font-synthesis: none;
+          -webkit-font-smoothing: antialiased;
           font-variant-numeric: tabular-nums;
         }
         .dark .canvas-generation-menu,
@@ -1960,7 +1962,7 @@
             color: var(--lw-stone-400) !important;
           }
         }
-        .dark .laowu-config-modal .ant-modal-content {
+        .dark .laowu-config-modal .ant-modal-content, .dark .laowu-config-modal .ant-modal-container {
           border-color: var(--lw-zinc-700) !important;
           background: var(--lw-stone-900) !important;
           box-shadow: 0 24px 80px rgb(var(--lw-black-rgb) / 0.48) !important;
@@ -2182,7 +2184,7 @@
             margin: 8px auto !important;
             top: 0 !important;
           }
-          .laowu-config-modal .ant-modal-content {
+          .laowu-config-modal .ant-modal-content, .laowu-config-modal .ant-modal-container {
             border-radius: 12px !important;
           }
           .laowu-config-shell {
@@ -2342,7 +2344,7 @@
 
 <style>
 /* Dark mode settings modal */
-.dark .laowu-config-modal .ant-modal-content,
+.dark .laowu-config-modal .ant-modal-content, .dark .laowu-config-modal .ant-modal-container,
 .dark .laowu-config-modal .ant-modal-header {
   background: var(--lw-stone-900) !important;
   border-color: var(--lw-stone-700) !important;

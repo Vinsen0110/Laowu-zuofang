@@ -79,7 +79,7 @@
 .lw-acct-chip.is-user:hover{border-color:#a7f3d0;box-shadow:0 4px 14px rgb(16 185 129 / .16)}
 .lw-acct-chip.is-user .lw-acct-avatar{background:linear-gradient(135deg,#6ee7b7,#34d399);color:#fff}
 .lw-acct-chip.is-user .lw-acct-wallet{display:inline-grid;place-items:center;opacity:.85}
-.lw-acct-chip.is-user .lw-acct-bal{font-size:14px;font-weight:800;letter-spacing:.01em}
+.lw-acct-chip.is-user .lw-acct-bal{font-size:14px;font-weight:600;letter-spacing:.01em;font-synthesis:none;-webkit-font-smoothing:antialiased}
 .lw-acct-chip.is-user.is-low{border-color:#fed7aa;background:linear-gradient(135deg,#fffaf5,#fff1e6);color:#c2410c;box-shadow:0 3px 10px rgb(249 115 22 / .10)}
 .lw-acct-chip.is-user.is-low .lw-acct-avatar{background:linear-gradient(135deg,#fdba74,#fb923c)}
 .dark .lw-acct-chip.is-user{border-color:rgb(52 211 153 / .35);background:linear-gradient(135deg,rgb(6 78 59 / .55),rgb(4 120 87 / .45));color:#d1fae5}
