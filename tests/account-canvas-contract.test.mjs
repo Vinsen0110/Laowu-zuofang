@@ -26,7 +26,7 @@ test("admins get no 图床 page; users get a refund hint on failures", () => {
 
 test("account chip: no focus refresh, no ledger for users, logout guard", () => {
     assert.doesNotMatch(accountUi, /addEventListener\("focus"/);
-    assert.match(accountUi, /user\.role === "admin" \? `<div class="lw-acct-section">/);
+    assert.match(accountUi, /\$\{isAdmin \? `<div class="lw-am-sep"><\/div>\s*<div class="lw-am-sec">\s*<div class="lw-am-label">最近记录/);
     assert.match(accountUi, /还有图片正在生成/);
 });
 
