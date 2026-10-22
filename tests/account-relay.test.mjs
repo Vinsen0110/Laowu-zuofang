@@ -416,3 +416,23 @@ test("renumbering users keeps balances, ledgers, sessions, codes and tasks attac
     assert.equal(next.id, after.length + 1, "new sign-ups continue after the highest id");
     assert.ok(a);
 });
+
+test("Tudou Gemini references are fetched by the relay, so the browser uploads them only once", async () => {
+    await saveChannel(db, { id: "tudou", apiKey: "sk-tudou" });
+    await savePrice(db, { channel: "tudou", model: "gemini-3-pro-image-preview", spec: "2k", price: "0.3" });
+    await adjustBalance(db, user.id, 1000, { kind: "admin", note: "t" });
+    const ref = "https://res.cloudinary.com/test-cloud/image/upload/v1/laowu-reference/a.webp";
+    const target = "https://api.ai-tudou.net/v1beta/models/gemini-3-pro-image-preview:generateContent";
+    const sent = [];
+    const response = await relay(db, { ...user, role: "user" }, relayRequest(target, { body: {
+        contents: [{ parts: [{ text: "x" }, { fileData: { mimeType: "image/webp", fileUri: ref } }] }],
+        generationConfig: { imageConfig: { imageSize: "2K" } },
+    } }), { fetchImpl: async (url, init) => {
+        if (String(url) === ref) return new Response(new Uint8Array([1, 2, 3]), { headers: { "Content-Type": "image/webp" } });
+        sent.push(JSON.parse(new TextDecoder().decode(init.body)));
+        return new Response('data: {"candidates":[{"content":{"parts":[{"inlineData":{"data":"AA=="}}]}}]}\n\n', { headers: { "Content-Type": "text/event-stream" } });
+    } });
+    await response.text();
+    assert.equal(sent.length, 1);
+    assert.deepEqual(sent[0].contents[0].parts[1], { inlineData: { mimeType: "image/webp", data: "AQID" } });
+});
