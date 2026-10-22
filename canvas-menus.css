@@ -22,12 +22,14 @@
 /* ---------- 打开 / 关闭动画 ----------
  * 用 translate / scale 这两个单独的属性，不碰 transform，
  * 这样不会和菜单本身用来定位、缩放的 transform 打架。 */
+/* 结束帧不写 translate / scale：动画会停在菜单自己的位置上。
+ * 有的菜单本身带一点偏移（比如往下错开 4px），写死成 0 的话，动画一结束就会跳一下。 */
 @keyframes lw-menu-in {
   from { opacity: 0; translate: 0 var(--lw-menu-enter-from, calc(-1 * var(--lw-menu-shift))); scale: var(--lw-menu-scale); }
-  to   { opacity: 1; translate: 0 0; scale: 1; }
+  to   { opacity: 1; }
 }
 @keyframes lw-menu-out {
-  from { opacity: 1; scale: 1; }
+  from { opacity: 1; }
   to   { opacity: 0; scale: var(--lw-menu-scale); }
 }
 
