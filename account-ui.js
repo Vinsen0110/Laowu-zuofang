@@ -218,6 +218,7 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
 .lw-gate-remember small{max-width:100%;overflow:hidden;color:var(--g-muted);font-size:13px;text-overflow:ellipsis;white-space:nowrap}
 .lw-gate-other{display:block;width:100%;margin-top:14px;padding:10px;border:1px dashed var(--g-line);border-radius:10px;background:none;color:var(--g-muted);font:inherit;font-size:13px;cursor:pointer}
 .lw-gate-other:hover{color:var(--g-ink);border-color:var(--g-muted)}
+.lw-gate .lw-gate-forget{display:block;margin:12px auto 0;color:var(--g-muted);font-size:12px}
 .lw-gate-me-avatar{display:block;width:72px;height:72px;margin:0 auto 16px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 4px var(--g-bg),0 0 0 5px var(--g-line)}
 .lw-gate-admin{color:var(--g-brand);font-weight:600}
 .lw-gate-balance{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;margin:0 0 16px;border:1px solid var(--g-line);border-radius:12px;font-size:14px;text-align:left}
@@ -360,10 +361,35 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
   function lastAccount() {
     try { const a = JSON.parse(localStorage.getItem(LAST_ACCOUNT_KEY) || "null"); return a && a.email ? a : null; } catch (_) { return null; }
   }
-  function rememberAccount(u) {
+  function rememberAccount(u, deviceToken) {
     try {
-      localStorage.setItem(LAST_ACCOUNT_KEY, JSON.stringify({ email: u.email, name: u.displayName || u.email, avatar: String(u.avatar || "").length < 60000 ? u.avatar || "" : "" }));
+      const prev = lastAccount();
+      const keep = prev && prev.email === u.email ? prev.deviceToken || "" : "";
+      localStorage.setItem(LAST_ACCOUNT_KEY, JSON.stringify({ email: u.email, name: u.displayName || u.email, avatar: String(u.avatar || "").length < 60000 ? u.avatar || "" : "", deviceToken: deviceToken || keep }));
     } catch (_) { /* storage blocked */ }
+  }
+  function forgetAccount() {
+    const last = lastAccount();
+    try { localStorage.removeItem(LAST_ACCOUNT_KEY); } catch (_) { /* storage blocked */ }
+    if (last?.deviceToken) api("/device-forget", { method: "POST", body: { deviceToken: last.deviceToken } }).catch(() => {});
+  }
+  // One click on the remembered account: sign in with this device's token instead of a password.
+  async function quickSignIn() {
+    const last = lastAccount();
+    if (!last?.deviceToken || busy) return;
+    busy = true; message = null; render();
+    try {
+      const result = await api("/device-login", { method: "POST", body: { deviceToken: last.deviceToken } });
+      rememberAccount(result.user, result.deviceToken);
+      setUser(result.user);
+      await loadLedger();
+    } catch (error) {
+      // The token is spent or revoked: keep the account but fall back to the password box.
+      try { localStorage.setItem(LAST_ACCOUNT_KEY, JSON.stringify({ ...last, deviceToken: "" })); } catch (_) { /* storage blocked */ }
+      message = { type: "error", text: error.message };
+    } finally {
+      busy = false; render();
+    }
   }
 
   function setUser(next) {
@@ -702,15 +728,16 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
       const pic = typeof globalThis.lwAvatarUrl === "function" ? globalThis.lwAvatarUrl({ email: last.email, avatar: last.avatar }) : "";
       return `<div class="lw-gate-center">
         <div class="lw-gate-remember">${pic ? `<img src="${esc(pic)}" alt="">` : ""}<b>${esc(last.name)}</b><small>${esc(last.email)}</small></div>
-        <p class="lw-entry-sub">输入密码，继续使用这个账号</p></div>
-        <form class="lw-acct-form" data-form="login" novalidate>
+        <p class="lw-entry-sub">${last.deviceToken ? "点击登录，直接进入你的画布" : "输入密码，继续使用这个账号"}</p></div>
+        ${last.deviceToken ? `<div class="lw-acct-form">${msgView()}<button class="lw-acct-btn" type="button" data-act="quick-login" ${busy ? "disabled" : ""}>${busy ? "正在登录…" : "登录"}</button></div>` : `<form class="lw-acct-form" data-form="login" novalidate>
           <input type="hidden" name="email" value="${esc(last.email)}">
           <input class="lw-acct-input" name="password" type="password" autocomplete="current-password" required minlength="8" placeholder="输入密码" aria-label="密码" autofocus>
           ${msgView()}
           <button class="lw-acct-btn" type="submit" ${busy ? "disabled" : ""}>${busy ? "请稍候…" : "登录"}</button>
           <button type="button" class="lw-acct-linkbtn lw-acct-forgot" data-act="mode-reset">忘记密码？</button>
-        </form>
+        </form>`}
         <button type="button" class="lw-gate-other" data-act="use-other">使用其他账号</button>
+        <button type="button" class="lw-acct-linkbtn lw-gate-forget" data-act="forget-account">在这台设备上移除这个账号</button>
         <p class="lw-gate-foot">还没有算力？<a href="${BUY_URL}" target="_blank" rel="noopener noreferrer">购买兑换码</a>，登录后在右上角充值</p>`;
     }
     if (user && gate) {
@@ -910,6 +937,7 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
       if (kind === "login" || kind === "register" || kind === "reset") {
         const path = kind === "reset" ? "/password/reset" : `/${kind}`;
         const result = await api(path, { method: "POST", body: { email: data.email, password: data.password, code: data.vcode } });
+        if (result.deviceToken) rememberAccount(result.user, result.deviceToken);
         codeSentTo = "";
         cooldownUntil = 0;
         mode = "login";
@@ -948,6 +976,8 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
       document.querySelector(`.startup-entry [data-project-action="${act === "project-blank" ? "blank" : "import"}"]`)?.click();
     }
     else if (act === "use-other") { useOtherAccount = true; message = null; render(); }
+    else if (act === "quick-login") { quickSignIn(); }
+    else if (act === "forget-account") { forgetAccount(); useOtherAccount = false; message = null; render(); }
     else if (act === "avatar-reset") { saveAvatar(""); }
     else if (act === "rename") { editingName = true; render(); host.querySelector('input[name="displayName"]')?.focus(); }
 

@@ -155,6 +155,44 @@ export async function login(db, { email, username, password }) {
     return { token, user: publicUser(user) };
 }
 
+// ---------- one-click sign-in on a remembered device ----------
+// The browser keeps a device token (never the password). Using it signs in and
+// swaps it for a fresh one; a password change or reset revokes them all.
+export const DEVICE_DAYS = 30;
+
+export async function issueDeviceToken(db, userId) {
+    const token = randomBytes(32).toString("base64url");
+    await db.query(
+        "INSERT INTO lw_device_tokens (token_hash, user_id, expires_at) VALUES ($1, $2, now() + make_interval(days => $3))",
+        [sha256(token), userId, DEVICE_DAYS],
+    );
+    return token;
+}
+
+export async function deviceLogin(db, deviceToken) {
+    const rows = await db.query(
+        `DELETE FROM lw_device_tokens WHERE token_hash = $1 RETURNING user_id, expires_at`,
+        [sha256(String(deviceToken || ""))],
+    );
+    const hit = rows[0];
+    if (!hit || new Date(hit.expires_at).getTime() < Date.now()) {
+        throw new AccountError(401, "device_expired", "免密登录已失效，请输入密码登录");
+    }
+    const [u] = await db.query("SELECT * FROM lw_users WHERE id = $1", [hit.user_id]);
+    if (!u) throw new AccountError(401, "device_expired", "免密登录已失效，请输入密码登录");
+    if (u.disabled) throw new AccountError(403, "disabled", "该账号已被停用，请联系管理员");
+    const token = randomBytes(32).toString("base64url");
+    await db.query(
+        "INSERT INTO lw_sessions (token_hash, user_id, expires_at) VALUES ($1, $2, now() + make_interval(days => $3))",
+        [sha256(token), u.id, SESSION_DAYS],
+    );
+    return { token, user: publicUser(u), deviceToken: await issueDeviceToken(db, u.id) };
+}
+
+export async function forgetDevice(db, deviceToken) {
+    await db.query("DELETE FROM lw_device_tokens WHERE token_hash = $1", [sha256(String(deviceToken || ""))]);
+}
+
 export async function logout(db, token) {
     if (!token) return;
     await db.query("DELETE FROM lw_sessions WHERE token_hash = $1", [sha256(token)]);
@@ -192,6 +230,7 @@ export async function changePassword(db, userId, { oldPassword, newPassword }) {
     const hash = await hashPassword(checkPassword(newPassword));
     await db.query("UPDATE lw_users SET password_hash = $1 WHERE id = $2", [hash, userId]);
     await db.query("DELETE FROM lw_sessions WHERE user_id = $1", [userId]);
+    await db.query("DELETE FROM lw_device_tokens WHERE user_id = $1", [userId]);
 }
 
 // ---------- balance ----------

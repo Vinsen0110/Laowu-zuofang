@@ -27,6 +27,9 @@ import {
     register,
     renumberUsers,
     setDisplayName,
+    issueDeviceToken,
+    deviceLogin,
+    forgetDevice,
     setAvatar,
     setUserDisabled,
     stats,
@@ -121,17 +124,25 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
             await register(db, { email, password: input.password });
             await markVerified(db, email);
             const { token: newToken, user } = await login(db, { email, password: input.password });
-            return json(200, { user }, { "Set-Cookie": sessionCookie(request, newToken, SESSION_DAYS * 86400) });
+            return json(200, { user, deviceToken: await issueDeviceToken(db, user.id) }, { "Set-Cookie": sessionCookie(request, newToken, SESSION_DAYS * 86400) });
         }
         if (path === "/login" && method === "POST") {
             const { token: newToken, user } = await login(db, await body(request));
-            return json(200, { user }, { "Set-Cookie": sessionCookie(request, newToken, SESSION_DAYS * 86400) });
+            return json(200, { user, deviceToken: await issueDeviceToken(db, user.id) }, { "Set-Cookie": sessionCookie(request, newToken, SESSION_DAYS * 86400) });
+        }
+        if (path === "/device-login" && method === "POST") {
+            const { token: newToken, user, deviceToken } = await deviceLogin(db, (await body(request)).deviceToken);
+            return json(200, { user, deviceToken }, { "Set-Cookie": sessionCookie(request, newToken, SESSION_DAYS * 86400) });
+        }
+        if (path === "/device-forget" && method === "POST") {
+            await forgetDevice(db, (await body(request)).deviceToken);
+            return json(200, { ok: true });
         }
         if (path === "/password/reset" && method === "POST") {
             const input = await body(request);
             const email = await resetPassword(db, input);
             const { token: newToken, user } = await login(db, { email, password: input.password });
-            return json(200, { user }, { "Set-Cookie": sessionCookie(request, newToken, SESSION_DAYS * 86400) });
+            return json(200, { user, deviceToken: await issueDeviceToken(db, user.id) }, { "Set-Cookie": sessionCookie(request, newToken, SESSION_DAYS * 86400) });
         }
         if (path === "/logout" && method === "POST") {
             await logout(db, token);

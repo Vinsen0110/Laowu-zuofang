@@ -125,6 +125,7 @@ export async function resetPassword(db, { email, code, password }) {
     );
     if (!rows[0]) throw new AccountError(404, "no_account", "这个邮箱还没有注册");
     await db.query("DELETE FROM lw_sessions WHERE user_id = $1", [rows[0].id]);
+    await db.query("DELETE FROM lw_device_tokens WHERE user_id = $1", [rows[0].id]);
     await db.query("DELETE FROM lw_login_attempts WHERE key = $1", [`login:${addr}`]);
     return addr;
 }
