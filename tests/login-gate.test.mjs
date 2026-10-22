@@ -40,3 +40,11 @@ test("the last account on this device is offered after sign-out: avatar, name an
     assert.match(ui, /<input type="hidden" name="email" value="\$\{esc\(last\.email\)\}">/);
     assert.match(ui, /data-act="use-other">使用其他账号<\/button>/);
 });
+
+test("one-click sign-in folds the rest away, centres the avatar with a ring, then fades the welcome panel in", () => {
+    assert.match(ui, /<button type="button" class="lw-gate-face" data-act="quick-login"/);
+    assert.match(ui, /box\?\.classList\.add\("is-signing"\);/);
+    assert.match(ui, /\.lw-gate-quick\.is-signing \.lw-gate-rest\{grid-template-rows:0fr;opacity:0;pointer-events:none\}/);
+    assert.match(ui, /\.lw-gate-quick\.is-signing \.lw-gate-face::after\{opacity:1;animation:lw-gate-spin 1s linear infinite\}/);
+    assert.match(ui, /<div class="lw-gate-me lw-gate-center\$\{enter\}">/);
+});
