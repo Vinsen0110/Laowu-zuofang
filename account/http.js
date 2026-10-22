@@ -277,7 +277,8 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
         throw new AccountError(404, "not_found", "接口不存在");
     } catch (error) {
         if (error instanceof AccountError) {
-            return json(error.status, { error: { code: error.code, message: error.message } });
+            // x-lw-code lets the page react to e.g. "insufficient" whatever the provider client shows.
+            return json(error.status, { error: { code: error.code, message: error.message } }, { "x-lw-code": error.code });
         }
         console.error("Account API error:", error);
         return json(500, { error: { code: "server_error", message: "服务器出错了，请稍后再试" } });
