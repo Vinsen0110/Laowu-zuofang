@@ -5,7 +5,7 @@ import test from "node:test";
 const ui = await readFile(new URL("../account-ui.js", import.meta.url), "utf8");
 
 test("the start screen is covered by the split entry page once the account state is known; opening a project removes it", () => {
-    assert.match(ui, /const gated = Boolean\(workspace\) && loaded;/);
+    assert.match(ui, /const gated = Boolean\(workspace\);/);
     assert.match(ui, /if \(!gated && gate\) \{ gate\.remove\(\); gate = null; \}/);
     assert.match(ui, /const target = gated \? gateSide\(\) : workspace;/);
 });
@@ -47,4 +47,10 @@ test("one-click sign-in folds the rest away, centres the avatar with a ring, the
     assert.match(ui, /\.lw-gate-quick\.is-signing \.lw-gate-rest\{grid-template-rows:0fr;opacity:0;pointer-events:none\}/);
     assert.match(ui, /\.lw-gate-quick\.is-signing \.lw-gate-face::after\{opacity:1;animation:lw-gate-spin 1s linear infinite\}/);
     assert.match(ui, /<div class="lw-gate-me lw-gate-center\$\{enter\}">/);
+});
+
+test("the old start screen never shows; while the sign-in check runs the page shows the remembered account", () => {
+    assert.match(ui, /\.startup-entry\{visibility:hidden\}/);
+    assert.match(ui, /<div class="lw-gate-quick is-signing lw-gate-checking">/);
+    assert.match(ui, /正在检查登录状态…/);
 });
