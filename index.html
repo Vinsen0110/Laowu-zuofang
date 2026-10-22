@@ -6,7 +6,7 @@
         <meta name="description" content="老屋作坊创作工具" />
         <link rel="icon" type="image/png" href="./kitty.png" />
         <link rel="preload" href="./assets/index-DT58oPsm.css" as="style" crossorigin>
-        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261022-mart-01" crossorigin>
+        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261022-refund-01" crossorigin>
         <link rel="preload" href="./icons/gemini.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/openai.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/claude.svg" as="image" type="image/svg+xml" />
@@ -160,6 +160,11 @@
                 window.__lwRelay = { inflight: 0, last: 0 };
                 var relayStart = function () { window.__lwRelay.inflight++; window.__lwRelay.last = Date.now(); };
                 var relayEnd = function () { window.__lwRelay.inflight = Math.max(0, window.__lwRelay.inflight - 1); window.__lwRelay.last = Date.now(); };
+                // The relay sends x-lw-refund when a failed generation was paid back.
+                var reportRefund = function (value) {
+                    var amount = Number(value);
+                    if (amount > 0) window.dispatchEvent(new CustomEvent("lw-refunded", { detail: { amount: amount } }));
+                };
                 var proxiedFetch = function (input, init) {
                     var method = String((init && init.method) || (input && input.method) || "GET").toUpperCase();
                     var rawUrl = typeof input === "string" || input instanceof URL ? String(input) : input && input.url;
@@ -175,12 +180,16 @@
                                     return input.clone().arrayBuffer().then(function (buffer) {
                                         relayInit.body = buffer;
                                         relayStart();
-                                        return nativeFetch(relayUrl(rawUrl), relayInit).finally(relayEnd);
+                                        return nativeFetch(relayUrl(rawUrl), relayInit).finally(relayEnd).then(function (response) {
+                                            reportRefund(response.headers.get("x-lw-refund"));
+                                            return response;
+                                        });
                                     });
                                 }
                             }
                             relayStart();
                             return nativeFetch(relayUrl(rawUrl), relayInit).finally(relayEnd).then(function (response) {
+                                reportRefund(response.headers.get("x-lw-refund"));
                                 if (method === "POST") window.dispatchEvent(new CustomEvent("lw-balance-changed", { detail: { url: String(rawUrl) } }));
                                 return response;
                             });
@@ -240,6 +249,7 @@
                     if (state && state.relay) {
                         relayStart();
                         this.addEventListener("loadend", relayEnd, { once: true });
+                        this.addEventListener("loadend", function () { reportRefund(this.getResponseHeader("x-lw-refund")); }, { once: true });
                         if (String(state.method).toUpperCase() === "POST") {
                             var doneUrl = state.url;
                             this.addEventListener("loadend", function () { window.dispatchEvent(new CustomEvent("lw-balance-changed", { detail: { url: doneUrl } })); }, { once: true });
@@ -681,11 +691,11 @@
                 else document.addEventListener("DOMContentLoaded", observe, { once: true });
             })();
         </script>
-        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261022-mart-01"></script>
+        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261022-refund-01"></script>
       <script type="module" src="./display-model-names.js?v=20261008-nano21-01"></script>
       <script type="module" src="./canvas-price-table.js?v=20261022-mart-01"></script>
       <script src="./prevent-canvas-drag-download.js?v=20260827-01"></script>
-      <script src="./account-ui.js?v=20261022-mart-01"></script>
+      <script src="./account-ui.js?v=20261022-refund-01"></script>
       <link rel="stylesheet" crossorigin href="./assets/index-DT58oPsm.css">
       <link rel="stylesheet" href="./theme.css?v=20261015-direct-01">
       <link rel="stylesheet" href="./startup-entry.css?v=20261015-theme-03">

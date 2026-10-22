@@ -11,7 +11,7 @@ import { background, checkLowBalances } from "./alerts.js";
 import { channelConfig } from "./channels.js";
 import { describeRequest } from "./describe.js";
 import { CHANNEL_LABELS, rewriteUrls, scrubText, unmaskTarget } from "./mask.js";
-import { AccountError, adjustBalance } from "./service.js";
+import { AccountError, adjustBalance, milliToYuan } from "./service.js";
 import { findTaskId, recordTask, settleTask, taskOutcome } from "./tasks.js";
 
 export { describeRequest };
@@ -84,7 +84,21 @@ function passThrough(upstream) {
 
 // Users never see supplier names or URLs: errors are scrubbed and result URLs
 // in small JSON bodies are pointed at the image proxy.
-async function forUser(upstream, request, onJson) {
+// x-lw-refund tells the page how much this request gave back, so it can say so.
+function withRefund(headers, refundedMilli) {
+    if (refundedMilli > 0) headers.set("x-lw-refund", String(milliToYuan(refundedMilli)));
+    return headers;
+}
+
+export function userErrorMessage(status, message, refundedMilli) {
+    const text = typeof message === "string" ? message : JSON.stringify(message);
+    // Gateway timeouts and outages (502/503/504, Cloudflare 52x) carry long technical pages.
+    const busy = status >= 500 && (status >= 520 || [502, 503, 504].includes(status) || /timeout|timed out|cloudflare|gateway/i.test(text));
+    const base = busy ? `平台繁忙或超时（${status}），请稍后重试` : scrubText(text).slice(0, 500) || `生成失败（${status}）`;
+    return refundedMilli > 0 ? `${base}。本次费用 ${milliToYuan(refundedMilli)} 已退回余额` : base;
+}
+
+async function forUser(upstream, request, onJson, refunded = () => 0) {
     const type = upstream.headers.get("content-type") || "";
     const length = Number(upstream.headers.get("content-length") || 0);
     if (upstream.status >= 400) {
@@ -94,8 +108,9 @@ async function forUser(upstream, request, onJson) {
             const data = JSON.parse(text);
             message = data?.error?.message || data?.message || data?.msg || data?.error || "";
         } catch { message = text; }
-        const body = { error: { message: scrubText(typeof message === "string" ? message : JSON.stringify(message)).slice(0, 500) || `生成失败（${upstream.status}）` } };
-        return new Response(JSON.stringify(body), { status: upstream.status, headers: { "Content-Type": "application/json; charset=utf-8", "x-lw-relay": "1" } });
+        const body = { error: { message: userErrorMessage(upstream.status, message, refunded()) } };
+        const headers = withRefund(new Headers({ "Content-Type": "application/json; charset=utf-8", "x-lw-relay": "1" }), refunded());
+        return new Response(JSON.stringify(body), { status: upstream.status, headers });
     }
     if (type.includes("json") && !type.includes("stream") && (!length || length < 2_000_000)) {
         const text = await upstream.text();
@@ -103,7 +118,7 @@ async function forUser(upstream, request, onJson) {
         try { data = JSON.parse(text); } catch { return new Response(text, { status: upstream.status, headers: copyHeaders(upstream) }); }
         if (onJson) await onJson(data).catch((error) => console.error("Relay task tracking failed:", error));
         const origin = new URL(request.url).origin;
-        return new Response(JSON.stringify(rewriteUrls(data, origin)), { status: upstream.status, headers: copyHeaders(upstream) });
+        return new Response(JSON.stringify(rewriteUrls(data, origin)), { status: upstream.status, headers: withRefund(copyHeaders(upstream), refunded()) });
     }
     return passThrough(upstream);
 }
@@ -180,10 +195,12 @@ export async function relay(db, user, request, { fetchImpl = fetch } = {}) {
         }
     }
 
+    let refundedMilli = 0;
     const refund = async (reason) => {
         if (!charge) return;
         const c = charge;
         charge = null;
+        refundedMilli += c.amount;
         await adjustBalance(db, user.id, c.amount, { kind: "refund", note: `${c.note}（${reason}）`, ref: c.ref })
             .catch((error) => console.error("Relay refund failed:", c.ref, error));
     };
@@ -230,8 +247,8 @@ export async function relay(db, user, request, { fetchImpl = fetch } = {}) {
             if (!taskId && raw) {
                 try { taskId = String(JSON.parse(new TextDecoder().decode(raw))?.taskId || ""); } catch { /* not JSON */ }
             }
-            await settleTask(db, channel, decodeURIComponent(taskId), taskOutcome(data));
+            await settleTask(db, channel, decodeURIComponent(taskId), taskOutcome(data), (milli) => { refundedMilli += milli; });
         }
     };
-    return forUser(upstream, request, onJson);
+    return forUser(upstream, request, onJson, () => refundedMilli);
 }

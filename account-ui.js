@@ -88,6 +88,8 @@
 .lw-acct-chip.is-admin:hover{border-color:transparent}
 .lw-acct-chip.is-admin .lw-acct-avatar{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#111827}
 .lw-acct-sitestack{display:flex;flex-direction:column;align-items:flex-end;gap:4px;margin-top:6px}
+.lw-refund-note{position:fixed;top:64px;left:50%;z-index:2147483001;max-width:calc(100vw - 32px);padding:10px 16px;border:1px solid var(--lw-green-teal-200,#b7e4cf);border-radius:12px;background:var(--lw-green-teal-50,#ecfdf5);color:var(--lw-green-teal-800,#1b604a);font:600 13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;box-shadow:0 10px 30px rgb(15 23 42 / .12);opacity:0;transform:translate(-50%,-8px);pointer-events:none;transition:opacity .2s,transform .2s}
+.lw-refund-note.is-on{opacity:1;transform:translate(-50%,0)}
 .lw-acct-siterow{position:relative;display:flex;align-items:center;justify-content:space-between;gap:14px;min-width:138px;height:28px;padding:0 12px 0 22px;border:1px solid var(--a-border);border-radius:10px;background:color-mix(in srgb,var(--a-bg) 88%,transparent);backdrop-filter:blur(8px);color:var(--a-text);font-size:12px;text-decoration:none;box-shadow:0 4px 12px rgb(15 23 42 / .08);transition:border-color .15s,transform .15s}
 .lw-acct-siterow::before{content:"";position:absolute;left:10px;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:var(--a-primary)}
 a.lw-acct-siterow:hover{transform:translateX(-2px)}
@@ -285,6 +287,25 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
       pendingSites.clear();
       sites.forEach(refreshSiteBalance);
     }, 1500);
+  });
+
+  // The relay reports money it gave back (failed generation); say so and show the new balance.
+  let refundNoteTimer = null;
+  window.addEventListener("lw-refunded", (event) => {
+    const amount = Number(event.detail?.amount);
+    if (!user || !(amount > 0)) return;
+    let note = document.querySelector(".lw-refund-note");
+    if (!note) {
+      note = document.createElement("div");
+      note.className = "lw-refund-note";
+      note.setAttribute("role", "status");
+      document.body.appendChild(note);
+    }
+    note.textContent = `生成失败，本次费用 ${money(amount)} 已退回你的余额`;
+    note.classList.add("is-on");
+    clearTimeout(refundNoteTimer);
+    refundNoteTimer = setTimeout(() => note.classList.remove("is-on"), 6000);
+    refresh();
   });
 
   async function refresh() {
@@ -511,13 +532,14 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
     if (force || created) paint(entry, entryView());
   }
 
+  const TRANSIENT = '.laowu-canvas-viewport > .origin-top-left, [data-notification-index], [class*="notification"], [role="alert"], [role="status"], .lw-refund-note';
   function placeChip() {
     if (!host || document.documentElement.classList.contains("lw-start")) return;
     let right = 12;
     const y = 26;
     for (let x = window.innerWidth - 8; x > window.innerWidth - 420; x -= 24) {
       const el = document.elementsFromPoint(x, y).find((n) => !host.contains(n) && n !== document.body && n !== document.documentElement && getComputedStyle(n).pointerEvents !== "none");
-      if (!el || el.closest(".laowu-canvas-viewport > .origin-top-left")) continue; // canvas nodes are not toolbar buttons
+      if (!el || el.closest(TRANSIENT)) continue; // canvas nodes and pop-up notices are not toolbar buttons
       const box = el.getBoundingClientRect();
       if (box.width > window.innerWidth * 0.6 || box.height > 120) continue; // canvas / background layers
       right = Math.max(right, window.innerWidth - box.left + 8);

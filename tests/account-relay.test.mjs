@@ -265,7 +265,8 @@ test("users never see supplier hosts: masked targets, scrubbed errors, proxied r
     const bad = await relay(db, { ...user, role: "user" }, relayRequest(GEN_URL, { body: { model: "gemini-3-pro-image-preview" } }), { fetchImpl: async () => new Response(
         JSON.stringify({ error: { message: "apimart upstream busy", type: "apimart_error" } }), { status: 503, headers: { "Content-Type": "application/json" } }) });
     assert.equal(bad.status, 503);
-    assert.equal((await bad.json()).error.message, "渠道 2 upstream busy");
+    assert.equal(bad.headers.get("x-lw-refund"), "0.2");
+    assert.equal((await bad.json()).error.message, "平台繁忙或超时（503），请稍后重试。本次费用 0.2 已退回余额");
 });
 
 test("a synchronous Gemini answer without an image is refunded", async () => {

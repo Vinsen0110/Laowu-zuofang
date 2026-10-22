@@ -74,8 +74,8 @@ export async function recordTask(db, { channel, taskId, userId, ref, amount, not
     );
 }
 
-// Applies a status check. Refunds once when the task failed.
-export async function settleTask(db, channel, taskId, outcome) {
+// Applies a status check. Refunds once when the task failed (refunded(milli) is told the amount).
+export async function settleTask(db, channel, taskId, outcome, refunded) {
     if (!taskId || outcome === "pending") return null;
     const next = outcome === "failed" ? "refunded" : "done";
     const rows = await db.query(
@@ -86,6 +86,7 @@ export async function settleTask(db, channel, taskId, outcome) {
     );
     const task = rows[0];
     if (!task || outcome !== "failed") return task ? "done" : null;
+    refunded?.(Number(task.amount_milli));
     await adjustBalance(db, Number(task.user_id), Number(task.amount_milli), {
         kind: "refund",
         note: `${task.note}（任务失败自动退回）`,
