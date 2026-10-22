@@ -218,6 +218,24 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
 .lw-gate-remember img{width:72px;height:72px;margin-bottom:10px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 4px var(--g-bg),0 0 0 5px var(--g-line)}
 .lw-gate-remember b{font-size:20px;font-weight:650}
 .lw-gate-remember small{max-width:100%;overflow:hidden;color:var(--g-muted);font-size:13px;text-overflow:ellipsis;white-space:nowrap}
+.lw-gate-face{position:relative;display:block;padding:0;border:0;border-radius:50%;background:none;cursor:default}
+button.lw-gate-face{cursor:pointer;transition:transform .2s}
+button.lw-gate-face:hover{transform:scale(1.04)}
+.lw-gate-face img{display:block}
+.lw-gate-face::after{content:"";position:absolute;inset:-7px;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 55%,#f472b6 75%,#8b5cf6 100%);-webkit-mask:radial-gradient(circle,transparent 62%,#000 63%);mask:radial-gradient(circle,transparent 62%,#000 63%);opacity:0;transition:opacity .3s}
+.lw-gate-signing-text{display:block;max-height:0;overflow:hidden;color:var(--g-muted);font-size:13px;font-style:normal;opacity:0;transition:max-height .4s ease,opacity .3s ease,margin .4s ease}
+.lw-gate-rest{display:grid;grid-template-rows:1fr;transition:grid-template-rows .5s cubic-bezier(.4,0,.2,1),opacity .3s ease}
+.lw-gate-rest>div{min-height:0;overflow:hidden}
+.lw-gate-quick .lw-gate-remember img{transition:transform .5s cubic-bezier(.4,0,.2,1)}
+.lw-gate-quick.is-signing .lw-gate-rest{grid-template-rows:0fr;opacity:0;pointer-events:none}
+.lw-gate-quick.is-signing .lw-gate-remember img{transform:scale(1.15)}
+.lw-gate-quick.is-signing .lw-gate-face::after{opacity:1;animation:lw-gate-spin 1s linear infinite}
+.lw-gate-quick.is-signing .lw-gate-signing-text{max-height:24px;margin-top:10px;opacity:1}
+.lw-gate-quick.is-signing button.lw-gate-face{pointer-events:none}
+@keyframes lw-gate-spin{to{transform:rotate(360deg)}}
+.lw-gate-me.is-entering{animation:lw-gate-enter .5s cubic-bezier(.2,.7,.2,1) both}
+@keyframes lw-gate-enter{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.lw-gate-rest,.lw-gate-quick .lw-gate-remember img,.lw-gate-signing-text{transition:none}.lw-gate-quick.is-signing .lw-gate-face::after{animation:none}.lw-gate-me.is-entering{animation:none}}
 .lw-gate-other{display:block;width:100%;margin-top:14px;padding:10px;border:1px dashed var(--g-line);border-radius:10px;background:none;color:var(--g-muted);font:inherit;font-size:13px;cursor:pointer}
 .lw-gate-other:hover{color:var(--g-ink);border-color:var(--g-muted)}
 .lw-gate .lw-gate-forget{display:block;margin:12px auto 0;color:var(--g-muted);font-size:12px}
@@ -360,6 +378,7 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
   // The last account signed in on this device, kept after sign-out so the sign-in page can offer it.
   const LAST_ACCOUNT_KEY = "lw-last-account";
   let useOtherAccount = false;
+  let welcomeMotion = false; // fade the welcome panel in right after a one-click sign-in
   function lastAccount() {
     try { const a = JSON.parse(localStorage.getItem(LAST_ACCOUNT_KEY) || "null"); return a && a.email ? a : null; } catch (_) { return null; }
   }
@@ -379,13 +398,20 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
   async function quickSignIn() {
     const last = lastAccount();
     if (!last?.deviceToken || busy) return;
-    busy = true; message = null; render();
+    busy = true; message = null;
+    // Animate on the page as it is (no repaint): fold away the rest, centre the avatar, show the ring.
+    const box = entry?.querySelector(".lw-gate-quick");
+    box?.classList.add("is-signing");
+    const started = Date.now();
     try {
       const result = await api("/device-login", { method: "POST", body: { deviceToken: last.deviceToken } });
+      await new Promise((r) => setTimeout(r, Math.max(0, 700 - (Date.now() - started)))); // let the motion finish
       rememberAccount(result.user, result.deviceToken);
+      welcomeMotion = true;
       setUser(result.user);
       await loadLedger();
     } catch (error) {
+      box?.classList.remove("is-signing");
       // The token is spent or revoked: keep the account but fall back to the password box.
       try { localStorage.setItem(LAST_ACCOUNT_KEY, JSON.stringify({ ...last, deviceToken: "" })); } catch (_) { /* storage blocked */ }
       message = { type: "error", text: error.message };
@@ -728,9 +754,12 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
     if (!user && gate && mode === "login" && !useOtherAccount && lastAccount()) {
       const last = lastAccount();
       const pic = typeof globalThis.lwAvatarUrl === "function" ? globalThis.lwAvatarUrl({ email: last.email, avatar: last.avatar }) : "";
-      return `<div class="lw-gate-center">
-        <div class="lw-gate-remember">${pic ? `<img src="${esc(pic)}" alt="">` : ""}<b>${esc(last.name)}</b><small>${esc(last.email)}</small></div>
-        <p class="lw-entry-sub">${last.deviceToken ? "点击登录，直接进入你的画布" : "输入密码，继续使用这个账号"}</p></div>
+      return `<div class="lw-gate-quick">
+        <div class="lw-gate-center">
+        <div class="lw-gate-remember">${last.deviceToken ? `<button type="button" class="lw-gate-face" data-act="quick-login" title="点击登录" aria-label="以 ${esc(last.name)} 登录">` : `<span class="lw-gate-face">`}${pic ? `<img src="${esc(pic)}" alt="">` : ""}${last.deviceToken ? "</button>" : "</span>"}<b>${esc(last.name)}</b><small>${esc(last.email)}</small><em class="lw-gate-signing-text">正在登录…</em></div>
+        </div>
+        <div class="lw-gate-rest"><div>
+        <p class="lw-entry-sub lw-gate-center">${last.deviceToken ? "点击头像或下面的按钮，直接进入你的画布" : "输入密码，继续使用这个账号"}</p>
         ${last.deviceToken ? `<div class="lw-acct-form">${msgView()}<button class="lw-acct-btn" type="button" data-act="quick-login" ${busy ? "disabled" : ""}>${busy ? "正在登录…" : "登录"}</button></div>` : `<form class="lw-acct-form" data-form="login" novalidate>
           <input type="hidden" name="email" value="${esc(last.email)}">
           <input class="lw-acct-input" name="password" type="password" autocomplete="current-password" required minlength="8" placeholder="输入密码" aria-label="密码" autofocus>
@@ -740,13 +769,16 @@ a.lw-acct-siterow:hover{border-color:var(--a-primary)}
         </form>`}
         <button type="button" class="lw-gate-other" data-act="use-other">使用其他账号</button>
         <button type="button" class="lw-acct-linkbtn lw-gate-forget" data-act="forget-account">在这台设备上移除这个账号</button>
-        <p class="lw-gate-foot">还没有算力？<a href="${BUY_URL}" target="_blank" rel="noopener noreferrer">购买兑换码</a>，登录后在右上角充值</p>`;
+        <p class="lw-gate-foot">还没有算力？<a href="${BUY_URL}" target="_blank" rel="noopener noreferrer">购买兑换码</a>，登录后在右上角充值</p>
+        </div></div></div>`;
     }
     if (user && gate) {
       const isAdmin = user.role === "admin";
       const opening = lastProjectState.startsWith("true");
       const projectError = lastProjectState.split("|").slice(1).join("|");
-      return `<div class="lw-gate-me lw-gate-center">
+      const enter = welcomeMotion ? " is-entering" : "";
+      welcomeMotion = false;
+      return `<div class="lw-gate-me lw-gate-center${enter}">
           <img class="lw-gate-me-avatar" src="${esc(globalThis.lwAvatarUrl ? globalThis.lwAvatarUrl(user) : "")}" alt="">
           <h2 class="lw-entry-title">欢迎回来，${esc(user.displayName || user.email)}</h2>
           <p class="lw-entry-sub">${esc(user.email)}${isAdmin ? ' · <span class="lw-gate-admin">管理员</span>' : ""}</p>
