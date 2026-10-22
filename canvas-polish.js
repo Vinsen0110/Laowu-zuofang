@@ -14,11 +14,18 @@
 .canvas-site-switch-dot{display:block;width:8px;height:8px;border-radius:50%;background:var(--site);box-shadow:0 0 0 3px color-mix(in srgb,var(--site) 18%,transparent)}
 .canvas-site-switch-name{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-.lw-tip{position:fixed;z-index:2147483100;padding:6px 10px;border-radius:8px;background:var(--lw-ink-cool-900);color:var(--lw-white);font:500 12px/1.3 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;white-space:nowrap;pointer-events:none;opacity:0;transform:translateX(-4px);transition:opacity .12s,transform .12s;box-shadow:0 6px 18px rgb(var(--lw-slate-900-rgb) / .2)}
+.lw-tip{position:fixed;z-index:2147483100;padding:6px 10px;border:1px solid var(--lw-ui-gray-200);border-radius:8px;background:var(--lw-white);color:var(--lw-ui-gray-900);font:500 12px/1.3 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;white-space:nowrap;pointer-events:none;opacity:0;transform:translateX(-4px);transition:opacity .12s,transform .12s;box-shadow:0 6px 18px rgb(var(--lw-slate-900-rgb) / .2)}
 .lw-tip.is-on{opacity:1;transform:none}
 .lw-tip.is-above{transform:translateY(4px)}
 .lw-tip.is-above.is-on{transform:none}
-.lw-tip kbd{margin-left:8px;padding:1px 5px;border-radius:4px;background:rgb(var(--lw-white-rgb) / .16);font:inherit;font-size:11px}
+.lw-tip kbd{margin-left:8px;padding:1px 5px;border-radius:4px;background:var(--lw-ui-gray-100);color:var(--lw-ui-gray-600);font:inherit;font-size:11px}
+.dark .lw-tip{border-color:var(--lw-stone-700);background:var(--lw-stone-900);color:var(--lw-stone-100)}
+.dark .lw-tip kbd{background:var(--lw-stone-800);color:var(--lw-stone-300)}
+body:has(.pointer-events-auto.flex.w-14.flex-col button:hover) .ant-tooltip,body:has(.lw-keys-btn:hover) .ant-tooltip{display:none!important}
+.lw-keys-btn{display:grid;place-items:center;width:28px;height:28px;margin:0 4px 0 2px;border:0;border-radius:999px;background:transparent;color:var(--lw-ui-gray-600);font:700 13px/1 -apple-system,BlinkMacSystemFont,sans-serif;cursor:pointer}
+.lw-keys-btn:hover{background:var(--lw-ui-gray-100);color:var(--lw-ui-gray-900)}
+.dark .lw-keys-btn{color:var(--lw-stone-300)}
+.dark .lw-keys-btn:hover{background:var(--lw-stone-800);color:var(--lw-stone-50)}
 
 .lw-empty{position:fixed;inset:0;z-index:30;display:grid;place-items:center;pointer-events:none}
 .lw-empty-card{display:flex;flex-direction:column;align-items:center;max-width:560px;padding:0 24px;text-align:center;animation:lw-empty-in .5s cubic-bezier(.2,.7,.2,1) both}
@@ -86,14 +93,16 @@
   function tipText(button) {
     const label = button.getAttribute("aria-label") || "";
     if (label.startsWith("选择站点")) return ["切换渠道"];
+    if (button.classList.contains("lw-keys-btn")) return ["快捷键", "?"];
     return TIPS[label] || (label ? [label] : null);
   }
   document.addEventListener("pointerover", (event) => {
     const button = event.target.closest?.("button");
-    const zone = button && (button.closest(".pointer-events-auto.flex.w-14.flex-col") ? "left" : button.closest(".flex.h-11.items-center.overflow-hidden.rounded-full") ? "bottom" : null);
+    const zone = button && (button.closest(".pointer-events-auto.flex.w-14.flex-col") ? "left" : button.closest(".flex.h-11.items-center.overflow-hidden.rounded-full, .lw-keys-btn") ? "bottom" : null);
     if (!zone) { if (tipFor && !tipFor.contains(event.target)) hideTip(); return; }
     const text = tipText(button);
     if (!text) return;
+    if (button.title) { button.dataset.lwTitle = button.title; button.removeAttribute("title"); }
     tipFor = button;
     tip.innerHTML = `${esc(text[0])}${text[1] ? `<kbd>${esc(text[1])}</kbd>` : ""}`;
     const r = button.getBoundingClientRect();
@@ -191,11 +200,26 @@
   // This script runs from <head>; attach to the page once <body> exists.
   function start() {
   document.body.appendChild(tip);
+  // A visible "?" in the bottom bar opens the shortcut panel.
+  function placeKeysButton() {
+    const bar = document.querySelector(".canvas-site-switch-button")?.closest(".flex.h-11.items-center.overflow-hidden.rounded-full");
+    if (!bar || bar.querySelector(".lw-keys-btn")) return;
+    const sep = document.createElement("span");
+    sep.className = "mx-1 h-6 w-px lw-keys-sep";
+    sep.style.background = "var(--lw-ui-gray-200)";
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "lw-keys-btn";
+    btn.setAttribute("aria-label", "快捷键");
+    btn.textContent = "?";
+    btn.addEventListener("click", (event) => { event.stopPropagation(); hideTip(); toggleKeys(); });
+    bar.append(sep, btn);
+  }
   let pending = false;
   new MutationObserver(() => {
     if (pending) return;
     pending = true;
-    requestAnimationFrame(() => { pending = false; renderEmpty(); if (tipFor && !document.contains(tipFor)) hideTip(); });
+    requestAnimationFrame(() => { pending = false; renderEmpty(); placeKeysButton(); if (tipFor && !document.contains(tipFor)) hideTip(); });
   }).observe(document.body, { childList: true, subtree: true });
   // The canvas registers __lwStartFromPrompt a moment after its last DOM change; check again shortly.
   setInterval(renderEmpty, 1000);

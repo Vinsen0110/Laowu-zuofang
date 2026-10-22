@@ -34,3 +34,20 @@ test("toolbar hover tips, the ? shortcut panel and one look for pop-up messages"
     for (const row of ["把选中的图片排成网格", "把选中的节点打包成分组", "拖出一份副本"]) assert.ok(polish.includes(row), row);
     assert.match(polish, /\.ant-message \.ant-message-notice-wrapper\{/);
 });
+
+test("tips follow the theme, replace the native title, and a visible ? opens the shortcuts", () => {
+    assert.match(polish, /\.dark \.lw-tip\{/);
+    assert.match(polish, /button\.dataset\.lwTitle = button\.title; button\.removeAttribute\("title"\);/);
+    assert.match(polish, /btn\.className = "lw-keys-btn";/);
+    assert.match(html, /button\[aria-label="快捷键"\]:not\(\.lw-keys-btn\)/);
+});
+
+test("image nodes, uploaded or generated, show the hover toolbar with crop and friends", () => {
+    assert.match(bundle, /pv=vc&&!Ye&&!\(QM\(vc\)&&!vc\.metadata\?\.content\)&&Yt===vc\.id\?vc:null/);
+    assert.match(bundle, /if\(lwNode\?\.type===Ne\.Image&&lwNode\.metadata\?\.content\)\{Zt\(K\),cv\(K\);return\}/);
+    assert.match(bundle, /ge=new Set\(\["download","copyPrompt","reversePrompt","doodle","crop","split","upscale","view"\]\)/);
+});
+
+test("the settings modal has a single frame on the newer antd markup", () => {
+    assert.match(html, /\.laowu-config-modal \.ant-modal-content, \.laowu-config-modal \.ant-modal-container \{\s*overflow: hidden;\s*padding: 0 !important;/);
+});
