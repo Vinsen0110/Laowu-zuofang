@@ -20,7 +20,6 @@ const TUDOU_GPT25 = {
     flare: { low: [0.03, 0.03, 0.06], medium: [0.04, 0.04, 0.08], high: [0.05, 0.05, 0.1], xhigh: [0.06, 0.06, 0.12], max: [0.08, 0.12, 0.16] },
     sunburst: { low: [0.04, 0.04, 0.08], medium: [0.05, 0.05, 0.1], high: [0.07, 0.07, 0.12], xhigh: [0.1, 0.1, 0.15], max: [0.12, 0.12, 0.18] },
 };
-const TUDOU_GPT2 = { low: [0.03, 0.04, 0.06], medium: [0.04, 0.06, 0.08], high: [0.06, 0.08, 0.1] };
 
 function row(channel, label, target, body, cost, currency) {
     const { model, spec } = describeRequest(new URL(target), body);
@@ -48,10 +47,6 @@ function tudouRows() {
                 `${TUDOU_ORIGIN}/v1/images/generations/async`,
                 { model: `gpt-image-2.5-${variant}-async`, resolution: r, quality: q }, TUDOU_GPT25[variant][q][i], "CNY")));
         }
-    }
-    for (const q of GPT_QUALITIES) {
-        RES.forEach((r, i) => rows.push(row("tudou", `GPT Image 2 · ${q}`, `${TUDOU_ORIGIN}/v1/images/generations/async`,
-            { model: "gpt-image-2-all", resolution: r, quality: q }, TUDOU_GPT2[q][i], "CNY")));
     }
     return rows;
 }
@@ -85,8 +80,6 @@ function grsaiRows() {
         RES.forEach((quality) => rows.push(fromBuilder("grsai", GRSAI_ORIGIN, grsaiImageRequestSpec, grsaiImagePrice, "CNY", label,
             { provider: "grsai", size: "1:1", quality, model: `grsai::${model}` })));
     }
-    rows.push(fromBuilder("grsai", GRSAI_ORIGIN, grsaiImageRequestSpec, grsaiImagePrice, "CNY", "GPT Image 2 VIP",
-        { provider: "grsai", size: "1:1", quality: "1k", model: "grsai::gpt-image-2-vip" }));
     return rows;
 }
 

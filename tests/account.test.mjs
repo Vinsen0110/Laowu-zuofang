@@ -6,6 +6,7 @@ import { handleAccountRequest } from "../account/http.js";
 import {
     adjustBalance,
     createCodes,
+    deleteCode,
     login,
     normalizeCode,
     redeemCode,
@@ -82,6 +83,16 @@ test("redeem codes work once only", async () => {
     const e = await register(db, { email: "erin@test.com", password: "password123" });
     const results = await Promise.allSettled([redeemCode(db, u.id, codes[1]), redeemCode(db, e.id, codes[1])]);
     assert.equal(results.filter((r) => r.status === "fulfilled").length, 1);
+});
+
+test("unused codes can be deleted; used ones are kept", async () => {
+    const u = await register(db, { email: "hank@test.com", password: "password123" });
+    const { codes } = await createCodes(db, { count: 2, amountYuan: "10", batch: "del" });
+    await deleteCode(db, codes[0]);
+    await assert.rejects(redeemCode(db, u.id, codes[0]), /不存在/);
+    await redeemCode(db, u.id, codes[1]);
+    await assert.rejects(deleteCode(db, codes[1]), /已被使用/);
+    await assert.rejects(deleteCode(db, "LW-AAAA-BBBB-CCCC-DDDD"), /不存在/);
 });
 
 test("HTTP flow: register → redeem → admin top-up", async () => {
