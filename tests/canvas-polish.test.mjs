@@ -89,3 +89,8 @@ test("unselected nodes carry only a light shadow, without a coloured halo", () =
     assert.match(bundle, /:"0 8px 24px rgb\(var\(--lw-slate-900-rgb\) \/ \.07\)",re=c\.useRef\(null\)/);
     assert.doesNotMatch(bundle, /"0 0 38px rgb\(var\(--lw-link-blue-rgb\) \/ \.18\), 0 20px 60px/);
 });
+
+test("node toolbar tips are short: 反推提示词 / 自定义裁剪 / 切图", () => {
+    const u = t => [...t].map(c => "\\u" + c.codePointAt(0).toString(16).toUpperCase().padStart(4, "0")).join("");
+    for (const t of ["反推提示词", "自定义裁剪", "切图"]) assert.ok(bundle.includes(`title:"${u(t)}"`), t);
+});
