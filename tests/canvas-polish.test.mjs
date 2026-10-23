@@ -103,3 +103,9 @@ test("the DRAW price shows the ฿ unit once, without the bolt icon", () => {
 test("the generation toolbar never reserves room for a horizontal scrollbar", () => {
     assert.match(html, /\.canvas-generation-toolbar > div:first-child \{\s*scrollbar-width: none !important;\s*\}/);
 });
+
+test("node images that arrive as a link stay hidden until fully downloaded, then fade in", () => {
+    assert.match(polish, /\[data-node-id\] img\.lw-img-wait\{opacity:0!important\}/);
+    assert.match(polish, /const src = img\.src;/);
+    assert.match(polish, /attributeFilter: \["src"\]/);
+});
