@@ -222,6 +222,7 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
   let prices = [];
   let catalog = [];
   let cloud = { cloudName: "", apiKey: "", apiSecret: "" };
+  let cos = { bucket: "", region: "ap-guangzhou", secretId: "", hasSecret: false, ready: false };
   let mail = { hasKey: false, keyPreview: "", fromEnv: false };
   let fx = 6.7;
   let markup = 2;
@@ -247,7 +248,7 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
         <p><a href="/">返回老屋作坊</a></p></div>`;
       return;
     }
-    await Promise.all([loadStats(), loadUsers(), loadCodes(), loadChannels(), loadPrices(), loadCloud(), loadMail()]);
+    await Promise.all([loadStats(), loadUsers(), loadCodes(), loadChannels(), loadPrices(), loadCloud(), loadCos(), loadMail()]);
     render();
     checkBalances();
   }
@@ -257,6 +258,7 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
   async function loadUsers(q) { users = (await api("/admin/users" + (q ? "?q=" + encodeURIComponent(q) : ""))).items; }
   async function loadCodes() { codes = (await api("/admin/codes")).items; }
   async function loadCloud() { cloud = await api("/admin/cloudinary"); }
+  async function loadCos() { cos = await api("/admin/cos"); }
   async function loadMail() { mail = await api("/admin/mail"); }
   async function loadChannels() { channels = (await api("/admin/channels")).items; }
   async function loadPrices() {
@@ -490,6 +492,18 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
           <label class="field" for="cl-secret">API Secret<input id="cl-secret" name="apiSecret" type="password" placeholder="${cloud.apiSecret ? "已设置，留空不修改" : "粘贴 API Secret"}" style="width:210px" autocomplete="new-password"></label>
           <button class="primary" type="submit">保存</button>
         </form>${msg(flash.cloud)}</div>
+      </section>
+      <section class="card">
+        <div class="card-head"><h2>结果图存储 · 腾讯云 COS<span class="sub">生成的原图放到国内存储桶，国内用户下载更快；不压缩，画质不变。没填或出错时自动改回由本服务器发图</span></h2>
+          <span class="tag ${cos.ready ? "ok" : ""}">${cos.ready ? "已启用" : "未启用"}</span></div>
+        <div class="card-body"><form class="row" id="cos-form" style="align-items:flex-end;flex-wrap:wrap">
+          <label class="field" for="cos-bucket">存储桶名称<input id="cos-bucket" name="bucket" value="${esc(cos.bucket || "")}" placeholder="例如 laowu-images-1250000000" style="width:240px" autocomplete="off"></label>
+          <label class="field" for="cos-region">地域<input id="cos-region" name="region" value="${esc(cos.region || "ap-guangzhou")}" style="width:130px" autocomplete="off"></label>
+          <label class="field" for="cos-id">SecretId<input id="cos-id" name="secretId" value="${esc(cos.secretId || "")}" style="width:260px" autocomplete="off"></label>
+          <label class="field" for="cos-key">SecretKey<input id="cos-key" name="secretKey" type="password" placeholder="${cos.hasSecret ? "已设置，留空不修改" : "粘贴 SecretKey"}" style="width:220px" autocomplete="new-password"></label>
+          <button class="primary" type="submit">保存</button>
+          <button class="ghost" type="button" id="cos-test">测试上传</button>
+        </form>${msg(flash.cos)}</div>
       </section>`,
   };
 
@@ -525,6 +539,10 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
         if (!key) throw new Error("请粘贴 Resend API Key");
         mail = await api("/admin/mail", { apiKey: key });
         flash.mail = { text: "已保存，之后的验证码会通过邮件发送" };
+      } else if (form.id === "cos-form") {
+        const data = Object.fromEntries(new FormData(form).entries());
+        cos = await api("/admin/cos", data);
+        flash.cos = { text: cos.ready ? "已保存，点「测试上传」确认能用" : "已保存，还差几项没填" };
       } else if (form.id === "cloud-form") {
         const data = Object.fromEntries(new FormData(form).entries());
         cloud = await api("/admin/cloudinary", data);
@@ -538,6 +556,7 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
     } catch (err) {
       if (form.id === "codes-form") flash.codes = { err: true, text: err.message };
       else if (form.id === "cloud-form") flash.cloud = { err: true, text: err.message };
+      else if (form.id === "cos-form") flash.cos = { err: true, text: err.message };
       else if (form.id === "mail-form") flash.mail = { err: true, text: err.message };
       else if (form.dataset.channel) flash.channels = { err: true, text: err.message };
       else flash.users = { err: true, text: err.message };
@@ -647,6 +666,16 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
         if (lastBatch) lastBatch.codes = lastBatch.codes.filter((x) => x !== c.code);
         flash.codes = { text: `已删除兑换码 ${c.code}` };
         await loadCodes();
+        render();
+      } else if (b.id === "cos-test") {
+        b.disabled = true;
+        b.textContent = "测试中…";
+        try {
+          await api("/admin/cos/test", {});
+          flash.cos = { text: "测试成功：能上传，也能从公开链接读取" };
+        } catch (err) {
+          flash.cos = { err: true, text: err.message };
+        }
         render();
       } else if (b.id === "copy-codes") {
         await navigator.clipboard.writeText(lastBatch.codes.join("\n"));

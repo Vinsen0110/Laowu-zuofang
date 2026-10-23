@@ -11,6 +11,7 @@ import { background, checkLowBalances } from "./alerts.js";
 import { channelConfig } from "./channels.js";
 import { describeRequest } from "./describe.js";
 import { CHANNEL_LABELS, rewriteUrls, scrubText, unmaskTarget, verifyImageToken } from "./mask.js";
+import { cosReady, getCos, moveInlineImagesToCos, parseGeminiAnswer } from "./cos.js";
 import { AccountError, adjustBalance, milliToYuan } from "./service.js";
 import { findTaskId, recordTask, settleTask, taskOutcome } from "./tasks.js";
 import { inlineTudouGeminiReferences, isTudouGeminiImageTarget } from "../tudou-reference-images.js";
@@ -158,6 +159,31 @@ function refundIfNoImage(upstream, refund) {
     return new Response(upstream.body.pipeThrough(watch), { status: upstream.status, headers: copyHeaders(upstream) });
 }
 
+async function deliverGeminiViaCos(upstream, cos, signal) {
+    const raw = await upstream.text();
+    const sawInline = /"inline_?[dD]ata"\s*:/.test(raw);
+    const payload = parseGeminiAnswer(raw);
+    if (payload) {
+        try {
+            const moved = await moveInlineImagesToCos(cos, payload, { signal });
+            if (moved > 0) {
+                return {
+                    sawImage: true,
+                    response: new Response(JSON.stringify(payload), {
+                        status: upstream.status,
+                        headers: new Headers({ "Content-Type": "application/json; charset=utf-8", "x-lw-relay": "1", "x-lw-cos": String(moved) }),
+                    }),
+                };
+            }
+        } catch (error) {
+            if (signal?.aborted) throw error;
+            console.error("COS delivery failed, sending the image from this server:", error.message);
+        }
+    }
+    // Not configured right or COS refused: send the answer as it came.
+    return { sawImage: sawInline, response: new Response(raw, { status: upstream.status, headers: copyHeaders(upstream) }) };
+}
+
 export async function relay(db, user, request, { fetchImpl = fetch } = {}) {
     const url = new URL(request.url);
     const masked = url.searchParams.get("t");
@@ -248,6 +274,17 @@ export async function relay(db, user, request, { fetchImpl = fetch } = {}) {
         throw new AccountError(502, "upstream_failed", "连接平台失败，费用已退回");
     }
     if (upstream.status >= 400) await refund(`平台返回 ${upstream.status}`);
+    // 土豆 Nano Banana answers carry the picture inline (10–14 MB). With COS set up,
+    // the original goes to the mainland bucket and the answer carries its link.
+    if (upstream.status < 300 && upstream.body && /:generateContent$/.test(target.pathname)) {
+        const cos = await getCos(db).catch(() => null);
+        if (cosReady(cos)) {
+            const delivered = await deliverGeminiViaCos(upstream, cos, request.signal);
+            if (charge && !delivered.sawImage) await refund("平台未返回图片");
+            if (charge) background(checkLowBalances(db, { ids: [channel] }));
+            return delivered.response;
+        }
+    }
     if (charge && upstream.status < 300 && upstream.body && /:generateContent$/.test(target.pathname)) {
         return refundIfNoImage(upstream, refund);
     }
