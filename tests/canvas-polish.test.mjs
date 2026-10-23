@@ -94,3 +94,12 @@ test("node toolbar tips are short: 反推提示词 / 自定义裁剪 / 切图", 
     const u = t => [...t].map(c => "\\u" + c.codePointAt(0).toString(16).toUpperCase().padStart(4, "0")).join("");
     for (const t of ["反推提示词", "自定义裁剪", "切图"]) assert.ok(bundle.includes(`title:"${u(t)}"`), t);
 });
+
+test("the DRAW price shows only the bolt icon, without a second unit sign", () => {
+    assert.doesNotMatch(bundle, /\(globalThis\.__lwUnit\|\|"¥"\)\+n\.toLocaleString\(\)/);
+    assert.match(bundle, /children:\[y\.jsx\(vM,\{\}\),n\.toLocaleString\(\)\]/);
+});
+
+test("the generation toolbar never reserves room for a horizontal scrollbar", () => {
+    assert.match(html, /\.canvas-generation-toolbar > div:first-child \{\s*scrollbar-width: none !important;\s*\}/);
+});
