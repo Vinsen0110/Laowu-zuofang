@@ -136,8 +136,10 @@ export function runningHubAspectRatio(config) {
     return undefined;
 }
 
+// "Auto" would otherwise reach RH with no ratio and come back 1:1, so the image
+// models follow the first reference image's shape.
 export function runningHubReferenceAspectRatio(config, width, height) {
-    if (runningHubImageModel(config) !== "gpt-image-2.5"
+    if (!["gpt-image-2.5", "nano-banana-pro"].includes(runningHubImageModel(config))
         || String(config?.size || "auto").trim().toLowerCase() !== "auto") {
         return config;
     }
