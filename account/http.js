@@ -17,6 +17,7 @@ import {
     normalizeEmail,
     changePassword,
     createCodes,
+    deleteCode,
     deleteUser,
     ledger,
     listCodes,
@@ -240,6 +241,10 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
             }
             if (path === "/admin/codes" && method === "POST") {
                 return json(200, await createCodes(db, await body(request)));
+            }
+            if (path === "/admin/delete-code" && method === "POST") {
+                await deleteCode(db, (await body(request)).code);
+                return json(200, { ok: true });
             }
             if (path === "/admin/channels" && method === "GET") {
                 return json(200, { items: await listChannels(db) });
