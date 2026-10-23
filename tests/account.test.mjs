@@ -85,13 +85,17 @@ test("redeem codes work once only", async () => {
     assert.equal(results.filter((r) => r.status === "fulfilled").length, 1);
 });
 
-test("unused codes can be deleted; used ones are kept", async () => {
+test("codes can be deleted, used or not, without touching balances", async () => {
     const u = await register(db, { email: "hank@test.com", password: "password123" });
     const { codes } = await createCodes(db, { count: 2, amountYuan: "10", batch: "del" });
     await deleteCode(db, codes[0]);
     await assert.rejects(redeemCode(db, u.id, codes[0]), /不存在/);
     await redeemCode(db, u.id, codes[1]);
-    await assert.rejects(deleteCode(db, codes[1]), /已被使用/);
+    await deleteCode(db, codes[1]);
+    const after = await db.query("SELECT balance_milli FROM lw_users WHERE id = $1", [u.id]);
+    assert.equal(Number(after[0].balance_milli), 10000);
+    const ledgerRows = await db.query("SELECT count(*) AS n FROM lw_ledger WHERE user_id = $1 AND kind = 'redeem'", [u.id]);
+    assert.equal(Number(ledgerRows[0].n), 1);
     await assert.rejects(deleteCode(db, "LW-AAAA-BBBB-CCCC-DDDD"), /不存在/);
 });
 

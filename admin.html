@@ -467,7 +467,7 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
             <td>${c.usedAt ? '<span class="tag">已使用</span>' : '<span class="tag ok">未使用</span>'}</td>
             <td>${esc(c.usedBy || "")}${c.usedAt ? ` <span class="muted">${esc(time(c.usedAt))}</span>` : ""}</td>
             <td class="muted">${esc(time(c.createdAt))}</td>
-            <td>${c.usedAt ? "" : `<button class="danger small" type="button" data-delete-code="${esc(c.code)}">删除</button>`}</td></tr>`).join("") || `<tr><td colspan="7" class="muted">还没有兑换码</td></tr>`}</tbody>
+            <td><button class="danger small" type="button" data-delete-code="${esc(c.code)}">删除</button></td></tr>`).join("") || `<tr><td colspan="7" class="muted">还没有兑换码</td></tr>`}</tbody>
         </table></div>
       </section>`,
 
@@ -640,7 +640,9 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
         render();
       } else if (b.dataset.deleteCode) {
         const c = codes.find((x) => x.code === b.dataset.deleteCode);
-        if (!confirm(`删除兑换码 ${c.code}（${money(c.amount)}）？删除后这个码就不能再兑换了。`)) return;
+        if (!confirm(c.usedAt
+          ? `删除已使用的兑换码 ${c.code}（${money(c.amount)}）？只删除这条记录，用户已到账的余额和余额记录不受影响。`
+          : `删除兑换码 ${c.code}（${money(c.amount)}）？删除后这个码就不能再兑换了。`)) return;
         await api("/admin/delete-code", { code: c.code });
         if (lastBatch) lastBatch.codes = lastBatch.codes.filter((x) => x !== c.code);
         flash.codes = { text: `已删除兑换码 ${c.code}` };
