@@ -17,9 +17,13 @@ test("an empty canvas offers example prompts that open a ready-to-run image node
     assert.match(bundle, /globalThis\.__lwStartFromPrompt=O=>\{Lu\(Ne\.Image,"\\u56FE\\u7247\\u751F\\u6210",Ji\(\),\{content:"",status:rd,prompt:O,/);
 });
 
-test("selected nodes get a fine ring instead of the wide glow", () => {
-    assert.match(bundle, /,He=\(\(\)=>\{const lwRing=/);
-    assert.doesNotMatch(bundle, /0 0 110px rgb\(var\(--lw-pink-brand-rgb\)/);
+test("selected and connection-target nodes use the soft glow again", () => {
+    assert.doesNotMatch(bundle, /const lwRing=/);
+    assert.match(bundle, /,He=oe\?Pe\?"0 0 0 1px rgb\(var\(--lw-green-500-rgb\) \/ \.60\), 0 0 46px/);
+});
+
+test("a connection lands anywhere on the target box, not only near its edge", () => {
+    assert.match(bundle, /if\(!en&&!Vt\)return;if\(gt=!0,st\.id===Q\.nodeId\|\|!ag\(Q\.nodeId,st\.id,vn\.current,Q\.handleType\)\)return;const ir=Rn\?0:Ht\*Ht\+bn\*bn;/);
 });
 
 test("the bottom-left switcher names the current channel; the top-left label is gone", () => {
