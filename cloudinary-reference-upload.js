@@ -9,6 +9,16 @@ const UPLOAD_TIMEOUT_MS = 180_000;
 const QUALITIES = [0.92, 0.88, 0.8, 0.7, 0.6];
 const UPLOADED_KEY = "lw-cloudinary-references-v1";
 const UPLOADED_LIMIT = 300;
+// Reference images now live on this site's own server (/api/account/ref/…) and are
+// deleted after 24 hours, so a remembered link is only reused while it is fresh.
+const SERVER_UPLOADED_KEY = "lw-server-references-v1";
+const SERVER_REUSE_MS = 20 * 60 * 60 * 1000;
+
+// Providers cannot reach a local preview, so 127.0.0.1 keeps the admin's Cloudinary.
+export function usesServerReferenceHost() {
+    const host = String(globalThis.location?.hostname || "");
+    return !!host && !["localhost", "127.0.0.1", "[::1]", "::1"].includes(host) && !host.endsWith(".localhost");
+}
 
 export function usesCloudinaryReferenceHost(config) {
     let hostname = "";
@@ -184,7 +194,74 @@ async function uploadKey(credentials, blob) {
     return `${credentials.cloudName}:${credentials.apiKey}:${hash}`;
 }
 
+function storedServerUploads() {
+    try { return JSON.parse(globalThis.localStorage?.getItem(SERVER_UPLOADED_KEY) || "{}") || {}; } catch { return {}; }
+}
+
+function rememberServerUpload(key, url) {
+    const entry = { url, at: Date.now() };
+    uploaded.set(`server:${key}`, entry);
+    try {
+        if (!globalThis.localStorage) return;
+        const entries = Object.entries(storedServerUploads())
+            .filter(([k, v]) => k !== key && Date.now() - Number(v?.at || 0) < SERVER_REUSE_MS);
+        entries.push([key, entry]);
+        globalThis.localStorage.setItem(SERVER_UPLOADED_KEY, JSON.stringify(Object.fromEntries(entries.slice(-UPLOADED_LIMIT))));
+    } catch {}
+}
+
+async function blobHash(blob) {
+    const digest = await crypto.subtle.digest("SHA-256", await blob.arrayBuffer());
+    return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+}
+
+export async function uploadServerReferenceBlob(original, options = {}) {
+    let key = "";
+    try {
+        if (original?.size && globalThis.crypto?.subtle) key = await blobHash(original);
+    } catch {}
+    const known = key && (uploaded.get(`server:${key}`) || storedServerUploads()[key]);
+    if (known?.url && Date.now() - Number(known.at || 0) < SERVER_REUSE_MS) {
+        checkAbort(options.signal);
+        options.onProgress?.({ stage: "uploading", progress: 10 });
+        return known.url;
+    }
+    checkAbort(options.signal);
+    const controller = new AbortController();
+    const abort = () => controller.abort(options.signal.reason);
+    options.signal?.addEventListener("abort", abort, { once: true });
+    const timeout = setTimeout(() => controller.abort(new Error("参考图上传超时，请重试；本地原图未修改")), options.timeoutMs ?? UPLOAD_TIMEOUT_MS);
+    try {
+        const signal = controller.signal;
+        const blob = await prepareCloudinaryReferenceBlob(original, { ...options, signal });
+        options.onProgress?.({ stage: "uploading", progress: 3 });
+        const response = await (options.fetchImpl || fetch)("/api/account/ref-upload", {
+            method: "POST",
+            body: blob,
+            headers: { "Content-Type": blob.type || "application/octet-stream" },
+            credentials: "include",
+            signal,
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result?.error?.message || `参考图上传失败 (${response.status})`);
+        if (!/^https?:\/\/[^/]+\/api\/account\/ref\/[a-f0-9]{32}\.(jpg|png|webp)$/.test(String(result.url || ""))) {
+            throw new Error("服务器没有返回有效的参考图链接");
+        }
+        checkAbort(signal);
+        options.onProgress?.({ stage: "uploading", progress: 10 });
+        if (key) rememberServerUpload(key, result.url);
+        return result.url;
+    } catch (error) {
+        if (controller.signal.aborted) throw controller.signal.reason;
+        throw error;
+    } finally {
+        clearTimeout(timeout);
+        options.signal?.removeEventListener("abort", abort);
+    }
+}
+
 export async function uploadCloudinaryReferenceBlob(config, original, options = {}) {
+    if (usesServerReferenceHost()) return uploadServerReferenceBlob(original, options);
     const credentials = cloudinaryCredentials(config);
     let key = "";
     try {
