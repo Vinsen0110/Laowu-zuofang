@@ -264,7 +264,9 @@ async function serveAccountApi(request, response, requestUrl) {
     }
     // Generation requests carry prompts and reference images; everything else is small.
     const isRelay = requestUrl.pathname === "/api/account/relay";
-    const body = method === "GET" || method === "HEAD" ? undefined : await readRequestBody(request, isRelay ? 40 * 1024 * 1024 : 64 * 1024);
+    const isReference = requestUrl.pathname === "/api/account/ref-upload";
+    const limit = isRelay ? 40 * 1024 * 1024 : isReference ? 10_500_000 : 64 * 1024;
+    const body = method === "GET" || method === "HEAD" ? undefined : await readRequestBody(request, limit);
     const abort = new AbortController();
     response.on("close", () => { if (!response.writableFinished) abort.abort(); });
     const webResponse = await handleAccountRequest(new Request(requestUrl, { method, headers, body, signal: abort.signal }));

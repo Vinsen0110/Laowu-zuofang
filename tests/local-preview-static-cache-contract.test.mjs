@@ -15,6 +15,6 @@ test("static cache: icons and versioned files are immutable, index.html is never
 
 test("account API responses stream and private folders are not served", () => {
     assert.match(server, /await pipeline\(Readable\.fromWeb\(webResponse\.body\), response\);/);
-    assert.match(server, /isRelay \? 40 \* 1024 \* 1024 : 64 \* 1024/);
+    assert.match(server, /isRelay \? 40 \* 1024 \* 1024 : isReference \? 10_500_000 : 64 \* 1024/);
     assert.match(server, /node_modules\\\/\|tests\\\/\|deploy\\\//);
 });
