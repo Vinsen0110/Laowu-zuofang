@@ -10,11 +10,14 @@ const rows = priceCatalog();
 const prices = rows.map((r, i) => ({ channel: r.channel, model: r.model, spec: r.spec, price: (i + 1) / 100 }));
 const priceOf = (channel, model, spec) => prices.find((p) => p.channel === channel && p.model === model && p.spec === spec)?.price;
 
+test("GPT Image 2 is gone from the price catalog", () => {
+    assert.equal(rows.filter((r) => /^gpt-image-2-(all|vip)$/.test(r.model)).length, 0);
+});
+
 test("canvas selling price matches the relay's catalog row on every site", () => {
     const cases = [
         [{ model: "tudou::nano-banana-pro", quality: "4k" }, "tudou", ["tudou", "gemini-3-pro-image-preview", "4k"]],
         [{ model: "tudou::gpt-image-2.5", quality: "2k", gptImageQuality: "xhigh", tudouGpt25Variant: "sunburst" }, "tudou", ["tudou", "gpt-image-2.5-sunburst-async", "2k/xhigh"]],
-        [{ model: "tudou::gpt-image-2", quality: "1k", gptImageQuality: "low" }, "tudou", ["tudou", "gpt-image-2-all", "1k/low"]],
         [{ model: "apimart::nano-banana-pro", quality: "2k", size: "1:1" }, "apimart", ["apimart", "gemini-3-pro-image-preview", "2k"]],
         [{ model: "apimart::gpt-image-2.5", quality: "4k", size: "1:1", gptImageQuality: "fixed" }, "apimart", ["apimart", "gpt-image-2.5-ext", "4k"]],
         [{ model: "rh::nano-banana-pro", quality: "1k", size: "1:1" }, "runninghub", ["runninghub", "rhart-image-n-pro", "1k"]],
