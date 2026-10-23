@@ -404,14 +404,11 @@ export async function setUserDisabled(db, userId, disabled) {
     if (disabled) await db.query("DELETE FROM lw_sessions WHERE user_id = $1", [userId]);
 }
 
-// Only codes nobody has redeemed can be removed; used ones stay as the record behind a balance change.
+// Removing a code never touches balances: a redeemed code's credit and its ledger row stay as they are.
 export async function deleteCode(db, rawCode) {
     const code = String(rawCode || "").trim();
-    const rows = await db.query("DELETE FROM lw_codes WHERE code = $1 AND used_at IS NULL RETURNING code", [code]);
-    if (rows[0]) return;
-    const exists = await db.query("SELECT 1 FROM lw_codes WHERE code = $1", [code]);
-    if (exists[0]) throw new AccountError(400, "code_used", "这个兑换码已被使用，不能删除");
-    throw new AccountError(404, "code_not_found", "兑换码不存在");
+    const rows = await db.query("DELETE FROM lw_codes WHERE code = $1 RETURNING code", [code]);
+    if (!rows[0]) throw new AccountError(404, "code_not_found", "兑换码不存在");
 }
 
 export async function listCodes(db, { batch = "", limit = 200 } = {}) {
