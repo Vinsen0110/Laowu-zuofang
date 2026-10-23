@@ -4,7 +4,7 @@
 
 import { APIMART_ORIGIN, apiMartImageRequestSpec } from "./apimart-api.js?v=20261022-ratio-01";
 import { GRSAI_ORIGIN, grsaiImageRequestSpec } from "./grsai-api.js?v=20261022-ratio-01";
-import { RUNNINGHUB_ORIGIN, runningHubImageRequestSpec } from "./runninghub-api.js?v=20261022-flash38-01";
+import { RUNNINGHUB_ORIGIN, runningHubImageRequestSpec } from "./runninghub-api.js?v=20261023-proratio-01";
 import { SOON_ORIGIN, soonImageRequestSpec } from "./soon-api.js?v=20261022-ratio-01";
 import { describeRequest } from "./account/describe.js?v=20261021-01";
 

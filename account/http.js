@@ -8,6 +8,7 @@ import { getDatabase } from "./db.js";
 import { checkLowBalances } from "./alerts.js";
 import { relay } from "./relay.js";
 import { verifyImageToken } from "./mask.js";
+import { copyResultToCos, cosReady, getCos, publicCos, saveCos, testCos } from "./cos.js";
 import { consumeCode, markVerified, requestCode, resetPassword } from "./verify.js";
 import {
     AccountError,
@@ -164,6 +165,18 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
             // Result images for users, fetched here so the supplier never shows in the browser.
             const target = verifyImageToken(url.searchParams.get("t"));
             if (!target) throw new AccountError(404, "not_found", "图片不存在");
+            // Mainland users fetch the copy in the COS bucket, which is far faster for
+            // them than this Hong Kong server. Same bytes, no re-encoding.
+            const cos = await getCos(db).catch(() => null);
+            if (cosReady(cos)) {
+                try {
+                    const copy = await copyResultToCos(cos, target, { signal: request.signal });
+                    if (copy) return new Response(null, { status: 302, headers: { Location: copy, "Cache-Control": "private, max-age=86400" } });
+                } catch (error) {
+                    if (request.signal?.aborted) throw error;
+                    console.error("COS copy failed, serving from this server:", error.message);
+                }
+            }
             const upstream = await fetch(target, { redirect: "follow", signal: request.signal });
             if (!upstream.ok || !upstream.body) throw new AccountError(502, "img_failed", "图片加载失败");
             return new Response(upstream.body, {
@@ -271,6 +284,15 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
                 setResendKey(saved.key);
                 const { key, ...rest } = saved;
                 return json(200, rest);
+            }
+            if (path === "/admin/cos" && method === "GET") {
+                return json(200, publicCos(await getCos(db)));
+            }
+            if (path === "/admin/cos" && method === "POST") {
+                return json(200, publicCos(await saveCos(db, await body(request))));
+            }
+            if (path === "/admin/cos/test" && method === "POST") {
+                return json(200, await testCos(await getCos(db)));
             }
             if (path === "/admin/cloudinary" && method === "GET") {
                 return json(200, await getCloudinary(db));

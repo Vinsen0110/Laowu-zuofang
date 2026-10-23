@@ -6,10 +6,10 @@ import{appStateStorage,createDeferredStateWriter,showStorageError}from"../app-st
 import{usesCloudinaryReferenceHost,cloudinaryReferenceSource,uploadCloudinaryReferenceBlob}from"../cloudinary-reference-upload.js?v=20261022-ref-01";
 await appStateStorage.ready;
 
-import{RUNNINGHUB_ORIGIN,RUNNINGHUB_LLM_ORIGIN,RUNNINGHUB_SITE_ID,RUNNINGHUB_SITE_NAME,RUNNINGHUB_SITE_MODELS,RUNNINGHUB_IMAGE_MODELS,RUNNINGHUB_TEXT_MODELS,isRunningHubSite,runRunningHubImageGeneration,runningHubImagePrice,runningHubReferenceAspectRatio,runningHubSupportedAspectRatios,runningHubGpt25Mode,runningHubGpt25Variant,runningHubQuality,uploadRunningHubReferenceBlob,fetchRunningHubAccount}from"../runninghub-api.js?v=20261022-flash38-01";
+import{RUNNINGHUB_ORIGIN,RUNNINGHUB_LLM_ORIGIN,RUNNINGHUB_SITE_ID,RUNNINGHUB_SITE_NAME,RUNNINGHUB_SITE_MODELS,RUNNINGHUB_IMAGE_MODELS,RUNNINGHUB_TEXT_MODELS,isRunningHubSite,runRunningHubImageGeneration,runningHubImagePrice,runningHubReferenceAspectRatio,runningHubSupportedAspectRatios,runningHubGpt25Mode,runningHubGpt25Variant,runningHubQuality,uploadRunningHubReferenceBlob,fetchRunningHubAccount}from"../runninghub-api.js?v=20261023-proratio-01";
 import{GRSAI_ORIGIN,GRSAI_SITE_ID,GRSAI_SITE_NAME,GRSAI_SITE_MODELS,GRSAI_IMAGE_MODELS,GRSAI_TEXT_MODELS,isGrsaiSite,grsaiImagePrice,runGrsaiImageGeneration,fetchGrsaiApiKeyCredits,fetchGrsaiAccountCredits}from"../grsai-api.js?v=20261022-ratio-01";
 import{APIMART_ORIGIN,APIMART_SITE_ID,APIMART_SITE_NAME,APIMART_SITE_MODELS,APIMART_IMAGE_MODELS,APIMART_TEXT_MODELS,isApiMartSite,apiMartGptImageQuality,apiMartGptOutputFormat,apiMartGptBackground,runApiMartImageGeneration,apiMartImagePrice,validateApiMartNano21ReferenceBytes,uploadApiMartReferenceBlob,fetchApiMartTokenBalance,fetchApiMartUserBalance}from"../apimart-api.js?v=20261022-ratio-01";
-import{orderModelReferences,orderRatioPresets,orderSiteChannels,siteDisplayName,siteDisplayNote}from"../display-order.js?v=20261022-mart-01";import{lwSellPrice}from"../account-pricing.js?v=20261022-ratio-01";
+import{orderModelReferences,orderRatioPresets,orderSiteChannels,siteDisplayName,siteDisplayNote}from"../display-order.js?v=20261022-mart-01";import{lwSellPrice}from"../account-pricing.js?v=20261023-proratio-01";
 import{SOON_ORIGIN,SOON_SITE_ID,SOON_SITE_NAME,SOON_SITE_MODELS,runSoonImageGeneration,soonImagePrice}from"../soon-api.js?v=20261022-ratio-01";import{inlineTudouGeminiReferences}from"../tudou-reference-images.js?v=20261015-direct-01";
 // antd needs real color values; read them from theme.css at render time
 function lwResolveColor(e){if(typeof e!="string"||!e.startsWith("var(")||typeof document>"u")return e;const t=getComputedStyle(document.documentElement).getPropertyValue(e.slice(4,-1).trim()).trim();return t||void 0}
@@ -593,7 +593,7 @@ return{inlineData:{mimeType:blob.type||"image/png",data:btoa(binary)}};
 }
 
 async function withRunningHubReferenceAspectRatio(config,references,signal){
- if(!isRunningHubSite(config)||pr(config?.model||config?.imageModel)!=="gpt-image-2.5")return config;
+ if(!isRunningHubSite(config)||!["gpt-image-2.5","nano-banana-pro"].includes(pr(config?.model||config?.imageModel)))return config;
  if(runningHubGpt25Mode(config)==="fixed"&&runningHub25RatioValue(config)==="auto"&&String(config?.size||"auto").trim().toLowerCase()!=="auto")config={...config,size:"auto"};
  if(String(config?.size||"auto").trim().toLowerCase()!=="auto"||!references?.length)return config;
  const abortError=()=>signal?.reason||new DOMException("Aborted","AbortError");
