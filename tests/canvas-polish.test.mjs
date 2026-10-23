@@ -72,3 +72,20 @@ test("node toolbar tips use the theme's text colour instead of antd's white", ()
 test("the left toolbar has no undo button (Cmd+Z still works)", () => {
     assert.doesNotMatch(bundle, /id:"tool-undo"/);
 });
+
+test("while dragging, the draft line follows the cursor; it snaps to the port only after release", () => {
+    assert.match(bundle, /re\?y\.jsx\(TTe,\{node:mo\.get\(re\.nodeId\),handle:re,mouseWorld:mt,target:void 0\}\):null/);
+});
+
+test("corner resize handles step aside while a connection is being dragged", () => {
+    assert.match(bundle, /i\?null:y\.jsx\(q0,\{corner:"top-left",onMouseDown:Ge\}\)/);
+});
+
+test("the handle plus is a centred drawing, not a text glyph", () => {
+    assert.match(bundle, /children:y\.jsx\("svg",\{viewBox:"0 0 24 24",width:"62%",height:"62%"[^]*?d:"M12 5v14M5 12h14"/);
+});
+
+test("unselected nodes carry only a light shadow, without a coloured halo", () => {
+    assert.match(bundle, /:"0 8px 24px rgb\(var\(--lw-slate-900-rgb\) \/ \.07\)",re=c\.useRef\(null\)/);
+    assert.doesNotMatch(bundle, /"0 0 38px rgb\(var\(--lw-link-blue-rgb\) \/ \.18\), 0 20px 60px/);
+});
