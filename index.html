@@ -6,7 +6,7 @@
         <meta name="description" content="老屋作坊创作工具" />
         <link rel="icon" type="image/png" href="./kitty.png" />
         <link rel="preload" href="./assets/index-DT58oPsm.css" as="style" crossorigin>
-        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261023-tiptext-02" crossorigin>
+        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261023-draw-01" crossorigin>
         <link rel="preload" href="./icons/gemini.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/openai.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/claude.svg" as="image" type="image/svg+xml" />
@@ -692,7 +692,7 @@
                 else document.addEventListener("DOMContentLoaded", observe, { once: true });
             })();
         </script>
-        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261023-tiptext-02"></script>
+        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261023-draw-01"></script>
       <script type="module" src="./display-model-names.js?v=20261008-nano21-01"></script>
       <script type="module" src="./canvas-price-table.js?v=20261022-mart-01"></script>
       <script src="./prevent-canvas-drag-download.js?v=20260827-01"></script>
@@ -1790,20 +1790,18 @@
         .canvas-generation-select > svg {
           flex-shrink: 0;
         }
-        .canvas-generation-toolbar > div:first-child::-webkit-scrollbar {
-          height: 5px;
+        /* The toolbar row can still scroll sideways, but a scrollbar would steal height
+           and push the left controls above the DRAW button. */
+        .canvas-generation-toolbar > div:first-child {
+          scrollbar-width: none !important;
         }
-        .canvas-generation-toolbar > div:first-child::-webkit-scrollbar-thumb {
-          background: var(--lw-stone-400);
-          border-radius: 4px;
+        .canvas-generation-toolbar > div:first-child::-webkit-scrollbar {
+          display: none;
+          height: 0;
         }
         .canvas-generation-panel[data-canvas-width-locked="true"] .canvas-generation-toolbar > div:first-child {
           overflow-x: auto;
           overflow-y: hidden;
-          scrollbar-width: thin;
-        }
-        .canvas-generation-panel[data-canvas-width-locked="true"] .canvas-generation-toolbar > div:first-child::-webkit-scrollbar {
-          height: 5px;
         }
         .canvas-model-menu > div > div > div:first-child {
           background: var(--lw-stone-100) !important;
@@ -1856,7 +1854,6 @@
           justify-content: space-between;
           overflow-x: auto;
           overflow-y: hidden;
-          scrollbar-width: thin;
         }
         .canvas-generation-panel:has(.canvas-model-select[title^="gpt-image-2"]) .canvas-generation-toolbar > div:last-child {
           margin-left: 4px !important;
