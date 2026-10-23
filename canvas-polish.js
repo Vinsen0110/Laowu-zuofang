@@ -26,6 +26,11 @@ body:has(.pointer-events-auto.flex.w-14.flex-col button:hover) .ant-tooltip{disp
 
 .lw-empty{position:fixed;inset:0;z-index:30;display:grid;place-items:center;pointer-events:none}
 .lw-empty-card{display:flex;flex-direction:column;align-items:center;max-width:560px;padding:0 24px;text-align:center;animation:lw-empty-in .5s cubic-bezier(.2,.7,.2,1) both}
+[data-node-id] img.lw-img-wait{opacity:0!important}
+[data-node-id] img.lw-img-shown{animation:lw-img-in .28s ease both}
+@keyframes lw-img-in{from{opacity:0}to{opacity:1}}
+.node-element:has(img.lw-img-wait)::after{content:"";position:absolute;left:50%;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border:2.5px solid rgb(var(--lw-pink-brand-rgb) / .25);border-top-color:rgb(var(--lw-pink-brand-rgb) / .9);border-radius:50%;animation:lw-img-spin .8s linear infinite;pointer-events:none;z-index:5}
+@keyframes lw-img-spin{to{transform:rotate(360deg)}}
 @keyframes lw-empty-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .lw-empty-card img{width:56px;height:56px;margin-bottom:16px;opacity:.9}
 .lw-empty-card h2{margin:0 0 6px;color:var(--lw-ui-gray-900);font:650 20px/1.3 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
@@ -199,8 +204,42 @@ body:has(.pointer-events-auto.flex.w-14.flex-col button:hover) .ant-tooltip{disp
     }
   }, true);
 
+  // Images that arrive as a link (渠道 2/4/5) would otherwise paint top to bottom
+  // while they download; keep them hidden until complete, then fade them in, so every
+  // channel shows its result the same way 渠道 1/3 do.
+  function waitForImage(img) {
+    if (!(img instanceof HTMLImageElement) || !img.closest("[data-node-id]")) return;
+    // currentSrc lags behind a new src for a moment, so read the attribute itself.
+    const src = img.src;
+    if (!src || img.dataset.lwWaitSrc === src) return;
+    img.dataset.lwWaitSrc = src;
+    if (img.complete && img.naturalWidth) return;
+    img.classList.remove("lw-img-shown");
+    img.classList.add("lw-img-wait");
+    const done = () => {
+      if (img.src !== src) return;
+      img.classList.remove("lw-img-wait");
+      img.classList.add("lw-img-shown");
+    };
+    img.addEventListener("load", done, { once: true });
+    img.addEventListener("error", done, { once: true });
+  }
+  function watchImages() {
+    document.querySelectorAll("[data-node-id] img").forEach(waitForImage);
+    new MutationObserver((records) => {
+      for (const record of records) {
+        if (record.type === "attributes") waitForImage(record.target);
+        else record.addedNodes.forEach((node) => {
+          if (node instanceof HTMLImageElement) waitForImage(node);
+          else if (node.querySelectorAll) node.querySelectorAll("img").forEach(waitForImage);
+        });
+      }
+    }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["src"] });
+  }
+
   // This script runs from <head>; attach to the page once <body> exists.
   function start() {
+  watchImages();
   document.body.appendChild(tip);
   // The "?" under 设置 in the left toolbar (drawn by the bundle) opens the panel.
   globalThis.__lwToggleKeys = () => { hideTip(); toggleKeys(); };
