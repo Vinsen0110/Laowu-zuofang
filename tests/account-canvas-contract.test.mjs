@@ -19,8 +19,8 @@ test("the 固定/官方 selector only shows when there is more than one mode", (
     assert.ok(uses.length >= 10);
 });
 
-test("nobody gets a 图床 page (references live on the site's server); users get a refund hint on failures", () => {
-    assert.doesNotMatch(bundle, /y\.jsx\(nL,\{active:t==="hosting"/);
+test("admins get no 图床 page; users get a refund hint on failures", () => {
+    assert.match(bundle, /globalThis\.__lwIsAdmin===true\?null:y\.jsx\(nL,\{active:t==="hosting"/);
     assert.match(bundle, /globalThis\.__lwIsAdmin===true\|\|\/已退回\/\.test\(e\.metadata\?\.errorDetails\|\|""\)\?null:y\.jsx\("div",\{className:"canvas-refund-hint"/);
 });
 
