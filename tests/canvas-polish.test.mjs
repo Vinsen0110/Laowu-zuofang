@@ -95,9 +95,9 @@ test("node toolbar tips are short: 反推提示词 / 自定义裁剪 / 切图", 
     for (const t of ["反推提示词", "自定义裁剪", "切图"]) assert.ok(bundle.includes(`title:"${u(t)}"`), t);
 });
 
-test("the DRAW price shows only the bolt icon, without a second unit sign", () => {
-    assert.doesNotMatch(bundle, /\(globalThis\.__lwUnit\|\|"¥"\)\+n\.toLocaleString\(\)/);
-    assert.match(bundle, /children:\[y\.jsx\(vM,\{\}\),n\.toLocaleString\(\)\]/);
+test("the DRAW price shows the ฿ unit once, without the bolt icon", () => {
+    assert.doesNotMatch(bundle, /children:\[y\.jsx\(vM,\{\}\),n\.toLocaleString\(\)\]/);
+    assert.equal(bundle.split('children:[(globalThis.__lwUnit||"\\u0E3F")+n.toLocaleString()]').length - 1, 2);
 });
 
 test("the generation toolbar never reserves room for a horizontal scrollbar", () => {
