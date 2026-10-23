@@ -23,8 +23,8 @@ test("the entry page centres the headline with the brand on top", () => {
     assert.match(ui, /<div class="lw-gate-shade"><\/div>\s*<div class="lw-gate-brand">/);
 });
 
-test("connection handles stay 16-22px on screen, sit close to the node and follow the theme", () => {
-    assert.match(bundle, /lwPx=Math\.min\(22,Math\.max\(16,22\*i\)\),l=lwPx\/i,d=\(lwPx\+12\)\/i,f=-\(lwPx\+12\)\/i;/);
+test("connection handles stay 18-24px on screen, sit close to the node and follow the theme", () => {
+    assert.match(bundle, /lwPx=Math\.min\(24,Math\.max\(18,24\*i\)\),l=lwPx\/i,d=\(lwPx\+12\)\/i,f=-\(lwPx\+12\)\/i;/);
     assert.match(bundle, /background:o\?"var\(--laowu-handle-bg-hover\)":"var\(--laowu-handle-bg\)"/);
 });
 
