@@ -8,7 +8,6 @@ import { getDatabase } from "./db.js";
 import { checkLowBalances } from "./alerts.js";
 import { relay } from "./relay.js";
 import { verifyImageToken } from "./mask.js";
-import { REF_MAX_BYTES, readReference, saveReference, startReferenceSweeper } from "./refs.js";
 import { consumeCode, markVerified, requestCode, resetPassword } from "./verify.js";
 import {
     AccountError,
@@ -100,17 +99,6 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
         if (method !== "GET" && !sameOrigin(request)) {
             throw new AccountError(403, "bad_origin", "请求来源不被允许");
         }
-        // Reference images are fetched by the provider, so reading one needs no sign-in;
-        // the 32-character random name is the only way to reach it.
-        if (path.startsWith("/ref/") && method === "GET") {
-            startReferenceSweeper();
-            const file = await readReference(path.slice("/ref/".length));
-            if (!file) return new Response("Not found", { status: 404 });
-            return new Response(file.bytes, {
-                status: 200,
-                headers: { "Content-Type": file.type, "Cache-Control": "public, max-age=86400", "X-Content-Type-Options": "nosniff" },
-            });
-        }
         const db = injectedDb || (await getDatabase());
         if (!mailKeyLoaded && !injectedDb) {
             mailKeyLoaded = true;
@@ -171,19 +159,6 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
 
         if (path === "/relay") {
             return await relay(db, me, request);
-        }
-        if (path === "/ref-upload" && method === "POST") {
-            startReferenceSweeper();
-            if (Number(request.headers.get("content-length") || 0) > REF_MAX_BYTES) {
-                throw new AccountError(413, "too_large", "参考图超过 10 MB");
-            }
-            let name;
-            try {
-                name = await saveReference(new Uint8Array(await request.arrayBuffer()));
-            } catch (error) {
-                throw new AccountError(error.status || 400, error.code || "bad_ref", error.message);
-            }
-            return json(200, { url: `${new URL(request.url).origin}/api/account/ref/${name}` });
         }
         if (path === "/img" && method === "GET") {
             // Result images for users, fetched here so the supplier never shows in the browser.

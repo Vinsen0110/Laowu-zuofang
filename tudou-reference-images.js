@@ -3,12 +3,8 @@ import { isCloudinaryImageUrl } from "./cloudinary-reference-upload.js";
 const MAX_REFERENCE_BYTES = 14 * 1024 * 1024;
 const TUDOU_GEMINI_IMAGE_PATH = /^\/v1beta\/models\/[^/]+:(?:generateContent|streamGenerateContent)$/;
 
-// Reference images uploaded to this site (deleted after 24 hours). Only our own
-// domains are trusted, so this can never be used to fetch an arbitrary address.
-const OWN_REFERENCE_URL = /^https:\/\/(?:www\.|test\.)?vinsen\.top\/api\/account\/ref\/[a-f0-9]{32}\.(?:jpg|png|webp)$/;
-
 export function isHostedReferenceImageUrl(value) {
-    return isCloudinaryImageUrl(value) || OWN_REFERENCE_URL.test(String(value || ""));
+    return isCloudinaryImageUrl(value);
 }
 
 export function isTudouGeminiImageTarget(target) {
