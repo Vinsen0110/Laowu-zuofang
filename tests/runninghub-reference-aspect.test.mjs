@@ -154,14 +154,19 @@ test("old fixed projects with unsupported explicit ratios omit aspectRatio rathe
     }
 });
 
-test("explicit ratios and existing RH models bypass reference inference", () => {
+test("explicit ratios and the retired GPT Image 2 bypass reference inference", () => {
     for (const config of [
         { ...base, size: "4:5" },
         { ...base, model: "runninghub::gpt-image-2" },
-        { ...base, model: "runninghub::nano-banana-pro" },
     ]) {
         assert.equal(runningHubReferenceAspectRatio(config, 3840, 2160), config);
     }
+});
+
+test("RH Nano Banana Pro follows the reference image's shape on Auto", () => {
+    const model = "runninghub::nano-banana-pro";
+    assert.equal(runningHubReferenceAspectRatio({ ...base, model }, 1080, 1920).size, "9:16");
+    assert.equal(runningHubReferenceAspectRatio({ ...base, model }, 3840, 2160).size, "16:9");
 });
 
 test("ratio inference preserves all fixed/official and Flare/Sunburst routing choices", () => {
@@ -254,7 +259,6 @@ test("the browser helper does not infer ratios for Mart, other sites or older RH
         { ...base, provider: "apimart", model: "apimart::gpt-image-2.5" },
         { ...base, provider: "custom", model: "custom::gpt-image-2.5" },
         { ...base, model: "runninghub::gpt-image-2" },
-        { ...base, model: "runninghub::nano-banana-pro" },
     ]) {
         assert.equal(await context.withRunningHubReferenceAspectRatio(config, ["blob:ref"]), config);
     }
