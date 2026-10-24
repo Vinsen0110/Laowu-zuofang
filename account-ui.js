@@ -34,6 +34,10 @@
 .lw-acct-form{display:flex;flex-direction:column;gap:10px}
 .lw-acct-label{display:flex;flex-direction:column;gap:5px;color:var(--a-muted);font-size:12px;font-weight:600}
 .lw-acct-input{height:38px;padding:0 11px;border:1px solid var(--a-border);border-radius:9px;background:var(--a-bg);color:var(--a-text);font-size:14px;font-family:inherit;outline:none}
+.lw-pw{position:relative;display:flex}
+.lw-pw .lw-acct-input{flex:1;min-width:0;padding-right:42px !important}
+.lw-pw-eye{position:absolute;top:50%;right:6px;translate:0 -50%;display:grid;place-items:center;width:32px;height:32px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--a-muted,var(--g-muted,currentColor));opacity:.75;cursor:pointer}
+.lw-pw-eye:hover{opacity:1;background:var(--a-soft,rgb(127 127 127 / .12))}
 .lw-acct-input:focus{border-color:var(--a-primary);box-shadow:0 0 0 3px rgb(34 121 90 / .15)}
 .lw-acct-btn{height:38px;border:0;border-radius:9px;background:var(--a-primary);color:#fff;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer}
 .lw-acct-btn:hover{background:var(--a-primary-hover)}
@@ -503,6 +507,18 @@ button.lw-gate-face:hover{transform:scale(1.04)}
     refresh();
   });
 
+  // The admin can change a user's balance from the admin page; pick that up when
+  // the user comes back to the tab, and once a minute while the tab is visible.
+  let lastBalanceCheck = 0;
+  function recheckBalance(minGap) {
+    if (!user || user.role === "admin" || document.visibilityState !== "visible") return;
+    if (Date.now() - lastBalanceCheck < minGap) return;
+    lastBalanceCheck = Date.now();
+    refresh();
+  }
+  document.addEventListener("visibilitychange", () => recheckBalance(10_000));
+  setInterval(() => recheckBalance(55_000), 60_000);
+
   async function refresh() {
     try {
       const data = await api("/me");
@@ -559,10 +575,10 @@ button.lw-gate-face:hover{transform:scale(1.04)}
           </span>
         </label>` : ""}
         <label class="lw-acct-label">${isReset ? "新密码" : "密码"}
-          <input class="lw-acct-input" name="password" type="password" autocomplete="${needsCode ? "new-password" : "current-password"}" required minlength="8" placeholder="至少 8 位">
+          ${passwordField(`name="password" autocomplete="${needsCode ? "new-password" : "current-password"}" required minlength="8" placeholder="至少 8 位"`)}
         </label>
         ${needsCode ? `<label class="lw-acct-label">确认${isReset ? "新" : ""}密码
-          <input class="lw-acct-input" name="confirm" type="password" autocomplete="new-password" required minlength="8">
+          ${passwordField(`name="confirm" autocomplete="new-password" required minlength="8"`)}
         </label>` : ""}
         ${msgView()}
         <button class="lw-acct-btn" type="submit" ${busy ? "disabled" : ""}>${busy ? "请稍候…" : submitText}</button>
@@ -609,7 +625,16 @@ button.lw-gate-face:hover{transform:scale(1.04)}
     return `<div class="lw-acct-msg ${message.type === "error" ? "is-error" : "is-ok"}" role="${message.type === "error" ? "alert" : "status"}">${esc(message.text)}</div>`;
   }
 
+  // Password boxes get an eye button so people can check what they typed.
+  let showPassword = false;
+  function passwordField(attrs) {
+    return `<span class="lw-pw"><input class="lw-acct-input" type="${showPassword ? "text" : "password"}" ${attrs}>`
+      + `<button type="button" class="lw-pw-eye" data-act="toggle-password" aria-label="${showPassword ? "隐藏密码" : "显示密码"}" aria-pressed="${showPassword}" title="${showPassword ? "隐藏密码" : "显示密码"}">${showPassword ? ICON.eyeOff : ICON.eye}</button></span>`;
+  }
+
   const ICON = {
+    eye: '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>',
+    eyeOff: '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-2.6 3.6M6.6 6.6C3.9 8.4 2 12 2 12s3.6 7 10 7a9.8 9.8 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="m2 2 20 20"/></svg>',
     pencil: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
     ticket: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9a3 3 0 0 0 0 6v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a3 3 0 0 0 0-6V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1Z"/><path d="M13 5v2M13 17v2M13 11v2"/></svg>',
     out: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>',
@@ -772,7 +797,7 @@ button.lw-gate-face:hover{transform:scale(1.04)}
         <p class="lw-entry-sub lw-gate-center">${last.deviceToken ? "点击头像或下面的按钮，直接进入你的画布" : "输入密码，继续使用这个账号"}</p>
         ${last.deviceToken ? `<div class="lw-acct-form">${msgView()}<button class="lw-acct-btn" type="button" data-act="quick-login" ${busy ? "disabled" : ""}>${busy ? "正在登录…" : "登录"}</button></div>` : `<form class="lw-acct-form" data-form="login" novalidate>
           <input type="hidden" name="email" value="${esc(last.email)}">
-          <input class="lw-acct-input" name="password" type="password" autocomplete="current-password" required minlength="8" placeholder="输入密码" aria-label="密码" autofocus>
+          ${passwordField(`name="password" autocomplete="current-password" required minlength="8" placeholder="输入密码" aria-label="密码" autofocus`)}
           ${msgView()}
           <button class="lw-acct-btn" type="submit" ${busy ? "disabled" : ""}>${busy ? "请稍候…" : "登录"}</button>
           <button type="button" class="lw-acct-linkbtn lw-acct-forgot" data-act="mode-reset">忘记密码？</button>
@@ -1014,6 +1039,22 @@ button.lw-gate-face:hover{transform:scale(1.04)}
       if (entryRedeemOpen) entry?.querySelector('input[name="code"]')?.focus();
     }
     else if (act === "send-code") sendCode(el);
+    else if (act === "toggle-password") {
+      showPassword = !showPassword;
+      document.querySelectorAll(".lw-pw").forEach((box) => {
+        const input = box.querySelector("input");
+        const eye = box.querySelector(".lw-pw-eye");
+        if (input) input.type = showPassword ? "text" : "password";
+        if (eye) {
+          const label = showPassword ? "隐藏密码" : "显示密码";
+          eye.innerHTML = showPassword ? ICON.eyeOff : ICON.eye;
+          eye.setAttribute("aria-label", label);
+          eye.setAttribute("aria-pressed", String(showPassword));
+          eye.title = label;
+        }
+      });
+      el.closest(".lw-pw")?.querySelector("input")?.focus();
+    }
     else if (act === "avatar-pick") { pickAvatar(); }
     else if (act === "project-blank" || act === "project-import") {
       // The folder picker needs this click's user activation, so press the start screen's own button now.

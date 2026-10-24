@@ -11,7 +11,7 @@ import { background, checkLowBalances } from "./alerts.js";
 import { channelConfig } from "./channels.js";
 import { describeRequest } from "./describe.js";
 import { CHANNEL_LABELS, rewriteUrls, scrubText, unmaskTarget, verifyImageToken } from "./mask.js";
-import { cosReady, getCos, moveInlineImagesToCos, parseGeminiAnswer } from "./cos.js";
+import { cosReady, dropUnusedSignatures, getCos, largestStrings, moveInlineImagesToCos, parseGeminiAnswer } from "./cos.js";
 import { AccountError, adjustBalance, milliToYuan } from "./service.js";
 import { findTaskId, recordTask, settleTask, taskOutcome } from "./tasks.js";
 import { inlineTudouGeminiReferences, isTudouGeminiImageTarget } from "../tudou-reference-images.js";
@@ -167,9 +167,13 @@ async function deliverGeminiViaCos(upstream, cos, signal) {
         try {
             const moved = await moveInlineImagesToCos(cos, payload, { signal });
             if (moved > 0) {
+                const dropped = dropUnusedSignatures(payload);
+                const body = JSON.stringify(payload);
+                const left = body.length > 200_000 ? ` 仍较大：${largestStrings(payload).join(", ")}` : "";
+                console.log(`COS 下发土豆结果：原始 ${raw.length}，去掉签名 ${dropped}，下发 ${body.length}${left}`);
                 return {
                     sawImage: true,
-                    response: new Response(JSON.stringify(payload), {
+                    response: new Response(body, {
                         status: upstream.status,
                         headers: new Headers({ "Content-Type": "application/json; charset=utf-8", "x-lw-relay": "1", "x-lw-cos": String(moved) }),
                     }),

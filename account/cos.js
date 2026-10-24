@@ -187,6 +187,42 @@ export async function moveInlineImagesToCos(cos, payload, options = {}) {
     return moved;
 }
 
+// Gemini image answers also carry an encrypted thoughtSignature next to the
+// picture, which can run to megabytes and does not compress. The canvas only
+// sends signatures back for function calls, so drop the rest. Returns how many
+// characters were removed.
+export function dropUnusedSignatures(payload) {
+    let removed = 0;
+    for (const layer of geminiLayers(payload)) {
+        for (const candidate of Array.isArray(layer?.candidates) ? layer.candidates : []) {
+            for (const part of Array.isArray(candidate?.content?.parts) ? candidate.content.parts : []) {
+                if (!part || typeof part !== "object" || part.functionCall || part.function_call) continue;
+                for (const key of ["thoughtSignature", "thought_signature"]) {
+                    if (typeof part[key] === "string") {
+                        removed += part[key].length;
+                        delete part[key];
+                    }
+                }
+            }
+        }
+    }
+    return removed;
+}
+
+// For the server log: the longest strings left in an answer, by path and length only.
+export function largestStrings(value, limit = 3) {
+    const found = [];
+    const walk = (node, path) => {
+        if (typeof node === "string") {
+            if (node.length > 10_000) found.push([path, node.length]);
+        } else if (node && typeof node === "object") {
+            for (const [key, child] of Object.entries(node)) walk(child, path ? `${path}.${key}` : key);
+        }
+    };
+    walk(value, "");
+    return found.sort((a, b) => b[1] - a[1]).slice(0, limit).map(([path, length]) => `${path}=${length}`);
+}
+
 // Supplier result links (渠道 2/4/5, and 渠道 3) copied to COS once; the same
 // source always maps to the same COS key, so repeat views reuse the copy.
 const copied = new Map();
