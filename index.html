@@ -1440,6 +1440,12 @@
           -webkit-text-fill-color: var(--lw-gray-800) !important;
           opacity: 1 !important;
         }
+        /* 模型下拉菜单和上面的框一样宽（默认是固定 320px） */
+        [data-slot="select-content"].settings-select-dropdown {
+          width: var(--radix-select-trigger-width) !important;
+          min-width: var(--radix-select-trigger-width) !important;
+          max-width: var(--radix-select-trigger-width) !important;
+        }
         .settings-select-dropdown,
         .settings-select-dropdown [role="listbox"] {
           background: var(--lw-white) !important;
