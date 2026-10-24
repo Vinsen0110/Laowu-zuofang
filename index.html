@@ -1413,12 +1413,18 @@
           width: 100% !important;
           font-size: 14px !important;
         }
-        .settings-grid .ant-select-selector {
+        /* 这版 antd 的边框画在 .ant-select 本身上（没有 .ant-select-selector 这一层） */
+        .settings-grid .ant-select {
           align-items: center;
           padding: 0 16px !important;
-          border-color: var(--lw-stone-200) !important;
+          border: 1px solid var(--lw-stone-200) !important;
           border-radius: 12px !important;
+          background: var(--lw-white) !important;
           box-shadow: 0 1px 3px 0 rgb(var(--lw-stone-900-rgb) / .1), 0 1px 2px -1px rgb(var(--lw-stone-900-rgb) / .1) !important;
+        }
+        .dark .settings-grid .ant-select {
+          border-color: var(--lw-stone-600) !important;
+          background: var(--lw-stone-800) !important;
         }
         .settings-grid .settings-select .ant-select-selector .ant-select-selection-item,
         .settings-grid .settings-select.ant-select-open .ant-select-selector .ant-select-selection-item,
