@@ -26,6 +26,9 @@ test("admins get no 图床 page; users get a refund hint on failures", () => {
 
 test("account chip: no focus refresh, no ledger for users, logout guard", () => {
     assert.doesNotMatch(accountUi, /addEventListener\("focus"/);
+    // Users still see a balance the admin changed: on returning to the tab and once a minute.
+    assert.match(accountUi, /if \(!user \|\| user\.role === "admin" \|\| document\.visibilityState !== "visible"\) return;/);
+    assert.match(accountUi, /document\.addEventListener\("visibilitychange", \(\) => recheckBalance\(10_000\)\);/);
     assert.match(accountUi, /\$\{isAdmin \? `<div class="lw-am-sep"><\/div>\s*<div class="lw-am-sec">\s*<div class="lw-am-label">最近记录/);
     assert.match(accountUi, /还有图片正在生成/);
 });

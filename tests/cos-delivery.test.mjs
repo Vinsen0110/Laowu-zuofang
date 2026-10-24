@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
-    copyResultToCos, cosAuthorization, cosReady, moveInlineImagesToCos, parseGeminiAnswer, publicCos, resultKey,
+    copyResultToCos, cosAuthorization, cosReady, dropUnusedSignatures, largestStrings, moveInlineImagesToCos, parseGeminiAnswer, publicCos, resultKey,
 } from "../account/cos.js";
 
 const cos = { secretId: "AKIDexample", secretKey: "secret", bucket: "laowu-images-1250000000", region: "ap-guangzhou", enabled: true };
@@ -62,4 +62,22 @@ test("an upload error surfaces so the caller can fall back to this server", asyn
             { fetchImpl: async () => new Response("<Error><Code>AccessDenied</Code></Error>", { status: 403 }) }),
         /AccessDenied/,
     );
+});
+
+test("the encrypted signature next to a picture is dropped, a function call keeps its own", async () => {
+    const payload = { candidates: [{ content: { parts: [
+        { inlineData: { mimeType: "image/png", data: "AAAA" }, thoughtSignature: "x".repeat(50_000) },
+        { functionCall: { name: "tool", args: {} }, thoughtSignature: "keep" },
+    ] } }] };
+    await moveInlineImagesToCos(cos, payload, { fetchImpl: async () => ok() });
+    assert.equal(dropUnusedSignatures(payload), 50_000);
+    const [picture, call] = payload.candidates[0].content.parts;
+    assert.equal(picture.thoughtSignature, undefined);
+    assert.match(picture.fileData.fileUri, /^https:\/\//);
+    assert.equal(call.thoughtSignature, "keep");
+    assert.ok(JSON.stringify(payload).length < 1_000);
+});
+
+test("the server log names the biggest strings by path and length only", () => {
+    assert.deepEqual(largestStrings({ a: { b: "y".repeat(20_000) }, c: "short" }), ["a.b=20000"]);
 });

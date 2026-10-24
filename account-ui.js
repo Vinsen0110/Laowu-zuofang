@@ -503,6 +503,18 @@ button.lw-gate-face:hover{transform:scale(1.04)}
     refresh();
   });
 
+  // The admin can change a user's balance from the admin page; pick that up when
+  // the user comes back to the tab, and once a minute while the tab is visible.
+  let lastBalanceCheck = 0;
+  function recheckBalance(minGap) {
+    if (!user || user.role === "admin" || document.visibilityState !== "visible") return;
+    if (Date.now() - lastBalanceCheck < minGap) return;
+    lastBalanceCheck = Date.now();
+    refresh();
+  }
+  document.addEventListener("visibilitychange", () => recheckBalance(10_000));
+  setInterval(() => recheckBalance(55_000), 60_000);
+
   async function refresh() {
     try {
       const data = await api("/me");
