@@ -494,13 +494,22 @@ E=typeof window<"u"&&!!window.oldHouseDesktop,P=async()=>{if(!(!E||r)){o(!0);try
                   y.jsx("h3",{children:"图床 Cloudinary（"+(globalThis.__lwIsAdmin===true?"Tudou / Grsai":"渠道 1 / 渠道 3")+" 参考图）"}),
                   y.jsx("span",{className:"api-collapsible-status "+((a.cloudinaryCloudName&&a.cloudinaryApiKey&&a.cloudinaryApiSecret)?"is-set":"is-empty"),children:(a.cloudinaryCloudName&&a.cloudinaryApiKey&&a.cloudinaryApiSecret)?"已配置":"未配置"})
                 ]}),
-                y.jsxs("p",{className:"api-hosting-tip",children:["用 "+(globalThis.__lwIsAdmin===true?"Tudou / Grsai":"渠道 1 / 渠道 3")+" 带参考图生成时，参考图要先上传到你自己的图床。还没有账号可以",y.jsx("a",{href:"https://cloudinary.com/users/register_free",target:"_blank",rel:"noopener noreferrer",children:"免费申请 Cloudinary ↗"}),"，注册后在 Settings → API Keys 里找到下面三项填进来。"]}),y.jsx("div",{className:"api-key-row reference-host-row",children:[
-                  ["cloudinaryCloudName","Cloud Name",!1],
-                  ["cloudinaryApiKey","API Key",!0],
-                  ["cloudinaryApiSecret","API Secret",!0]
-                ].map(([key,label,secret])=>y.jsxs("label",{className:"api-field",children:[
+                y.jsxs("p",{className:"api-hosting-tip",children:["用 "+(globalThis.__lwIsAdmin===true?"Tudou / Grsai":"渠道 1 / 渠道 3")+" 带参考图生成时，参考图要先上传到你自己的图床，拿到链接再交给模型。Cloudinary 免费、不用绑卡，按下面 3 步申请，大约 3 分钟。"]}),
+                ((lwLink)=>y.jsxs("details",{className:"api-hosting-guide",children:[
+                  y.jsx("summary",{children:"不会申请？点这里看教程"}),
+                  y.jsxs("ol",{className:"api-hosting-steps",children:[
+                    y.jsxs("li",{children:[y.jsx("b",{children:"注册 Cloudinary"}),y.jsxs("p",{children:["打开 ",lwLink("https://cloudinary.com/users/register_free","注册页面 ↗"),"，点 Google 或 GitHub 一键注册最快，也可以用邮箱注册。注册后会问几个问卷（职业、用途），随便选，一路点 Next 或 Skip。"]})]}),
+                    y.jsxs("li",{children:[y.jsx("b",{children:"复制 Cloud name"}),y.jsxs("p",{children:["进入 ",lwLink("https://console.cloudinary.com/app/home/dashboard","控制台首页 ↗"),"，页面顶部 Product Environment 下面那串名字（类似 dxxxxxxxx）就是 Cloud name，点旁边的复制按钮，粘贴到下面第 1 格。"]}),y.jsx("p",{className:"api-hosting-warn",children:"注意：不是你的账号名或邮箱。"})]}),
+                    y.jsxs("li",{children:[y.jsx("b",{children:"复制 API Key 和 API Secret"}),y.jsxs("p",{children:["打开 ",lwLink("https://console.cloudinary.com/app/settings/api-keys","API Keys 页面 ↗"),"（也可以在首页点 Go to API Keys，或左下角齿轮 Settings → API Keys）。API Key 是一串纯数字，粘贴到第 2 格；API Secret 默认被遮住，点旁边的眼睛图标显示后再复制，粘贴到第 3 格。"]}),y.jsx("p",{className:"api-hosting-warn",children:"看 Secret 时可能会往注册邮箱发验证码，去邮箱查收输入即可。"})]})
+                  ]}),
+                  y.jsx("p",{className:"api-hosting-note",children:"三格都填好后，标题旁会显示「已配置」，就可以用了。页面是英文的话，可以在 Cloudinary 页面右键选「翻译成中文」。API Secret 只保存在你自己的浏览器里，只用来在本地生成上传签名，不会发给本站服务器。"})
+                ]}))((href,text)=>y.jsx("a",{href,target:"_blank",rel:"noopener noreferrer",children:text})),y.jsx("div",{className:"api-key-row reference-host-row",children:[
+                  ["cloudinaryCloudName","Cloud Name",!1,"第 1 格：类似 dxxxxxxxx"],
+                  ["cloudinaryApiKey","API Key",!0,"第 2 格：一串纯数字"],
+                  ["cloudinaryApiSecret","API Secret",!0,"第 3 格：点眼睛图标显示后复制"]
+                ].map(([key,label,secret,hint])=>y.jsxs("label",{className:"api-field",children:[
                   y.jsx("span",{className:"api-field-label",children:label}),
-                  y.jsx(secret?_o.Password:_o,{className:"api-key-input",size:"large",value:a[key]||"",placeholder:label,autoComplete:"off",spellCheck:!1,onChange:$=>i(key,$.target.value)})
+                  y.jsx(secret?_o.Password:_o,{className:"api-key-input",size:"large",value:a[key]||"",placeholder:hint,autoComplete:"off",spellCheck:!1,onChange:$=>i(key,$.target.value)})
                 ]},key))})
               ]})
             ]}):t==="generation"?y.jsxs("div",{className:"generation-settings-sections",children:[

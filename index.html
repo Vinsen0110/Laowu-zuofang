@@ -6,7 +6,7 @@
         <meta name="description" content="老屋作坊创作工具" />
         <link rel="icon" type="image/png" href="./kitty.png" />
         <link rel="preload" href="./assets/index-DT58oPsm.css" as="style" crossorigin>
-        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261023-proratio-01" crossorigin>
+        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261024-hostguide-02" crossorigin>
         <link rel="preload" href="./icons/gemini.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/openai.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/claude.svg" as="image" type="image/svg+xml" />
@@ -692,7 +692,7 @@
                 else document.addEventListener("DOMContentLoaded", observe, { once: true });
             })();
         </script>
-        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261023-proratio-01"></script>
+        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261024-hostguide-02"></script>
       <script type="module" src="./display-model-names.js?v=20261008-nano21-01"></script>
       <script type="module" src="./canvas-price-table.js?v=20261022-mart-01"></script>
       <script src="./prevent-canvas-drag-download.js?v=20260827-01"></script>
@@ -705,7 +705,7 @@
       <style>
         /* 图床设置 reuses the old API page; only its Cloudinary block is shown. */
         .api-hosting-page > :not(details) { display: none !important; }
-        .api-hosting-page details > summary { pointer-events: none; }
+        .api-hosting-page > details > summary { pointer-events: none; }
         .canvas-site-menu-label { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; min-width: 0; }
         .canvas-site-menu-note { font-size: 11px; font-weight: 500; opacity: .6; }
         body:has(.canvas-image-viewer) .lw-acct,
@@ -714,6 +714,19 @@
         .api-hosting-tip { margin: 4px 0 12px; color: var(--lw-stone-500); font-size: 13px; line-height: 1.6; }
         .api-hosting-tip a { color: var(--lw-indigo-700); }
         .dark .api-hosting-tip a { color: var(--lw-indigo-300); }
+        .api-hosting-guide { max-width: 540px; margin: 0 0 16px; padding: 12px 16px; border: 1px solid var(--lw-stone-200); border-radius: 12px; background: var(--lw-stone-50); font-size: 13px; line-height: 1.65; color: var(--lw-stone-700); }
+        .dark .api-hosting-guide { border-color: var(--lw-stone-700); background: var(--lw-stone-800); color: var(--lw-stone-200); }
+        .api-hosting-guide > summary { cursor: pointer; font-weight: 600; color: var(--lw-indigo-700); }
+        .dark .api-hosting-guide > summary { color: var(--lw-indigo-300); }
+        .api-hosting-steps { margin: 10px 0 0; padding-left: 20px; list-style: decimal; }
+        .api-hosting-steps > li { margin-bottom: 10px; }
+        .api-hosting-steps > li::marker { font-weight: 600; }
+        .api-hosting-steps b { display: block; margin-bottom: 2px; }
+        .api-hosting-steps p { margin: 0; }
+        .api-hosting-guide a { color: var(--lw-indigo-700); text-decoration: underline; }
+        .dark .api-hosting-guide a { color: var(--lw-indigo-300); }
+        .api-hosting-warn { margin-top: 2px !important; color: var(--lw-amber-600); }
+        .api-hosting-note { margin: 4px 0 0; color: var(--lw-stone-500); font-size: 12px; }
         .laowu-canvas-viewport {
           overflow: clip !important;
         }
