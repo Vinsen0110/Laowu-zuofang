@@ -495,8 +495,8 @@ E=typeof window<"u"&&!!window.oldHouseDesktop,P=async()=>{if(!(!E||r)){o(!0);try
                   y.jsx("span",{className:"api-collapsible-status "+((a.cloudinaryCloudName&&a.cloudinaryApiKey&&a.cloudinaryApiSecret)?"is-set":"is-empty"),children:(a.cloudinaryCloudName&&a.cloudinaryApiKey&&a.cloudinaryApiSecret)?"已配置":"未配置"})
                 ]}),
                 y.jsxs("p",{className:"api-hosting-tip",children:["用 "+(globalThis.__lwIsAdmin===true?"Tudou / Grsai":"渠道 1 / 渠道 3")+" 带参考图生成时，参考图要先上传到你自己的图床，拿到链接再交给模型。Cloudinary 免费、不用绑卡，按下面 3 步申请，大约 3 分钟。"]}),
-                ((lwLink)=>y.jsxs("details",{className:"api-hosting-guide",open:!(a.cloudinaryCloudName&&a.cloudinaryApiKey&&a.cloudinaryApiSecret),children:[
-                  y.jsx("summary",{children:"申请教程（第一次用请看）"}),
+                ((lwLink)=>y.jsxs("details",{className:"api-hosting-guide",children:[
+                  y.jsx("summary",{children:"不会申请？点这里看教程"}),
                   y.jsxs("ol",{className:"api-hosting-steps",children:[
                     y.jsxs("li",{children:[y.jsx("b",{children:"注册 Cloudinary"}),y.jsxs("p",{children:["打开 ",lwLink("https://cloudinary.com/users/register_free","注册页面 ↗"),"，点 Google 或 GitHub 一键注册最快，也可以用邮箱注册。注册后会问几个问卷（职业、用途），随便选，一路点 Next 或 Skip。"]})]}),
                     y.jsxs("li",{children:[y.jsx("b",{children:"复制 Cloud name"}),y.jsxs("p",{children:["进入 ",lwLink("https://console.cloudinary.com/app/home/dashboard","控制台首页 ↗"),"，页面顶部 Product Environment 下面那串名字（类似 dxxxxxxxx）就是 Cloud name，点旁边的复制按钮，粘贴到下面第 1 格。"]}),y.jsx("p",{className:"api-hosting-warn",children:"注意：不是你的账号名或邮箱。"})]}),
