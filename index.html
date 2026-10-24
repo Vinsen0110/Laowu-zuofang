@@ -1355,8 +1355,8 @@
         }
         .settings-grid {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 20px 18px;
+          grid-template-columns: repeat(2, minmax(0, 260px));
+          gap: 18px 16px;
         }
         .settings-field {
           min-width: 0;
@@ -1404,7 +1404,16 @@
         }
         .settings-grid .ant-select,
         .settings-grid .ant-select-selector {
-          min-height: 44px !important;
+          min-height: 38px !important;
+          height: 38px !important;
+          font-size: 14px !important;
+        }
+        .settings-grid .settings-model-select {
+          height: 38px !important;
+          padding-left: 12px !important;
+          padding-right: 12px !important;
+          border-radius: 10px !important;
+          font-size: 14px !important;
         }
         .settings-grid .ant-select-selector {
           align-items: center;
