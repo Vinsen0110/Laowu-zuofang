@@ -12,7 +12,7 @@ test("connected image generation panels inherit valid upstream model settings", 
     assert.match(bundle, /gptImageQuality:inheritedImageModel\?sourceNode\.metadata\?\.gptImageQuality\|\|N\.gptImageQuality:N\.gptImageQuality/);
     assert.match(bundle, /apimartOutputFormat:inheritedImageModel\?sourceNode\.metadata\?\.apimartOutputFormat\|\|N\.apimartOutputFormat:N\.apimartOutputFormat/);
     assert.match(bundle, /apimartBackground:inheritedImageModel\?sourceNode\.metadata\?\.apimartBackground\|\|N\.apimartBackground:N\.apimartBackground/);
-    assert.match(bundle, /size:inheritedImageModel\?sourceNode\.metadata\?\.size\|\|N\.size:N\.size/);
+    assert.match(bundle, /size:inheritedImageModel\?sourceNode\.metadata\?\.size\|\|"auto":"auto"/);
     assert.match(bundle, /count:pm\(inheritedImageModel\?sourceNode\.metadata\?\.count\|\|N\.canvasImageCount\|\|N\.count:N\.canvasImageCount\|\|N\.count\)/);
 });
 

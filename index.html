@@ -6,7 +6,7 @@
         <meta name="description" content="老屋作坊创作工具" />
         <link rel="icon" type="image/png" href="./kitty.png" />
         <link rel="preload" href="./assets/index-DT58oPsm.css" as="style" crossorigin>
-        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261024-timer-01" crossorigin>
+        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261024-noratio-04" crossorigin>
         <link rel="preload" href="./icons/gemini.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/openai.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/claude.svg" as="image" type="image/svg+xml" />
@@ -692,7 +692,7 @@
                 else document.addEventListener("DOMContentLoaded", observe, { once: true });
             })();
         </script>
-        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261024-timer-01"></script>
+        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261024-noratio-04"></script>
       <script type="module" src="./display-model-names.js?v=20261008-nano21-01"></script>
       <script type="module" src="./canvas-price-table.js?v=20261022-mart-01"></script>
       <script src="./prevent-canvas-drag-download.js?v=20260827-01"></script>
@@ -1355,8 +1355,8 @@
         }
         .settings-grid {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 20px 18px;
+          grid-template-columns: repeat(2, minmax(0, 260px));
+          gap: 18px 16px;
         }
         .settings-field {
           min-width: 0;
@@ -1404,13 +1404,27 @@
         }
         .settings-grid .ant-select,
         .settings-grid .ant-select-selector {
-          min-height: 44px !important;
+          min-height: 40px !important;
+          height: 40px !important;
+          font-size: 14px !important;
         }
-        .settings-grid .ant-select-selector {
+        /* 四个框统一用模型选择框的样子：40px 高、12px 圆角、浅阴影 */
+        .settings-grid .settings-model-select {
+          width: 100% !important;
+          font-size: 14px !important;
+        }
+        /* 这版 antd 的边框画在 .ant-select 本身上（没有 .ant-select-selector 这一层） */
+        .settings-grid .ant-select {
           align-items: center;
-          border-color: var(--lw-cool-gray-200) !important;
-          border-radius: 10px !important;
-          box-shadow: none !important;
+          padding: 0 16px !important;
+          border: 1px solid var(--lw-stone-200) !important;
+          border-radius: 12px !important;
+          background: var(--lw-white) !important;
+          box-shadow: 0 1px 3px 0 rgb(var(--lw-stone-900-rgb) / .1), 0 1px 2px -1px rgb(var(--lw-stone-900-rgb) / .1) !important;
+        }
+        .dark .settings-grid .ant-select {
+          border-color: var(--lw-stone-600) !important;
+          background: var(--lw-stone-800) !important;
         }
         .settings-grid .settings-select .ant-select-selector .ant-select-selection-item,
         .settings-grid .settings-select.ant-select-open .ant-select-selector .ant-select-selection-item,
@@ -1425,6 +1439,12 @@
           color: var(--lw-gray-800) !important;
           -webkit-text-fill-color: var(--lw-gray-800) !important;
           opacity: 1 !important;
+        }
+        /* 模型下拉菜单和上面的框一样宽（默认是固定 320px） */
+        [data-slot="select-content"].settings-select-dropdown {
+          width: var(--radix-select-trigger-width) !important;
+          min-width: var(--radix-select-trigger-width) !important;
+          max-width: var(--radix-select-trigger-width) !important;
         }
         .settings-select-dropdown,
         .settings-select-dropdown [role="listbox"] {

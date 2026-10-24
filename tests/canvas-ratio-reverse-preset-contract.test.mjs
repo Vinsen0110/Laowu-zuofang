@@ -50,7 +50,8 @@ test("built-in presets include the layer separation prompt", () => {
   );
 });
 
-test("settings ratio select renders the same compact ratio shape", () => {
-  assert.match(bundle, /optionRender:\$=>y\.jsxs\("span",\{className:"flex min-w-0 items-center gap-2",children:\[ratioShape\(\{value:\$\.value\}\)/);
-  assert.match(bundle, /labelRender:\$=>y\.jsxs\("span",\{className:"flex min-w-0 items-center gap-2",children:\[ratioShape\(\{value:\$\.value\}\)/);
+test("settings have no default ratio; new image nodes start at Auto", () => {
+  assert.doesNotMatch(bundle, /label:"\\u5C3A\\u5BF8\\u6BD4\\u4F8B",className:"settings-field"/);
+  assert.doesNotMatch(bundle, /gptImageQuality:N\.gptImageQuality,size:N\.size/);
+  assert.equal(bundle.split('gptImageQuality:N.gptImageQuality,size:"auto",count:pm(N.canvasImageCount||N.count)').length - 1, 4);
 });

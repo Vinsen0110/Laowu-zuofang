@@ -109,7 +109,7 @@ test("generation defaults identify the active site and use a readable select sta
         indexHtml,
         /\.dark \.settings-select-dropdown[^}]*background: var\(--lw-stone-900\) !important;[^}]*color: var\(--lw-stone-200\) !important;/s,
     );
-    assert.match(bundle, /className:"settings-model-select !h-11/);
+    assert.match(bundle, /className:"settings-model-select !h-10/);
     assert.match(
         indexHtml,
         /\.settings-model-select\[data-state="open"\] \.canvas-model-picker-text[^}]*color: var\(--lw-gray-800\) !important;[^}]*-webkit-text-fill-color: var\(--lw-gray-800\) !important;/s,
