@@ -112,7 +112,7 @@ export function userErrorMessage(status, message, refundedMilli) {
     return refundedMilli > 0 ? `${base}。本次费用 ${milliToYuan(refundedMilli)} 已退回余额` : base;
 }
 
-async function forUser(upstream, request, onJson, refunded = () => 0) {
+async function forUser(upstream, request, onJson, refunded = () => 0, { rewrite = true } = {}) {
     const type = upstream.headers.get("content-type") || "";
     const length = Number(upstream.headers.get("content-length") || 0);
     if (upstream.status >= 400) {
@@ -132,7 +132,8 @@ async function forUser(upstream, request, onJson, refunded = () => 0) {
         try { data = JSON.parse(text); } catch { return new Response(text, { status: upstream.status, headers: copyHeaders(upstream) }); }
         if (onJson) await onJson(data).catch((error) => console.error("Relay task tracking failed:", error));
         const origin = new URL(request.url).origin;
-        return new Response(JSON.stringify(rewriteUrls(data, origin)), { status: upstream.status, headers: withRefund(copyHeaders(upstream), refunded()) });
+        const out = rewrite ? rewriteUrls(data, origin) : data;
+        return new Response(JSON.stringify(out), { status: upstream.status, headers: withRefund(copyHeaders(upstream), refunded()) });
     }
     return passThrough(upstream);
 }
@@ -360,5 +361,7 @@ export async function relay(db, user, request, { fetchImpl = fetch } = {}) {
             await settleTask(db, channel, decodeURIComponent(taskId), taskOutcome(data), (milli) => { refundedMilli += milli; });
         }
     };
-    return forUser(upstream, request, onJson, () => refundedMilli);
+    // "直连平台": result links stay the supplier's own, so the browser downloads them directly.
+    const direct = (await getCos(db).catch(() => null))?.delivery === "direct";
+    return forUser(upstream, request, onJson, () => refundedMilli, { rewrite: !direct });
 }

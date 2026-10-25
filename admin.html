@@ -166,6 +166,8 @@ dialog::backdrop{background:rgb(9 9 11 / .4);backdrop-filter:blur(2px)}
 .user .em{color:var(--muted);font-size:12px}
 .acts{display:flex;justify-content:flex-end;gap:2px}
 tr.adjust-row td{background:var(--hover)}
+.delivery-option{display:flex;gap:8px;align-items:flex-start;margin:6px 0;font-size:13px;line-height:1.55;cursor:pointer}
+.delivery-option input{margin-top:3px}
 tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .search{position:relative}
 .search svg{position:absolute;left:9px;top:50%;translate:0 -50%;color:var(--faint)}
@@ -222,7 +224,7 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
   let prices = [];
   let catalog = [];
   let cloud = { cloudName: "", apiKey: "", apiSecret: "" };
-  let cos = { bucket: "", region: "ap-guangzhou", secretId: "", hasSecret: false, ready: false };
+  let cos = { bucket: "", region: "ap-guangzhou", secretId: "", hasSecret: false, ready: false, delivery: "cos" };
   let mail = { hasKey: false, keyPreview: "", fromEnv: false };
   let fx = 6.7;
   let markup = 2;
@@ -503,7 +505,15 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
           <label class="field" for="cos-key">SecretKey<input id="cos-key" name="secretKey" type="password" placeholder="${cos.hasSecret ? "已设置，留空不修改" : "粘贴 SecretKey"}" style="width:220px" autocomplete="new-password"></label>
           <button class="primary" type="submit">保存</button>
           <button class="ghost" type="button" id="cos-test">测试上传</button>
-        </form>${msg(flash.cos)}</div>
+        </form>${msg(flash.cos)}
+        <form class="delivery-form" id="delivery-form">
+          <div class="muted" style="margin:14px 0 8px;font-weight:600">普通用户的结果图怎么下发</div>
+          <label class="delivery-option"><input type="radio" name="delivery" value="cos" ${cos.delivery !== "direct" ? "checked" : ""}>
+            <span><b>腾讯云 COS</b>：所有结果图都从广州存储下载。国内快，用户看不到平台域名；按流量付费，约 0.4 分/张</span></label>
+          <label class="delivery-option"><input type="radio" name="delivery" value="direct" ${cos.delivery === "direct" ? "checked" : ""}>
+            <span><b>直连平台</b>：RH、Grsai、Soon、APIMart、土豆 GPT 的结果图由浏览器直接从平台下载，和以前一样，免费；用户在开发者工具里能看到平台域名。土豆香蕉仍走 COS</span></label>
+          <button class="primary small" type="submit" style="margin-top:8px">保存下发方式</button>
+        </form>${msg(flash.delivery)}</div>
       </section>`,
   };
 
@@ -539,6 +549,10 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
         if (!key) throw new Error("请粘贴 Resend API Key");
         mail = await api("/admin/mail", { apiKey: key });
         flash.mail = { text: "已保存，之后的验证码会通过邮件发送" };
+      } else if (form.id === "delivery-form") {
+        const delivery = new FormData(form).get("delivery") === "direct" ? "direct" : "cos";
+        cos = await api("/admin/cos", { delivery });
+        flash.delivery = { text: delivery === "direct" ? "已切换为直连平台，之后的生成立即生效" : "已切换为腾讯云 COS，之后的生成立即生效" };
       } else if (form.id === "cos-form") {
         const data = Object.fromEntries(new FormData(form).entries());
         cos = await api("/admin/cos", data);
@@ -557,6 +571,7 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
       if (form.id === "codes-form") flash.codes = { err: true, text: err.message };
       else if (form.id === "cloud-form") flash.cloud = { err: true, text: err.message };
       else if (form.id === "cos-form") flash.cos = { err: true, text: err.message };
+      else if (form.id === "delivery-form") flash.delivery = { err: true, text: err.message };
       else if (form.id === "mail-form") flash.mail = { err: true, text: err.message };
       else if (form.dataset.channel) flash.channels = { err: true, text: err.message };
       else flash.users = { err: true, text: err.message };

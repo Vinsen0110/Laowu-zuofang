@@ -488,3 +488,21 @@ test("土豆 Nano Banana Pro's stream: the picture goes to COS and the browser g
         await saveCos(db, { secretId: "", bucket: "" });
     }
 });
+
+test("直连平台: users get the supplier's own result link; switching back restores the proxy", async () => {
+    const { saveCos, getCos } = await import("../account/cos.js");
+    await adjustBalance(db, user.id, 2000, { kind: "admin", note: "t" });
+    const answer = async () => new Response(
+        JSON.stringify({ data: { url: "https://upload.apimart.ai/r/2.png" } }), { headers: { "Content-Type": "application/json" } });
+    const generate = () => relay(db, { ...user, role: "user" }, relayRequest(GEN_URL, { body: { model: "gemini-3-pro-image-preview" } }), { fetchImpl: answer });
+
+    assert.equal((await getCos(db)).delivery, "cos");
+    await saveCos(db, { delivery: "direct" });
+    assert.equal((await getCos(db)).delivery, "direct");
+    const direct = await (await generate()).json();
+    assert.equal(direct.data.url, "https://upload.apimart.ai/r/2.png");
+
+    await saveCos(db, { delivery: "cos" });
+    const proxied = await (await generate()).json();
+    assert.match(proxied.data.url, /^http:\/\/127\.0\.0\.1:4173\/api\/account\/img\?t=/);
+});
