@@ -452,3 +452,39 @@ test("a proxied upload or result link sent back as a reference reaches the suppl
     } });
     assert.deepEqual(sent[0].image_urls, [original, forged], "only links this server signed are restored");
 });
+
+test("土豆 Nano Banana Pro's stream: the picture goes to COS and the browser gets one event with its link", async () => {
+    const { saveCos } = await import("../account/cos.js");
+    await saveChannel(db, { id: "tudou", apiKey: "sk-tudou" });
+    await savePrice(db, { channel: "tudou", model: "gemini-3-pro-image-preview", spec: "1k", price: "0.4" });
+    await saveCos(db, { secretId: "AKIDtest", secretKey: "secret", bucket: "laowu-images-1250000000", region: "ap-guangzhou", delivery: "cos" });
+    await adjustBalance(db, user.id, 2000, { kind: "admin", note: "t" });
+    const picture = Buffer.from([0x89, 0x50, 0x4e, 0x47, 9, 9, 9, 9]).toString("base64");
+    const sse = `data: ${JSON.stringify({ candidates: [{ content: { parts: [{ text: "ok" }] } }] })}\n\n`
+        + `data: ${JSON.stringify({ candidates: [{ content: { parts: [{ inlineData: { mimeType: "image/png", data: picture }, thoughtSignature: "s".repeat(5000) }] } }] })}\n\n`;
+    const uploads = [];
+    const realFetch = globalThis.fetch;
+    globalThis.fetch = async (url, init = {}) => {
+        if (init.method === "PUT") { uploads.push(String(url)); return new Response("", { status: 200 }); }
+        return realFetch(url, init);
+    };
+    try {
+        const target = "https://api.ai-tudou.net/v1beta/models/gemini-3-pro-image-preview:streamGenerateContent?alt=sse";
+        const before = await balance();
+        const res = await relay(db, { ...user, role: "user" }, relayRequest(target, {
+            body: { contents: [{ parts: [{ text: "cat" }] }], generationConfig: { imageConfig: { imageSize: "1K" } } },
+        }), { fetchImpl: async () => new Response(sse, { headers: { "Content-Type": "text/event-stream" } }) });
+        assert.match(res.headers.get("content-type"), /text\/event-stream/);
+        const text = await res.text();
+        assert.equal(uploads.length, 1);
+        assert.ok(!/inline_?[dD]ata/.test(text), "no picture bytes left in the answer");
+        assert.ok(!text.includes("thoughtSignature"));
+        const event = JSON.parse(text.trim().replace(/^data: /, ""));
+        const part = event.candidates.flatMap((c) => c.content.parts).find((p) => p.fileData);
+        assert.match(part.fileData.fileUri, /^https:\/\/laowu-images-1250000000\.cos\.ap-guangzhou\.myqcloud\.com\/results\//);
+        assert.equal(await balance(), before - 400, "charged once, not refunded");
+    } finally {
+        globalThis.fetch = realFetch;
+        await saveCos(db, { secretId: "", bucket: "" });
+    }
+});
