@@ -188,6 +188,37 @@ async function deliverGeminiViaCos(upstream, cos, signal) {
     return { sawImage: sawInline, response: new Response(raw, { status: upstream.status, headers: copyHeaders(upstream) }) };
 }
 
+// 土豆 Nano Banana Pro answers as a stream (SSE). Collect it, move the picture to
+// COS, then send one SSE event carrying the link. Keep-alive comments go out while
+// the upstream is still working, so browsers do not drop a long, silent request.
+const KEEPALIVE_MS = 10_000;
+function deliverGeminiStreamViaCos(upstream, cos, signal, onDone) {
+    const encoder = new TextEncoder();
+    const body = new ReadableStream({
+        async start(controller) {
+            const ping = setInterval(() => {
+                try { controller.enqueue(encoder.encode(": keepalive\n\n")); } catch { /* closed */ }
+            }, KEEPALIVE_MS);
+            try {
+                const delivered = await deliverGeminiViaCos(upstream, cos, signal);
+                const text = await delivered.response.text();
+                // Moved: one JSON answer, sent as a single event. Not moved: the original stream text.
+                controller.enqueue(encoder.encode(delivered.response.headers.get("x-lw-cos") ? `data: ${text}\n\n` : text));
+                controller.close();
+                await onDone(delivered.sawImage);
+            } catch (error) {
+                controller.error(error);
+            } finally {
+                clearInterval(ping);
+            }
+        },
+    });
+    return new Response(body, {
+        status: upstream.status,
+        headers: new Headers({ "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache", "x-lw-relay": "1", "x-lw-cos-stream": "1" }),
+    });
+}
+
 export async function relay(db, user, request, { fetchImpl = fetch } = {}) {
     const url = new URL(request.url);
     const masked = url.searchParams.get("t");
@@ -280,6 +311,15 @@ export async function relay(db, user, request, { fetchImpl = fetch } = {}) {
     if (upstream.status >= 400) await refund(`平台返回 ${upstream.status}`);
     // 土豆 Nano Banana answers carry the picture inline (10–14 MB). With COS set up,
     // the original goes to the mainland bucket and the answer carries its link.
+    if (upstream.status < 300 && upstream.body && /:streamGenerateContent$/.test(target.pathname)) {
+        const cos = await getCos(db).catch(() => null);
+        if (cosReady(cos)) {
+            return deliverGeminiStreamViaCos(upstream, cos, request.signal, async (sawImage) => {
+                if (charge && !sawImage) await refund("平台未返回图片");
+                if (charge) background(checkLowBalances(db, { ids: [channel] }));
+            });
+        }
+    }
     if (upstream.status < 300 && upstream.body && /:generateContent$/.test(target.pathname)) {
         const cos = await getCos(db).catch(() => null);
         if (cosReady(cos)) {
