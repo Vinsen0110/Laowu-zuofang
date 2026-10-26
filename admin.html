@@ -166,6 +166,8 @@ dialog::backdrop{background:rgb(9 9 11 / .4);backdrop-filter:blur(2px)}
 .user .em{color:var(--muted);font-size:12px}
 .acts{display:flex;justify-content:flex-end;gap:2px}
 tr.adjust-row td{background:var(--hover)}
+.cos-backup{margin-top:16px;padding-top:14px;border-top:1px solid var(--border-2)}
+.cos-backup>summary{cursor:pointer;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .secret-wrap{position:relative;display:flex;align-items:center}
 .secret-wrap input{flex:1;min-width:0;padding-right:36px}
 .secret-eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:28px;height:28px;padding:0;border:0;border-radius:6px;background:transparent;color:var(--muted);cursor:pointer}
@@ -505,9 +507,19 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
         </form>${msg(flash.cloud)}</div>
       </section>
       <section class="card">
-        <div class="card-head"><h2>结果图存储 · 腾讯云 COS<span class="sub">生成的原图放到国内存储桶，国内用户下载更快；不压缩，画质不变。没填或出错时自动改回由本服务器发图</span></h2>
-          <span class="tag ${cos.ready ? "ok" : ""}">${cos.ready ? "已启用" : "未启用"}</span></div>
-        <div class="card-body"><form class="row" id="cos-form" style="align-items:flex-end;flex-wrap:wrap">
+        <div class="card-head"><h2>结果图下发方式<span class="sub">普通用户的结果图从哪里下载。土豆两种方式下都由浏览器直连，不经过服务器</span></h2>
+          <span class="tag ${cos.delivery === "direct" ? "ok" : ""}">${cos.delivery === "direct" ? "直连平台" : "腾讯云 COS"}</span></div>
+        <div class="card-body"><form class="delivery-form" id="delivery-form">
+          <label class="delivery-option"><input type="radio" name="delivery" value="cos" ${cos.delivery !== "direct" ? "checked" : ""}>
+            <span><b>腾讯云 COS</b>：RH、Grsai、Soon、APIMart 的结果图从广州存储下载。国内快，用户看不到平台域名；按流量付费，约 0.4 分/张</span></label>
+          <label class="delivery-option"><input type="radio" name="delivery" value="direct" ${cos.delivery === "direct" ? "checked" : ""}>
+            <span><b>直连平台</b>：RH、Grsai、Soon、APIMart 的结果图由浏览器直接从平台下载，和以前一样，免费；用户在开发者工具里能看到平台域名</span></label>
+          <button class="primary small" type="submit" style="margin-top:8px">保存下发方式</button>
+        </form>${msg(flash.delivery)}
+        <details class="cos-backup" ${cos.delivery === "direct" ? "" : "open"}>
+          <summary>备用：腾讯云 COS 设置 <span class="tag ${cos.ready ? "ok" : ""}">${cos.ready ? "已配置" : "未配置"}</span><span class="muted">（用户多了、选"腾讯云 COS"时才用到；密钥都保留着）</span></summary>
+          <div class="muted" style="margin:8px 0 10px">生成的原图放到国内存储桶，国内用户下载更快；不压缩，画质不变。没填或出错时自动改回由本服务器发图</div>
+          <form class="row" id="cos-form" style="align-items:flex-end;flex-wrap:wrap">
           <label class="field" for="cos-bucket">存储桶名称<input id="cos-bucket" name="bucket" value="${esc(cos.bucket || "")}" placeholder="例如 laowu-images-1250000000" style="width:240px" autocomplete="off"></label>
           <label class="field" for="cos-region">地域<input id="cos-region" name="region" value="${esc(cos.region || "ap-guangzhou")}" style="width:130px" autocomplete="off"></label>
           <label class="field" for="cos-id">SecretId<input id="cos-id" name="secretId" value="${esc(cos.secretId || "")}" style="width:260px" autocomplete="off"></label>
@@ -515,14 +527,7 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
           <button class="primary" type="submit">保存</button>
           <button class="ghost" type="button" id="cos-test">测试上传</button>
         </form>${msg(flash.cos)}
-        <form class="delivery-form" id="delivery-form">
-          <div class="muted" style="margin:14px 0 8px;font-weight:600">普通用户的结果图怎么下发（土豆两种方式下都由浏览器直连，不经过服务器）</div>
-          <label class="delivery-option"><input type="radio" name="delivery" value="cos" ${cos.delivery !== "direct" ? "checked" : ""}>
-            <span><b>腾讯云 COS</b>：RH、Grsai、Soon、APIMart 的结果图从广州存储下载。国内快，用户看不到平台域名；按流量付费，约 0.4 分/张</span></label>
-          <label class="delivery-option"><input type="radio" name="delivery" value="direct" ${cos.delivery === "direct" ? "checked" : ""}>
-            <span><b>直连平台</b>：RH、Grsai、Soon、APIMart 的结果图由浏览器直接从平台下载，和以前一样，免费；用户在开发者工具里能看到平台域名</span></label>
-          <button class="primary small" type="submit" style="margin-top:8px">保存下发方式</button>
-        </form>${msg(flash.delivery)}</div>
+        </details></div>
       </section>`,
   };
 

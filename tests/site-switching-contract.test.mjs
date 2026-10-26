@@ -124,3 +124,36 @@ test("new users start on 渠道 1 (Tudou) for images and 渠道 2 (Mart) for tex
     assert.match(bundle, /an=\{channelMode:"local",activeSiteId:TUDOU_SITE_ID,textSiteId:APIMART_SITE_ID,baseUrl:TUDOU_BASE_URL,/);
     assert.match(bundle, /imageModel:\`\$\{TUDOU_SITE_ID\}::nano-banana-pro\`/);
 });
+
+test("each site keeps its own image model: 2.1 → a site without 2.1 → back again is still 2.1", async () => {
+    const vm = await import("node:vm");
+    const start = bundle.indexOf("function buildSiteConfigPatch(");
+    let source = "";
+    for (let end = bundle.indexOf("}", start); end !== -1; end = bundle.indexOf("}", end + 1)) {
+        const candidate = bundle.slice(start, end + 1);
+        try { new vm.Script(`(${candidate})`); source = candidate; break; } catch { /* keep reading */ }
+    }
+    const ref = (value) => String(value || "").split("::");
+    const scope = vm.createContext({
+        DP: "runninghub",
+        pr: (value) => ref(value).pop(),
+        ES: (site, model) => `${site}::${model.trim()}`,
+        v5: (value) => value,
+        normalizeSiteApiKeys: () => ({ apiKey: "lw-balance" }),
+        normalizeTextConfig: (config) => config,
+        siteModelRefs: (site, models) => models.map((m) => `${site}::${m}`),
+        siteImageModelNames: () => [],
+        siteTextModelNames: () => [],
+    });
+    vm.runInContext(source, scope);
+    const channels = [
+        { id: "tudou", baseUrl: "", apiFormat: "openai", models: ["nano-banana-pro", "nano-banana-2.1"] },
+        { id: "soon", baseUrl: "", apiFormat: "openai", models: ["nano-banana-pro"] },
+    ];
+    let config = { activeSiteId: "tudou", channels, imageModel: "tudou::nano-banana-2.1", model: "tudou::nano-banana-2.1", imageModelBySite: {} };
+    config = { ...config, ...scope.buildSiteConfigPatch(config, "soon") };
+    assert.equal(config.imageModel, "soon::nano-banana-pro", "Soon has no 2.1, so it falls back to Pro");
+    config = { ...config, ...scope.buildSiteConfigPatch(config, "tudou") };
+    assert.equal(config.imageModel, "tudou::nano-banana-2.1", "back on 土豆 the earlier 2.1 is restored");
+    assert.equal(config.imageModelBySite.soon, "nano-banana-pro");
+});

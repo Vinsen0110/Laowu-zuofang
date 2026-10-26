@@ -766,6 +766,7 @@ button.lw-gate-face:hover{transform:scale(1.04)}
         <button type="button" class="lw-am-item" data-act="avatar-pick">${ICON.image}更换头像</button>
         ${user.avatar ? `<button type="button" class="lw-am-item" data-act="avatar-reset">${ICON.reset}恢复默认头像</button>` : ""}
         ${isAdmin ? `<a class="lw-am-item" href="/admin.html" target="_blank" rel="noopener">${ICON.admin}管理后台<span class="lw-am-kbd">${ICON.ext}</span></a>` : ""}
+        <a class="lw-am-item" href="./proxy-help.html" target="_blank" rel="noopener">${ICON.ext}开着代理出图慢？看设置方法</a>
         <button type="button" class="lw-am-item is-danger" data-act="logout">${ICON.out}退出登录</button>
       </div>`;
   }

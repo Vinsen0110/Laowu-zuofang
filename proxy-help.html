@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>开着代理出图慢 · 老屋作坊</title>
+<link rel="icon" href="./kitty.png">
+<style>
+  :root { --bg:#f7f7f8; --panel:#fff; --text:#18181b; --muted:#71717a; --border:#e4e4e7; --code:#f4f4f5; --accent:#1f7a55; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0d0d0f; --panel:#151518; --text:#f4f4f5; --muted:#a1a1aa; --border:#2a2a2e; --code:#1f1f23; --accent:#2e9a6d; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.7 -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 24px; margin: 0 0 6px; }
+  h2 { font-size: 18px; margin: 28px 0 10px; }
+  .lead { color: var(--muted); margin: 0 0 20px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin: 12px 0; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 600; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 0 8px; margin-right: 6px; }
+  ol { padding-left: 20px; margin: 6px 0; }
+  li { margin: 4px 0; }
+  pre { background: var(--code); border: 1px solid var(--border); border-radius: 8px; padding: 12px; overflow-x: auto; font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; margin: 8px 0; white-space: pre; }
+  .copy { font: inherit; font-size: 13px; padding: 4px 10px; border: 1px solid var(--border); border-radius: 7px; background: var(--panel); color: var(--text); cursor: pointer; }
+  .muted { color: var(--muted); font-size: 13px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>开着代理（魔法）出图很慢？</h1>
+  <p class="lead">本站生成的图片是从各家图片服务器直接下载到你电脑上的。不开代理时一般很快；开着代理时，图片可能被绕到很远的节点，就会变慢。按下面任选一种方法设置即可。</p>
+
+  <h2>方法一：生图时关掉代理（最简单）</h2>
+  <div class="card">
+    <span class="tag">推荐</span>用本站生图时，先把代理软件关掉，或者切到「直连」模式。用完再打开。
+  </div>
+
+  <h2>方法二：切到「规则模式」</h2>
+  <div class="card">
+    把代理软件从「全局模式」切到「规则模式」（Rule）。大多数情况下这样就够了；如果还是慢，再用方法三。
+  </div>
+
+  <h2>方法三：Clash Verge 加直连规则（开着代理也快）</h2>
+  <div class="card">
+    <ol>
+      <li>打开 Clash Verge，点左侧「订阅」。</li>
+      <li>在你正在用的订阅上<b>右键 →「编辑规则」</b>，在「前置规则」里粘贴下面这几行，保存：</li>
+    </ol>
+    <pre id="rules">DOMAIN-SUFFIX,vinsen.top,DIRECT
+DOMAIN-SUFFIX,ai-tudou.net,DIRECT
+DOMAIN-SUFFIX,aitohumanize.com,DIRECT
+DOMAIN-SUFFIX,getapib.org,DIRECT
+DOMAIN-SUFFIX,myqcloud.com,DIRECT</pre>
+    <button class="copy" data-copy="rules">复制规则</button>
+    <ol start="3">
+      <li>再在同一个订阅上<b>右键 →「编辑脚本」</b>，把内容整个换成下面这段，保存（让这些域名用国内 DNS 解析，否则有些电脑直连时会连不上）：</li>
+    </ol>
+    <pre id="script">function main(config) {
+  const domains = ["vinsen.top", "ai-tudou.net", "getapib.org", "aitohumanize.com", "myqcloud.com"];
+  config.dns = config.dns || {};
+  const policy = config.dns["nameserver-policy"] || {};
+  for (const d of domains) policy["+." + d] = ["223.5.5.5", "119.29.29.29"];
+  config.dns["nameserver-policy"] = policy;
+  return config;
+}</pre>
+    <button class="copy" data-copy="script">复制脚本</button>
+    <ol start="4">
+      <li>回到「订阅」页，<b>重新点一下当前订阅</b>让设置生效，然后刷新本站页面。</li>
+    </ol>
+    <p class="muted">如果你的脚本里原来已经有内容，请不要整个替换，把中间那几行加进原来的 main 函数里，或者找懂的朋友帮忙。</p>
+  </div>
+
+  <h2>其他代理软件</h2>
+  <div class="card">
+    ClashX、Clash Party、小火箭（Shadowrocket）、v2rayN 等，都可以在「规则」里把下面这些域名设成「直连（DIRECT）」：
+    <pre>vinsen.top
+ai-tudou.net
+aitohumanize.com
+getapib.org
+myqcloud.com</pre>
+  </div>
+
+  <p class="muted">还是不行？截图联系站长。</p>
+</main>
+<script>
+  document.addEventListener("click", async (event) => {
+    const button = event.target.closest("[data-copy]");
+    if (!button) return;
+    const text = document.getElementById(button.dataset.copy)?.textContent || "";
+    try {
+      await navigator.clipboard.writeText(text);
+      button.textContent = "已复制";
+    } catch {
+      button.textContent = "复制失败，请手动选中复制";
+    }
+    setTimeout(() => { button.textContent = button.dataset.copy === "rules" ? "复制规则" : "复制脚本"; }, 2000);
+  });
+</script>
+</body>
+</html>
