@@ -424,8 +424,8 @@ test("Tudou Gemini references are fetched by the relay, so the browser uploads t
     const ref = "https://res.cloudinary.com/test-cloud/image/upload/v1/laowu-reference/a.webp";
     const target = "https://api.ai-tudou.net/v1beta/models/gemini-3-pro-image-preview:generateContent";
     const sent = [];
-    // 土豆 is admin-only; the admin's own key path goes direct, the relay path is the fallback.
-    const response = await relay(db, { ...user, role: "admin" }, relayRequest(target, { body: {
+    // 土豆 is called from the browser; the relay is the fallback before the browser has the key.
+    const response = await relay(db, { ...user, role: "user" }, relayRequest(target, { body: {
         contents: [{ parts: [{ text: "x" }, { fileData: { mimeType: "image/webp", fileUri: ref } }] }],
         generationConfig: { imageConfig: { imageSize: "2K" } },
     } }), { fetchImpl: async (url, init) => {
@@ -472,7 +472,7 @@ test("土豆 Nano Banana Pro's stream: the picture goes to COS and the browser g
     try {
         const target = "https://api.ai-tudou.net/v1beta/models/gemini-3-pro-image-preview:streamGenerateContent?alt=sse";
         const before = await balance();
-        const res = await relay(db, { ...user, role: "admin" }, relayRequest(target, {
+        const res = await relay(db, { ...user, role: "user" }, relayRequest(target, {
             body: { contents: [{ parts: [{ text: "cat" }] }], generationConfig: { imageConfig: { imageSize: "1K" } } },
         }), { fetchImpl: async () => new Response(sse, { headers: { "Content-Type": "text/event-stream" } }) });
         assert.match(res.headers.get("content-type"), /text\/event-stream/);
@@ -483,7 +483,7 @@ test("土豆 Nano Banana Pro's stream: the picture goes to COS and the browser g
         const event = JSON.parse(text.trim().replace(/^data: /, ""));
         const part = event.candidates.flatMap((c) => c.content.parts).find((p) => p.fileData);
         assert.match(part.fileData.fileUri, /^https:\/\/laowu-images-1250000000\.cos\.ap-guangzhou\.myqcloud\.com\/results\//);
-        assert.equal(await balance(), before, "admin generations are free");
+        assert.equal(await balance(), before - 400, "relay fallback: charged once, not refunded");
     } finally {
         globalThis.fetch = realFetch;
         await saveCos(db, { secretId: "", bucket: "" });

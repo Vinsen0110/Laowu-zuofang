@@ -8,6 +8,7 @@ import { randomBytes } from "node:crypto";
 import { background, checkLowBalances } from "./alerts.js";
 import { describeRequest } from "./describe.js";
 import { CHANNEL_LABELS } from "./mask.js";
+import { channelConfig } from "./channels.js";
 import { ADMIN_ONLY_MODELS, channelForUrl, findPrice } from "./relay.js";
 import { AccountError, adjustBalance, milliToYuan } from "./service.js";
 
@@ -19,6 +20,8 @@ export async function chargeDirect(db, user, input) {
     if (!DIRECT_CHANNELS.has(channel)) throw new AccountError(400, "not_direct", "这个渠道不能直连");
     const { model, spec, count } = describeRequest(target, input?.body && typeof input.body === "object" ? input.body : null);
     if (user.role === "admin") return { ref: "", amount: 0 };
+    const config = await channelConfig(db, channel);
+    if (!config.enabled || !config.apiKey) throw new AccountError(503, "channel_off", "这个渠道暂时不可用，请换一个渠道");
     if (ADMIN_ONLY_MODELS.has(model)) throw new AccountError(403, "admin_only", "官方模式仅管理员可用，请切换到固定模式");
     const unit = model ? await findPrice(db, channel, model, spec) : null;
     if (unit == null) {
@@ -46,10 +49,15 @@ export async function refundDirect(db, user, input) {
     );
     const charge = rows.find((r) => r.kind === "usage");
     if (!charge) throw new AccountError(404, "no_charge", "没有找到这次扣费");
-    if (rows.some((r) => r.kind === "refund")) return { refunded: 0 };
     if (Date.now() - new Date(charge.created_at).getTime() > REFUND_WINDOW_MS) {
         throw new AccountError(400, "too_late", "超过退款时间");
     }
+    // Claim the refund atomically: parallel calls with the same ref get only one row back.
+    const claimed = await db.query(
+        "INSERT INTO lw_direct_refunds (ref, user_id) VALUES ($1, $2) ON CONFLICT (ref) DO NOTHING RETURNING ref",
+        [ref, user.id],
+    );
+    if (!claimed.length) return { refunded: 0 };
     const amount = -Number(charge.delta_milli);
     const reason = String(input?.reason || "生成失败").replace(/\s+/g, " ").slice(0, 60);
     await adjustBalance(db, user.id, amount, { kind: "refund", note: `${charge.note}（${reason}）`, ref });

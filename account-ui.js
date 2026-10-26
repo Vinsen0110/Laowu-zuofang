@@ -326,8 +326,15 @@ button.lw-gate-face:hover{transform:scale(1.04)}
   // 土豆 straight from the browser: the canvas asks to be charged before it sends a
   // generation, and refunded when 土豆 fails. The admin is never charged.
   globalThis.__lwDirectCharge = async (url, body) => {
-    const result = await api("/direct/charge", { method: "POST", body: { url, body } });
-    if (result.ref) window.dispatchEvent(new CustomEvent("lw-balance-changed", { detail: { url } }));
+    let result;
+    try {
+      result = await api("/direct/charge", { method: "POST", body: { url, body } });
+    } catch (error) {
+      if (/余额不足/.test(error.message)) window.dispatchEvent(new CustomEvent("lw-insufficient"));
+      throw error;
+    }
+    // Users see their new balance; the admin sees the 土豆 site balance refresh.
+    window.dispatchEvent(new CustomEvent("lw-balance-changed", { detail: { url } }));
     return result.ref || "";
   };
   globalThis.__lwDirectRefund = async (ref, reason) => {

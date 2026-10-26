@@ -7,10 +7,11 @@
 // When COS is not configured or an upload fails, callers fall back to serving
 // the image from this server as before.
 //
-// delivery = "direct" switches link-type results (RH, Grsai, Soon, APIMart, 土豆 GPT)
-// back to the supplier's own link, so the browser downloads them straight from
-// the supplier as before accounts existed; only 土豆's inline pictures still
-// need COS. Users can then see the supplier's image domain.
+// delivery = "direct" switches link-type results (RH, Grsai, Soon, APIMart) back to
+// the supplier's own link, so the browser downloads them straight from the supplier
+// as before accounts existed; users can then see the supplier's image domain.
+// 土豆 is called from the browser in both modes; COS only sees it on the relay
+// fallback (a generation sent before the browser has the 土豆 key).
 
 import { createHash, createHmac, randomBytes } from "node:crypto";
 import { AccountError } from "./service.js";

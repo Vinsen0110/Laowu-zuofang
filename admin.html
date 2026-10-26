@@ -516,11 +516,11 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
           <button class="ghost" type="button" id="cos-test">测试上传</button>
         </form>${msg(flash.cos)}
         <form class="delivery-form" id="delivery-form">
-          <div class="muted" style="margin:14px 0 8px;font-weight:600">普通用户的结果图怎么下发</div>
+          <div class="muted" style="margin:14px 0 8px;font-weight:600">普通用户的结果图怎么下发（土豆两种方式下都由浏览器直连，不经过服务器）</div>
           <label class="delivery-option"><input type="radio" name="delivery" value="cos" ${cos.delivery !== "direct" ? "checked" : ""}>
-            <span><b>腾讯云 COS</b>：所有结果图都从广州存储下载。国内快，用户看不到平台域名；按流量付费，约 0.4 分/张</span></label>
+            <span><b>腾讯云 COS</b>：RH、Grsai、Soon、APIMart 的结果图从广州存储下载。国内快，用户看不到平台域名；按流量付费，约 0.4 分/张</span></label>
           <label class="delivery-option"><input type="radio" name="delivery" value="direct" ${cos.delivery === "direct" ? "checked" : ""}>
-            <span><b>直连平台</b>：RH、Grsai、Soon、APIMart、土豆 GPT 的结果图由浏览器直接从平台下载，和以前一样，免费；用户在开发者工具里能看到平台域名。土豆香蕉仍走 COS</span></label>
+            <span><b>直连平台</b>：RH、Grsai、Soon、APIMart 的结果图由浏览器直接从平台下载，和以前一样，免费；用户在开发者工具里能看到平台域名</span></label>
           <button class="primary small" type="submit" style="margin-top:8px">保存下发方式</button>
         </form>${msg(flash.delivery)}</div>
       </section>`,

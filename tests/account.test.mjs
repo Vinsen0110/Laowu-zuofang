@@ -291,3 +291,23 @@ test("土豆 key for signed-in users, saved keys only for the admin, direct char
     assert.equal((await call("/direct/charge", { method: "POST", cookie: userCookie, body: { url: "https://api.apimart.ai/v1/images/generations", body: {} } })).status, 400);
     assert.deepEqual(await (await call("/direct/charge", { method: "POST", cookie: bossCookie, body: { url, body } })).json(), { ref: "", amount: 0 });
 });
+
+test("direct refunds are atomic: parallel refunds of one charge pay out once; a disabled 土豆 cannot be charged", async () => {
+    const { saveChannel, savePrice } = await import("../account/channels.js");
+    const { chargeDirect, refundDirect } = await import("../account/direct.js");
+    await saveChannel(db, { id: "tudou", apiKey: "sk-tudou-race-1234" });
+    await savePrice(db, { channel: "tudou", model: "gemini-3-pro-image-preview", spec: "1k", price: "0.4" });
+    const racer = await register(db, { email: "racer@test.com", password: "password123" });
+    await adjustBalance(db, racer.id, 1000, { kind: "admin" });
+    const url = "https://api.ai-tudou.net/v1beta/models/gemini-3-pro-image-preview:streamGenerateContent?alt=sse";
+    const body = { generationConfig: { imageConfig: { imageSize: "1K" } } };
+    const { ref } = await chargeDirect(db, racer, { url, body });
+    const results = await Promise.all(Array.from({ length: 6 }, () => refundDirect(db, racer, { ref })));
+    assert.equal(results.filter((r) => r.refunded > 0).length, 1);
+    const [row] = await db.query("SELECT balance_milli FROM lw_users WHERE id = $1", [racer.id]);
+    assert.equal(Number(row.balance_milli), 1000, "balance back to where it started, not higher");
+
+    await saveChannel(db, { id: "tudou", enabled: false });
+    await assert.rejects(chargeDirect(db, racer, { url, body }), /暂时不可用/);
+    await saveChannel(db, { id: "tudou", enabled: true });
+});
