@@ -29,7 +29,8 @@ test("preview keeps zoom, drag, Escape, original-image download and propagation 
     assert.match(viewer, /P\.key==="Escape"/);
     assert.match(viewer, /setPointerCapture\(S\.pointerId\)/);
     assert.match(viewer, /r\(1\),a\(\{x:0,y:0\}\)/);
-    assert.match(viewer, /await fetch\(f\),T=await j\.blob\(\)/);
+    assert.match(viewer, /await fetch\(f,\{cache:"no-store"\}\)/);
+    assert.match(viewer, /H&&H\.remove\?\.\(\)\.catch\(\(\)=>\{\}\),ru\.saveAs\(f,C\)/);
     assert.match(viewer, /await N\.write\(T\),await N\.close\(\)/);
     assert.match(viewer, /onPointerDown:S=>S\.stopPropagation\(\)/);
 });
