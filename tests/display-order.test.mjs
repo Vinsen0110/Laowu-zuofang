@@ -10,6 +10,8 @@ import {
 } from "../display-order.js";
 
 const bundle = await readFile(new URL("../assets/index-B2KJ37fm.js", import.meta.url), "utf8");
+// The admin sees every site; 土豆 is hidden from users (see the last test).
+globalThis.__lwIsAdmin = true;
 
 test("site displays known providers first without mutating stored channels", () => {
     const channels = [
@@ -92,4 +94,15 @@ test("users see numbered channels, admins see provider names", async () => {
     globalThis.__lwIsAdmin = true;
     assert.equal(siteDisplayName({ id: "runninghub", name: "RH" }), "RH");
     delete globalThis.__lwIsAdmin;
+});
+
+test("users do not see 土豆: not in the site list, not in the model list", () => {
+    globalThis.__lwIsAdmin = false;
+    try {
+        const channels = [{ id: "tudou", name: "Tudou" }, { id: "runninghub", name: "RH" }, { id: "grsai", name: "Grsai" }];
+        assert.deepEqual(orderSiteChannels(channels).map(({ id }) => id), ["grsai", "runninghub"]);
+        assert.deepEqual(orderModelReferences(["tudou::nano-banana-pro", "runninghub::nano-banana-pro"]), ["runninghub::nano-banana-pro"]);
+    } finally {
+        globalThis.__lwIsAdmin = true;
+    }
 });

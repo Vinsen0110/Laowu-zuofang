@@ -31,6 +31,8 @@ const HOSTS = [
 
 // GPT Image 2.5 official (usage-billed) models are for admins only.
 export const ADMIN_ONLY_MODELS = new Set(["gpt-image-2.5-flare", "gpt-image-2.5-sunburst", "rhart-image-g-2.5-official-token"]);
+// 土豆 is kept for the admin, whose browser calls it directly with the site key.
+export const ADMIN_ONLY_CHANNELS = new Set(["tudou"]);
 
 // Polling, uploads and result queries are free; only generation is charged.
 const FREE_PATH = /\/upload|\/query$|\/result$|\/tasks(?:\/|$)/;
@@ -231,6 +233,7 @@ export async function relay(db, user, request, { fetchImpl = fetch } = {}) {
     if (method !== "POST" && !FREE_PATH.test(target.pathname)) {
         throw new AccountError(403, "forbidden_path", "这个接口不能通过余额调用");
     }
+    if (user.role !== "admin" && ADMIN_ONLY_CHANNELS.has(channel)) throw new AccountError(403, "admin_only_channel", "这个渠道暂未开放");
 
     const config = await channelConfig(db, channel);
     if (!config.enabled || !config.apiKey) {

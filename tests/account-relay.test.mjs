@@ -424,7 +424,8 @@ test("Tudou Gemini references are fetched by the relay, so the browser uploads t
     const ref = "https://res.cloudinary.com/test-cloud/image/upload/v1/laowu-reference/a.webp";
     const target = "https://api.ai-tudou.net/v1beta/models/gemini-3-pro-image-preview:generateContent";
     const sent = [];
-    const response = await relay(db, { ...user, role: "user" }, relayRequest(target, { body: {
+    // 土豆 is admin-only; the admin's own key path goes direct, the relay path is the fallback.
+    const response = await relay(db, { ...user, role: "admin" }, relayRequest(target, { body: {
         contents: [{ parts: [{ text: "x" }, { fileData: { mimeType: "image/webp", fileUri: ref } }] }],
         generationConfig: { imageConfig: { imageSize: "2K" } },
     } }), { fetchImpl: async (url, init) => {
@@ -471,7 +472,7 @@ test("土豆 Nano Banana Pro's stream: the picture goes to COS and the browser g
     try {
         const target = "https://api.ai-tudou.net/v1beta/models/gemini-3-pro-image-preview:streamGenerateContent?alt=sse";
         const before = await balance();
-        const res = await relay(db, { ...user, role: "user" }, relayRequest(target, {
+        const res = await relay(db, { ...user, role: "admin" }, relayRequest(target, {
             body: { contents: [{ parts: [{ text: "cat" }] }], generationConfig: { imageConfig: { imageSize: "1K" } } },
         }), { fetchImpl: async () => new Response(sse, { headers: { "Content-Type": "text/event-stream" } }) });
         assert.match(res.headers.get("content-type"), /text\/event-stream/);
@@ -482,7 +483,7 @@ test("土豆 Nano Banana Pro's stream: the picture goes to COS and the browser g
         const event = JSON.parse(text.trim().replace(/^data: /, ""));
         const part = event.candidates.flatMap((c) => c.content.parts).find((p) => p.fileData);
         assert.match(part.fileData.fileUri, /^https:\/\/laowu-images-1250000000\.cos\.ap-guangzhou\.myqcloud\.com\/results\//);
-        assert.equal(await balance(), before - 400, "charged once, not refunded");
+        assert.equal(await balance(), before, "admin generations are free");
     } finally {
         globalThis.fetch = realFetch;
         await saveCos(db, { secretId: "", bucket: "" });
@@ -505,4 +506,20 @@ test("直连平台: users get the supplier's own result link; switching back res
     await saveCos(db, { delivery: "cos" });
     const proxied = await (await generate()).json();
     assert.match(proxied.data.url, /^http:\/\/127\.0\.0\.1:4173\/api\/account\/img\?t=/);
+});
+
+test("土豆 is admin-only: users are refused before anything is charged or sent", async () => {
+    await saveChannel(db, { id: "tudou", apiKey: "sk-tudou" });
+    await savePrice(db, { channel: "tudou", model: "gemini-3-pro-image-preview", spec: "1k", price: "0.4" });
+    await adjustBalance(db, user.id, 1000, { kind: "admin", note: "t" });
+    const before = await balance();
+    let called = false;
+    await assert.rejects(
+        relay(db, { ...user, role: "user" }, relayRequest("https://api.ai-tudou.net/v1beta/models/gemini-3-pro-image-preview:generateContent", {
+            body: { contents: [{ parts: [{ text: "x" }] }] },
+        }), { fetchImpl: async () => { called = true; return new Response("{}"); } }),
+        /这个渠道暂未开放/,
+    );
+    assert.equal(called, false);
+    assert.equal(await balance(), before);
 });

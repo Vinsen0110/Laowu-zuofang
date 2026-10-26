@@ -5,6 +5,13 @@ export const SITE_DISPLAY_ORDER = ["tudou", "apimart", "grsai", "runninghub", "s
 export const SITE_CHANNEL_LABELS = { tudou: "渠道 1", apimart: "渠道 2", grsai: "渠道 3", runninghub: "渠道 4", soon: "渠道 5" };
 export const SITE_CHANNEL_NOTES = { tudou: "推荐 · 性价比高", apimart: "便宜", grsai: "备用", runninghub: "最稳定 · 价格较高", soon: "备用" };
 
+// 土豆 is kept for the admin; users only see the other sites.
+export const ADMIN_ONLY_SITES = new Set(["tudou"]);
+
+export function siteVisible(siteId) {
+    return globalThis.__lwIsAdmin === true || !ADMIN_ONLY_SITES.has(String(siteId || ""));
+}
+
 export function siteDisplayName(channel) {
     if (globalThis.__lwIsAdmin === true) return channel?.name || "";
     return SITE_CHANNEL_LABELS[channel?.id] || channel?.name || "";
@@ -27,11 +34,15 @@ function siteRank(siteId) {
 }
 
 export function orderSiteChannels(channels = []) {
-    return stableOrder(channels, (channel) => siteRank(channel?.id));
+    return stableOrder(channels.filter((channel) => siteVisible(channel?.id)), (channel) => siteRank(channel?.id));
 }
 
 export function orderModelReferences(modelReferences = []) {
-    return stableOrder(modelReferences, (reference) => {
+    const visible = modelReferences.filter((reference) => {
+        const separator = String(reference || "").indexOf("::");
+        return separator < 0 || siteVisible(String(reference).slice(0, separator));
+    });
+    return stableOrder(visible, (reference) => {
         const separator = String(reference || "").indexOf("::");
         const siteId = separator < 0 ? "" : String(reference).slice(0, separator);
         return siteRank(siteId);

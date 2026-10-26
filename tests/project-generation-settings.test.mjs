@@ -5,6 +5,9 @@ import vm from "node:vm";
 import { runningHubGpt25Mode, runningHubGpt25Variant } from "../runninghub-api.js";
 import { orderModelReferences } from "../display-order.js";
 
+// These checks cover the admin's view, where every site (土豆 included) is listed.
+globalThis.__lwIsAdmin = true;
+
 const source = await readFile(new URL("../assets/index-B2KJ37fm.js", import.meta.url), "utf8");
 
 function functionSource(name) {

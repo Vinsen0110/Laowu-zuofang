@@ -331,6 +331,7 @@ button.lw-gate-face:hover{transform:scale(1.04)}
     const admin = user?.role === "admin";
     globalThis.__lwIsAdmin = admin;
     globalThis.__lwGptOfficial = admin;
+    window.dispatchEvent(new Event("laowu-role"));
     const options = globalThis.__lwGptModeOptions;
     if (!options) {
       if (tries < 40) setTimeout(() => applyRole(tries + 1), 250);
@@ -442,12 +443,15 @@ button.lw-gate-face:hover{transform:scale(1.04)}
     siteBalances = null;
     globalThis.__lwCloudinary = null;
     globalThis.__lwPrices = null;
+    globalThis.__lwTudouKey = "";
     if (user && user.role !== "admin") {
       // Selling prices for the canvas price display (the relay charges the same table).
       api("/prices").then((r) => { globalThis.__lwPrices = r.items || []; window.dispatchEvent(new Event("lw-prices-loaded")); }).catch(() => {});
     }
     if (user?.role === "admin") {
       api("/admin/cloudinary").then((c) => { globalThis.__lwCloudinary = c; }).catch(() => {});
+      // 土豆 is admin-only and called straight from this browser with the site key.
+      api("/admin/tudou-key").then((k) => { globalThis.__lwTudouKey = k.apiKey || ""; }).catch(() => {});
       loadSiteBalances(); // once on sign-in; afterwards only the site just used is refreshed
     }
     listeners.forEach((fn) => { try { fn(user); } catch (_) { /* ignore */ } });
