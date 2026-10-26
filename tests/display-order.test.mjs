@@ -96,12 +96,12 @@ test("users see numbered channels, admins see provider names", async () => {
     delete globalThis.__lwIsAdmin;
 });
 
-test("users do not see 土豆: not in the site list, not in the model list", () => {
+test("users see every site, 土豆 included", () => {
     globalThis.__lwIsAdmin = false;
     try {
         const channels = [{ id: "tudou", name: "Tudou" }, { id: "runninghub", name: "RH" }, { id: "grsai", name: "Grsai" }];
-        assert.deepEqual(orderSiteChannels(channels).map(({ id }) => id), ["grsai", "runninghub"]);
-        assert.deepEqual(orderModelReferences(["tudou::nano-banana-pro", "runninghub::nano-banana-pro"]), ["runninghub::nano-banana-pro"]);
+        assert.deepEqual(orderSiteChannels(channels).map(({ id }) => id), ["tudou", "grsai", "runninghub"]);
+        assert.deepEqual(orderModelReferences(["runninghub::nano-banana-pro", "tudou::nano-banana-pro"]), ["tudou::nano-banana-pro", "runninghub::nano-banana-pro"]);
     } finally {
         globalThis.__lwIsAdmin = true;
     }

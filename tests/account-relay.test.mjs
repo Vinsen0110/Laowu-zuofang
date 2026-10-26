@@ -507,19 +507,3 @@ test("直连平台: users get the supplier's own result link; switching back res
     const proxied = await (await generate()).json();
     assert.match(proxied.data.url, /^http:\/\/127\.0\.0\.1:4173\/api\/account\/img\?t=/);
 });
-
-test("土豆 is admin-only: users are refused before anything is charged or sent", async () => {
-    await saveChannel(db, { id: "tudou", apiKey: "sk-tudou" });
-    await savePrice(db, { channel: "tudou", model: "gemini-3-pro-image-preview", spec: "1k", price: "0.4" });
-    await adjustBalance(db, user.id, 1000, { kind: "admin", note: "t" });
-    const before = await balance();
-    let called = false;
-    await assert.rejects(
-        relay(db, { ...user, role: "user" }, relayRequest("https://api.ai-tudou.net/v1beta/models/gemini-3-pro-image-preview:generateContent", {
-            body: { contents: [{ parts: [{ text: "x" }] }] },
-        }), { fetchImpl: async () => { called = true; return new Response("{}"); } }),
-        /这个渠道暂未开放/,
-    );
-    assert.equal(called, false);
-    assert.equal(await balance(), before);
-});

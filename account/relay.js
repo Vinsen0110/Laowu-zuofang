@@ -31,8 +31,8 @@ const HOSTS = [
 
 // GPT Image 2.5 official (usage-billed) models are for admins only.
 export const ADMIN_ONLY_MODELS = new Set(["gpt-image-2.5-flare", "gpt-image-2.5-sunburst", "rhart-image-g-2.5-official-token"]);
-// 土豆 is kept for the admin, whose browser calls it directly with the site key.
-export const ADMIN_ONLY_CHANNELS = new Set(["tudou"]);
+// Channels only the admin may use (none for now: 土豆 is open to users, called from their browser).
+export const ADMIN_ONLY_CHANNELS = new Set();
 
 // Polling, uploads and result queries are free; only generation is charged.
 const FREE_PATH = /\/upload|\/query$|\/result$|\/tasks(?:\/|$)/;

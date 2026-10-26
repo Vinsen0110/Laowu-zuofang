@@ -253,28 +253,41 @@ test("mail is sent through Resend when configured", async () => {
     }
 });
 
-test("admin-only 土豆 and key eyes: the admin reads saved keys, users get neither keys nor 土豆 prices", async () => {
+test("土豆 key for signed-in users, saved keys only for the admin, direct charge and refund", async () => {
     const { saveChannel, savePrice } = await import("../account/channels.js");
     await saveChannel(db, { id: "tudou", apiKey: "sk-tudou-eye-123456" });
     await savePrice(db, { channel: "tudou", model: "gemini-3-pro-image-preview", spec: "1k", price: "0.4" });
-    await savePrice(db, { channel: "runninghub", model: "rhart-image-n-pro", spec: "1k", price: "0.95" });
     const bossCookie = cookieOf(await call("/login", { method: "POST", body: { email: "boss@test.com", password: "password123" } }));
-    await register(db, { email: "eye-user@test.com", password: "password123" });
+    const eye = await register(db, { email: "eye-user@test.com", password: "password123" });
     const userCookie = cookieOf(await call("/login", { method: "POST", body: { email: "eye-user@test.com", password: "password123" } }));
 
-    let res = await call("/admin/secret?item=channel:tudou:apiKey", { cookie: bossCookie });
-    assert.equal((await res.json()).value, "sk-tudou-eye-123456");
-    res = await call("/admin/tudou-key", { cookie: bossCookie });
-    assert.equal((await res.json()).apiKey, "sk-tudou-eye-123456");
-    res = await call("/admin/secret?item=nope", { cookie: bossCookie });
-    assert.equal(res.status, 400);
-
+    // The eye on the admin page: saved keys, admin only.
+    assert.equal((await (await call("/admin/secret?item=channel:tudou:apiKey", { cookie: bossCookie })).json()).value, "sk-tudou-eye-123456");
+    assert.equal((await call("/admin/secret?item=nope", { cookie: bossCookie })).status, 400);
     assert.equal((await call("/admin/secret?item=channel:tudou:apiKey", { cookie: userCookie })).status, 403);
-    assert.equal((await call("/admin/tudou-key", { cookie: userCookie })).status, 403);
 
-    const userPrices = (await (await call("/prices", { cookie: userCookie })).json()).items;
-    assert.ok(userPrices.some((p) => p.channel === "runninghub"));
-    assert.ok(!userPrices.some((p) => p.channel === "tudou"));
-    const adminPrices = (await (await call("/prices", { cookie: bossCookie })).json()).items;
-    assert.ok(adminPrices.some((p) => p.channel === "tudou"));
+    // 土豆 is called from the browser: signed-in users get its key and see its prices.
+    assert.equal((await (await call("/tudou-key", { cookie: userCookie })).json()).apiKey, "sk-tudou-eye-123456");
+    assert.equal((await call("/tudou-key")).status, 401);
+    const prices = (await (await call("/prices", { cookie: userCookie })).json()).items;
+    assert.ok(prices.some((p) => p.channel === "tudou"));
+
+    // Charged before the browser sends the generation; refunded once when it fails.
+    const url = "https://api.ai-tudou.net/v1beta/models/gemini-3-pro-image-preview:streamGenerateContent?alt=sse";
+    const body = { contents: [{ parts: [{ text: "cat" }] }], generationConfig: { imageConfig: { imageSize: "1K" } } };
+    let res = await call("/direct/charge", { method: "POST", cookie: userCookie, body: { url, body } });
+    assert.equal(res.status, 402, "no balance yet");
+    await adjustBalance(db, eye.id, 1000, { kind: "admin" });
+    res = await call("/direct/charge", { method: "POST", cookie: userCookie, body: { url, body } });
+    const { ref, amount } = await res.json();
+    assert.match(ref, /^direct:[a-f0-9]{12}$/);
+    assert.equal(amount, 0.4);
+    assert.equal((await userFromSession(db, userCookie.split("=")[1])).balanceMilli, 600);
+    assert.equal((await (await call("/direct/refund", { method: "POST", cookie: userCookie, body: { ref, reason: "生成失败" } })).json()).refunded, 0.4);
+    assert.equal((await (await call("/direct/refund", { method: "POST", cookie: userCookie, body: { ref } })).json()).refunded, 0, "only once");
+    assert.equal((await userFromSession(db, userCookie.split("=")[1])).balanceMilli, 1000);
+    // Someone else's charge cannot be refunded, other channels cannot go direct, the admin is free.
+    assert.equal((await call("/direct/refund", { method: "POST", cookie: bossCookie, body: { ref } })).status, 404);
+    assert.equal((await call("/direct/charge", { method: "POST", cookie: userCookie, body: { url: "https://api.apimart.ai/v1/images/generations", body: {} } })).status, 400);
+    assert.deepEqual(await (await call("/direct/charge", { method: "POST", cookie: bossCookie, body: { url, body } })).json(), { ref: "", amount: 0 });
 });

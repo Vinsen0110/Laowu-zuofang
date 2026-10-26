@@ -7,6 +7,7 @@ import { setResendKey } from "./mailer.js";
 import { getDatabase } from "./db.js";
 import { checkLowBalances } from "./alerts.js";
 import { ADMIN_ONLY_CHANNELS, relay } from "./relay.js";
+import { chargeDirect, refundDirect } from "./direct.js";
 import { verifyImageToken } from "./mask.js";
 import { copyResultToCos, cosReady, getCos, publicCos, saveCos, testCos } from "./cos.js";
 import { consumeCode, markVerified, requestCode, resetPassword } from "./verify.js";
@@ -161,6 +162,17 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
         if (path === "/relay") {
             return await relay(db, me, request);
         }
+        // 土豆 straight from the browser (no relay, no COS): its key, and charge / refund per generation.
+        if (path === "/tudou-key" && method === "GET") {
+            const tudou = await channelConfig(db, "tudou");
+            return json(200, { apiKey: tudou.enabled ? tudou.apiKey : "" });
+        }
+        if (path === "/direct/charge" && method === "POST") {
+            return json(200, await chargeDirect(db, me, await body(request)));
+        }
+        if (path === "/direct/refund" && method === "POST") {
+            return json(200, await refundDirect(db, me, await body(request)));
+        }
         if (path === "/img" && method === "GET") {
             // Result images for users, fetched here so the supplier never shows in the browser.
             const target = verifyImageToken(url.searchParams.get("t"));
@@ -309,11 +321,6 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
                 else if (item === "cos") value = (await getCos(db)).secretKey;
                 else throw new AccountError(400, "bad_item", "不认识的密钥");
                 return json(200, { value: value || "" }, { "Cache-Control": "no-store" });
-            }
-            // The admin's canvas calls 土豆 directly (no relay, no COS) with this key.
-            if (path === "/admin/tudou-key" && method === "GET") {
-                const tudou = await channelConfig(db, "tudou");
-                return json(200, { apiKey: tudou.enabled ? tudou.apiKey : "", baseUrl: tudou.baseUrl || "" });
             }
             if (path === "/admin/cloudinary" && method === "GET") {
                 return json(200, await getCloudinary(db));

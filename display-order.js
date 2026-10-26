@@ -5,8 +5,8 @@ export const SITE_DISPLAY_ORDER = ["tudou", "apimart", "grsai", "runninghub", "s
 export const SITE_CHANNEL_LABELS = { tudou: "渠道 1", apimart: "渠道 2", grsai: "渠道 3", runninghub: "渠道 4", soon: "渠道 5" };
 export const SITE_CHANNEL_NOTES = { tudou: "推荐 · 性价比高", apimart: "便宜", grsai: "备用", runninghub: "最稳定 · 价格较高", soon: "备用" };
 
-// 土豆 is kept for the admin; users only see the other sites.
-export const ADMIN_ONLY_SITES = new Set(["tudou"]);
+// Sites only the admin sees (none for now).
+export const ADMIN_ONLY_SITES = new Set();
 
 export function siteVisible(siteId) {
     return globalThis.__lwIsAdmin === true || !ADMIN_ONLY_SITES.has(String(siteId || ""));

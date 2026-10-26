@@ -44,7 +44,7 @@ function runtime(extra = {}) {
         'tudouBackendModel', 'tudouGeminiGenerationConfig', 'isTudouSite', 'wA', 'eW',
         'localTudouRequestBase', 'DMe', 'zMe', 'Jq', 'oW', 'tudouStreamRequestId',
         'appendTudouGeminiSseEvent', 'geminiResponseLayers', 'geminiNoImageMessage', 'WMe',
-        'tudouGeminiStreamImages']) vm.runInContext(functionSource(name), scope);
+        'lwTudouDirect', 'tudouGeminiStreamImagesRaw', 'tudouGeminiStreamImages']) vm.runInContext(functionSource(name), scope);
     return scope;
 }
 function config(model = 'tudou::nano-banana-2.1') {
