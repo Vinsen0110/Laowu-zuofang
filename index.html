@@ -210,10 +210,12 @@
                     if (method === "GET" && rawUrl) {
                         try {
                             var imageTarget = new URL(rawUrl, location.href);
+                            // Mart's results (getapib.org, Alibaba Cloud Hong Kong) allow cross-origin
+                            // reads, so the browser downloads them directly instead of through a proxy
+                            // (a Hong Kong hop is slow for mainland users). Only upload.apimart.ai,
+                            // which mainland DNS does not resolve properly, still goes through it.
                             var isApiMartResult = imageTarget.protocol === "https:" &&
-                                (imageTarget.hostname === "getapib.org" ||
-                                    imageTarget.hostname.endsWith(".getapib.org") ||
-                                    imageTarget.hostname === "upload.apimart.ai" ||
+                                (imageTarget.hostname === "upload.apimart.ai" ||
                                     imageTarget.hostname.endsWith(".upload.apimart.ai"));
                             if (isApiMartResult) {
                                 return nativeFetch(hostedProxyOrigin + "/api/apimart-image?url=" + encodeURIComponent(imageTarget.href), init);
