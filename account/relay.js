@@ -31,6 +31,8 @@ const HOSTS = [
 
 // GPT Image 2.5 official (usage-billed) models are for admins only.
 export const ADMIN_ONLY_MODELS = new Set(["gpt-image-2.5-flare", "gpt-image-2.5-sunburst", "rhart-image-g-2.5-official-token"]);
+// Channels only the admin may use (none for now: 土豆 is open to users, called from their browser).
+export const ADMIN_ONLY_CHANNELS = new Set();
 
 // Polling, uploads and result queries are free; only generation is charged.
 const FREE_PATH = /\/upload|\/query$|\/result$|\/tasks(?:\/|$)/;
@@ -112,7 +114,7 @@ export function userErrorMessage(status, message, refundedMilli) {
     return refundedMilli > 0 ? `${base}。本次费用 ${milliToYuan(refundedMilli)} 已退回余额` : base;
 }
 
-async function forUser(upstream, request, onJson, refunded = () => 0) {
+async function forUser(upstream, request, onJson, refunded = () => 0, { rewrite = true } = {}) {
     const type = upstream.headers.get("content-type") || "";
     const length = Number(upstream.headers.get("content-length") || 0);
     if (upstream.status >= 400) {
@@ -132,7 +134,8 @@ async function forUser(upstream, request, onJson, refunded = () => 0) {
         try { data = JSON.parse(text); } catch { return new Response(text, { status: upstream.status, headers: copyHeaders(upstream) }); }
         if (onJson) await onJson(data).catch((error) => console.error("Relay task tracking failed:", error));
         const origin = new URL(request.url).origin;
-        return new Response(JSON.stringify(rewriteUrls(data, origin)), { status: upstream.status, headers: withRefund(copyHeaders(upstream), refunded()) });
+        const out = rewrite ? rewriteUrls(data, origin) : data;
+        return new Response(JSON.stringify(out), { status: upstream.status, headers: withRefund(copyHeaders(upstream), refunded()) });
     }
     return passThrough(upstream);
 }
@@ -230,6 +233,7 @@ export async function relay(db, user, request, { fetchImpl = fetch } = {}) {
     if (method !== "POST" && !FREE_PATH.test(target.pathname)) {
         throw new AccountError(403, "forbidden_path", "这个接口不能通过余额调用");
     }
+    if (user.role !== "admin" && ADMIN_ONLY_CHANNELS.has(channel)) throw new AccountError(403, "admin_only_channel", "这个渠道暂未开放");
 
     const config = await channelConfig(db, channel);
     if (!config.enabled || !config.apiKey) {
@@ -360,5 +364,7 @@ export async function relay(db, user, request, { fetchImpl = fetch } = {}) {
             await settleTask(db, channel, decodeURIComponent(taskId), taskOutcome(data), (milli) => { refundedMilli += milli; });
         }
     };
-    return forUser(upstream, request, onJson, () => refundedMilli);
+    // "直连平台": result links stay the supplier's own, so the browser downloads them directly.
+    const direct = (await getCos(db).catch(() => null))?.delivery === "direct";
+    return forUser(upstream, request, onJson, () => refundedMilli, { rewrite: !direct });
 }

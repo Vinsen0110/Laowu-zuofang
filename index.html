@@ -6,7 +6,7 @@
         <meta name="description" content="老屋作坊创作工具" />
         <link rel="icon" type="image/png" href="./kitty.png" />
         <link rel="preload" href="./assets/index-DT58oPsm.css" as="style" crossorigin>
-        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261024-noratio-04" crossorigin>
+        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261026-tudoudirect-03" crossorigin>
         <link rel="preload" href="./icons/gemini.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/openai.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/claude.svg" as="image" type="image/svg+xml" />
@@ -210,10 +210,12 @@
                     if (method === "GET" && rawUrl) {
                         try {
                             var imageTarget = new URL(rawUrl, location.href);
+                            // Mart's results (getapib.org, Alibaba Cloud Hong Kong) allow cross-origin
+                            // reads, so the browser downloads them directly instead of through a proxy
+                            // (a Hong Kong hop is slow for mainland users). Only upload.apimart.ai,
+                            // which mainland DNS does not resolve properly, still goes through it.
                             var isApiMartResult = imageTarget.protocol === "https:" &&
-                                (imageTarget.hostname === "getapib.org" ||
-                                    imageTarget.hostname.endsWith(".getapib.org") ||
-                                    imageTarget.hostname === "upload.apimart.ai" ||
+                                (imageTarget.hostname === "upload.apimart.ai" ||
                                     imageTarget.hostname.endsWith(".upload.apimart.ai"));
                             if (isApiMartResult) {
                                 return nativeFetch(hostedProxyOrigin + "/api/apimart-image?url=" + encodeURIComponent(imageTarget.href), init);
@@ -692,12 +694,12 @@
                 else document.addEventListener("DOMContentLoaded", observe, { once: true });
             })();
         </script>
-        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261024-noratio-04"></script>
+        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261026-tudoudirect-03"></script>
       <script type="module" src="./display-model-names.js?v=20261008-nano21-01"></script>
       <script type="module" src="./canvas-price-table.js?v=20261022-mart-01"></script>
       <script src="./prevent-canvas-drag-download.js?v=20260827-01"></script>
       <script src="./avatar.js?v=20261022-avatar-01"></script>
-      <script src="./account-ui.js?v=20261024-pweye-01"></script>
+      <script src="./account-ui.js?v=20261026-devguard-01"></script>
       <script src="./canvas-polish.js?v=20261023-reveal-02"></script>
       <link rel="stylesheet" crossorigin href="./assets/index-DT58oPsm.css">
       <link rel="stylesheet" href="./theme.css?v=20261022-sitemenu-01">

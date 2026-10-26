@@ -49,8 +49,8 @@ test("APIMart result proxy returns only successful image responses", async () =>
     );
 });
 
-test("local and hosted builds route APIMart result fetches through the image proxy", () => {
-    assert.match(indexHtml, /imageTarget\.hostname === "getapib\.org"/);
+test("Mart results (getapib.org) download directly; only upload.apimart.ai goes through the image proxy", () => {
+    assert.doesNotMatch(indexHtml, /imageTarget\.hostname === "getapib\.org"/);
     assert.match(indexHtml, /imageTarget\.hostname === "upload\.apimart\.ai"/);
     assert.match(indexHtml, /\/api\/apimart-image\?url=/);
     assert.match(previewServer, /requestUrl\.pathname === "\/api\/apimart-image"/);

@@ -2,11 +2,12 @@
 // same code runs on Vercel and in the local preview server.
 
 import { USD_TO_CNY, priceCatalog } from "./catalog.js";
-import { channelBalances, deletePrice, getCloudinary, getMailSettings, listChannels, listPrices, saveChannel, saveCloudinary, saveMailSettings, savePrice, savePrices } from "./channels.js";
+import { channelBalances, channelConfig, deletePrice, getCloudinary, getMailSettings, listChannels, listPrices, saveChannel, saveCloudinary, saveMailSettings, savePrice, savePrices } from "./channels.js";
 import { setResendKey } from "./mailer.js";
 import { getDatabase } from "./db.js";
 import { checkLowBalances } from "./alerts.js";
-import { relay } from "./relay.js";
+import { ADMIN_ONLY_CHANNELS, relay } from "./relay.js";
+import { chargeDirect, refundDirect } from "./direct.js";
 import { verifyImageToken } from "./mask.js";
 import { copyResultToCos, cosReady, getCos, publicCos, saveCos, testCos } from "./cos.js";
 import { consumeCode, markVerified, requestCode, resetPassword } from "./verify.js";
@@ -161,6 +162,17 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
         if (path === "/relay") {
             return await relay(db, me, request);
         }
+        // 土豆 straight from the browser (no relay, no COS): its key, and charge / refund per generation.
+        if (path === "/tudou-key" && method === "GET") {
+            const tudou = await channelConfig(db, "tudou");
+            return json(200, { apiKey: tudou.enabled ? tudou.apiKey : "" });
+        }
+        if (path === "/direct/charge" && method === "POST") {
+            return json(200, await chargeDirect(db, me, await body(request)));
+        }
+        if (path === "/direct/refund" && method === "POST") {
+            return json(200, await refundDirect(db, me, await body(request)));
+        }
         if (path === "/img" && method === "GET") {
             // Result images for users, fetched here so the supplier never shows in the browser.
             const target = verifyImageToken(url.searchParams.get("t"));
@@ -198,7 +210,9 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
         }
         if (path === "/prices" && method === "GET") {
             // Selling prices only (no costs), for the canvas to show before generating.
-            const items = (await listPrices(db)).filter((p) => p.enabled).map(({ channel, model, spec, price }) => ({ channel, model, spec, price }));
+            const items = (await listPrices(db))
+                .filter((p) => p.enabled && (me.role === "admin" || !ADMIN_ONLY_CHANNELS.has(p.channel)))
+                .map(({ channel, model, spec, price }) => ({ channel, model, spec, price }));
             return json(200, { items });
         }
         if (path === "/ledger" && method === "GET") {
@@ -293,6 +307,20 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
             }
             if (path === "/admin/cos/test" && method === "POST") {
                 return json(200, await testCos(await getCos(db)));
+            }
+            // The eye next to a key box on the admin page: the saved key, so it can be copied.
+            if (path === "/admin/secret" && method === "GET") {
+                const item = url.searchParams.get("item") || "";
+                let value;
+                if (item.startsWith("channel:")) {
+                    const [, id, field] = item.split(":");
+                    const c = await channelConfig(db, id);
+                    value = field === "apiKey2" ? c.apiKey2 : c.apiKey;
+                } else if (item === "mail") value = (await getMailSettings(db)).key;
+                else if (item === "cloudinary") value = (await getCloudinary(db)).apiSecret;
+                else if (item === "cos") value = (await getCos(db)).secretKey;
+                else throw new AccountError(400, "bad_item", "不认识的密钥");
+                return json(200, { value: value || "" }, { "Cache-Control": "no-store" });
             }
             if (path === "/admin/cloudinary" && method === "GET") {
                 return json(200, await getCloudinary(db));

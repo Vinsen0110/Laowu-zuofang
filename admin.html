@@ -166,6 +166,15 @@ dialog::backdrop{background:rgb(9 9 11 / .4);backdrop-filter:blur(2px)}
 .user .em{color:var(--muted);font-size:12px}
 .acts{display:flex;justify-content:flex-end;gap:2px}
 tr.adjust-row td{background:var(--hover)}
+.cos-backup{margin-top:16px;padding-top:14px;border-top:1px solid var(--border-2)}
+.cos-backup>summary{cursor:pointer;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.secret-wrap{position:relative;display:flex;align-items:center}
+.secret-wrap input{flex:1;min-width:0;padding-right:36px}
+.secret-eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:28px;height:28px;padding:0;border:0;border-radius:6px;background:transparent;color:var(--muted);cursor:pointer}
+.secret-eye:hover{background:var(--hover);color:var(--text)}
+.secret-eye svg{width:16px;height:16px}
+.delivery-option{display:flex;gap:8px;align-items:flex-start;margin:6px 0;font-size:13px;line-height:1.55;cursor:pointer}
+.delivery-option input{margin-top:3px}
 tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .search{position:relative}
 .search svg{position:absolute;left:9px;top:50%;translate:0 -50%;color:var(--faint)}
@@ -222,7 +231,7 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
   let prices = [];
   let catalog = [];
   let cloud = { cloudName: "", apiKey: "", apiSecret: "" };
-  let cos = { bucket: "", region: "ap-guangzhou", secretId: "", hasSecret: false, ready: false };
+  let cos = { bucket: "", region: "ap-guangzhou", secretId: "", hasSecret: false, ready: false, delivery: "cos" };
   let mail = { hasKey: false, keyPreview: "", fromEnv: false };
   let fx = 6.7;
   let markup = 2;
@@ -279,7 +288,11 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
   const SITE_NAME = { tudou: "Tudou", apimart: "Mart", runninghub: "RH", grsai: "Grsai", soon: "Soon" };
   const CHANNEL_NAME = { tudou: "渠道 1", apimart: "渠道 2", grsai: "渠道 3", runninghub: "渠道 4", soon: "渠道 5" };
   const svg = (d, size = 16) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+  // Key boxes get an eye: it shows what was typed, or loads the saved key so it can be copied.
+  const secret = (input, item) => `<span class="secret-wrap">${input}<button type="button" class="secret-eye" data-reveal="${item}" title="显示 / 隐藏" aria-label="显示密钥">${ICON.eye}</button></span>`;
   const ICON = {
+    eye: svg('<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>'),
+    eyeOff: svg('<path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-2.6 3.6M6.6 6.6C3.9 8.4 2 12 2 12s3.6 7 10 7a9.8 9.8 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="m2 2 20 20"/>'),
     overview: svg('<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>'),
     prices: svg('<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.5"/>'),
     users: svg('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/>'),
@@ -383,9 +396,9 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
             <div class="ch-sub">${esc(b?.detail || b?.message || (c.lastCheckedAt ? "上次 " + time(c.lastCheckedAt) : ""))}</div>
             <form data-channel="${c.id}">
               <label class="field">API Key ${c.keySource === "env" ? "（由环境变量提供）" : ""}
-                <input name="apiKey" type="password" autocomplete="off" placeholder="${c.hasKey ? "已设置 " + esc(c.keyPreview) + "，留空不修改" : "粘贴这个渠道的 API Key"}" ${c.keySource === "env" ? "disabled" : ""}></label>
+                ${secret(`<input name="apiKey" type="password" autocomplete="off" placeholder="${c.hasKey ? "已设置 " + esc(c.keyPreview) + "，留空不修改" : "粘贴这个渠道的 API Key"}" ${c.keySource === "env" ? "disabled" : ""}>`, `channel:${c.id}:apiKey`)}</label>
               ${c.extraKey ? `<label class="field">${esc(c.extraKey)}
-                <input name="apiKey2" type="password" autocomplete="off" placeholder="${c.hasKey2 ? "已设置 " + esc(c.key2Preview) + "，留空不修改" : "没有可以不填"}"></label>` : ""}
+                ${secret(`<input name="apiKey2" type="password" autocomplete="off" placeholder="${c.hasKey2 ? "已设置 " + esc(c.key2Preview) + "，留空不修改" : "没有可以不填"}">`, `channel:${c.id}:apiKey2`)}</label>` : ""}
               <div class="ch-save"><label class="field">余额低于多少提醒（${c.unit}）<input name="alertThreshold" type="number" step="0.01" min="0" value="${c.alertThreshold}"></label>
               <button class="ghost" type="submit">保存</button></div>
             </form>
@@ -479,7 +492,7 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
         <div class="card-head"><h2>邮件 Resend<span class="sub">注册、找回密码的验证码邮件 · ${mail.fromEnv ? "由环境变量提供" : mail.hasKey ? "已设置" : "未设置（验证码会直接显示在页面上，仅适合测试）"}</span></h2>
           <a class="ch-topup" href="https://resend.com/api-keys" target="_blank" rel="noopener">去 Resend 创建${ICON.ext}</a></div>
         <div class="card-body"><form class="row" id="mail-form" style="align-items:flex-end">
-          <label class="field" for="mail-key">API Key<input id="mail-key" name="apiKey" type="password" autocomplete="new-password" style="width:340px" placeholder="${mail.hasKey ? "已设置 " + esc(mail.keyPreview) + "，留空不修改" : "粘贴 Resend API Key（re_ 开头）"}"></label>
+          <label class="field" for="mail-key">API Key${secret(`<input id="mail-key" name="apiKey" type="password" autocomplete="new-password" style="width:340px" placeholder="${mail.hasKey ? "已设置 " + esc(mail.keyPreview) + "，留空不修改" : "粘贴 Resend API Key（re_ 开头）"}">`, "mail")}</label>
           <button class="primary" type="submit">保存</button>
         </form>${msg(flash.mail)}</div>
       </section>
@@ -489,21 +502,32 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
         <div class="card-body"><form class="row" id="cloud-form" style="align-items:flex-end">
           <label class="field" for="cl-name">Cloud Name<input id="cl-name" name="cloudName" value="${esc(cloud.cloudName)}" style="width:170px" autocomplete="off"></label>
           <label class="field" for="cl-key">API Key<input id="cl-key" name="apiKey" value="${esc(cloud.apiKey)}" style="width:190px" autocomplete="off"></label>
-          <label class="field" for="cl-secret">API Secret<input id="cl-secret" name="apiSecret" type="password" placeholder="${cloud.apiSecret ? "已设置，留空不修改" : "粘贴 API Secret"}" style="width:210px" autocomplete="new-password"></label>
+          <label class="field" for="cl-secret">API Secret${secret(`<input id="cl-secret" name="apiSecret" type="password" placeholder="${cloud.apiSecret ? "已设置，留空不修改" : "粘贴 API Secret"}" style="width:210px" autocomplete="new-password">`, "cloudinary")}</label>
           <button class="primary" type="submit">保存</button>
         </form>${msg(flash.cloud)}</div>
       </section>
       <section class="card">
-        <div class="card-head"><h2>结果图存储 · 腾讯云 COS<span class="sub">生成的原图放到国内存储桶，国内用户下载更快；不压缩，画质不变。没填或出错时自动改回由本服务器发图</span></h2>
-          <span class="tag ${cos.ready ? "ok" : ""}">${cos.ready ? "已启用" : "未启用"}</span></div>
-        <div class="card-body"><form class="row" id="cos-form" style="align-items:flex-end;flex-wrap:wrap">
+        <div class="card-head"><h2>结果图下发方式<span class="sub">普通用户的结果图从哪里下载。土豆两种方式下都由浏览器直连，不经过服务器</span></h2>
+          <span class="tag ${cos.delivery === "direct" ? "ok" : ""}">${cos.delivery === "direct" ? "直连平台" : "腾讯云 COS"}</span></div>
+        <div class="card-body"><form class="delivery-form" id="delivery-form">
+          <label class="delivery-option"><input type="radio" name="delivery" value="cos" ${cos.delivery !== "direct" ? "checked" : ""}>
+            <span><b>腾讯云 COS</b>：RH、Grsai、Soon、APIMart 的结果图从广州存储下载。国内快，用户看不到平台域名；按流量付费，约 0.4 分/张</span></label>
+          <label class="delivery-option"><input type="radio" name="delivery" value="direct" ${cos.delivery === "direct" ? "checked" : ""}>
+            <span><b>直连平台</b>：RH、Grsai、Soon、APIMart 的结果图由浏览器直接从平台下载，和以前一样，免费；用户在开发者工具里能看到平台域名</span></label>
+          <button class="primary small" type="submit" style="margin-top:8px">保存下发方式</button>
+        </form>${msg(flash.delivery)}
+        <details class="cos-backup" ${cos.delivery === "direct" ? "" : "open"}>
+          <summary>备用：腾讯云 COS 设置 <span class="tag ${cos.ready ? "ok" : ""}">${cos.ready ? "已配置" : "未配置"}</span><span class="muted">（用户多了、选"腾讯云 COS"时才用到；密钥都保留着）</span></summary>
+          <div class="muted" style="margin:8px 0 10px">生成的原图放到国内存储桶，国内用户下载更快；不压缩，画质不变。没填或出错时自动改回由本服务器发图</div>
+          <form class="row" id="cos-form" style="align-items:flex-end;flex-wrap:wrap">
           <label class="field" for="cos-bucket">存储桶名称<input id="cos-bucket" name="bucket" value="${esc(cos.bucket || "")}" placeholder="例如 laowu-images-1250000000" style="width:240px" autocomplete="off"></label>
           <label class="field" for="cos-region">地域<input id="cos-region" name="region" value="${esc(cos.region || "ap-guangzhou")}" style="width:130px" autocomplete="off"></label>
           <label class="field" for="cos-id">SecretId<input id="cos-id" name="secretId" value="${esc(cos.secretId || "")}" style="width:260px" autocomplete="off"></label>
-          <label class="field" for="cos-key">SecretKey<input id="cos-key" name="secretKey" type="password" placeholder="${cos.hasSecret ? "已设置，留空不修改" : "粘贴 SecretKey"}" style="width:220px" autocomplete="new-password"></label>
+          <label class="field" for="cos-key">SecretKey${secret(`<input id="cos-key" name="secretKey" type="password" placeholder="${cos.hasSecret ? "已设置，留空不修改" : "粘贴 SecretKey"}" style="width:220px" autocomplete="new-password">`, "cos")}</label>
           <button class="primary" type="submit">保存</button>
           <button class="ghost" type="button" id="cos-test">测试上传</button>
-        </form>${msg(flash.cos)}</div>
+        </form>${msg(flash.cos)}
+        </details></div>
       </section>`,
   };
 
@@ -539,6 +563,10 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
         if (!key) throw new Error("请粘贴 Resend API Key");
         mail = await api("/admin/mail", { apiKey: key });
         flash.mail = { text: "已保存，之后的验证码会通过邮件发送" };
+      } else if (form.id === "delivery-form") {
+        const delivery = new FormData(form).get("delivery") === "direct" ? "direct" : "cos";
+        cos = await api("/admin/cos", { delivery });
+        flash.delivery = { text: delivery === "direct" ? "已切换为直连平台，之后的生成立即生效" : "已切换为腾讯云 COS，之后的生成立即生效" };
       } else if (form.id === "cos-form") {
         const data = Object.fromEntries(new FormData(form).entries());
         cos = await api("/admin/cos", data);
@@ -557,6 +585,7 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
       if (form.id === "codes-form") flash.codes = { err: true, text: err.message };
       else if (form.id === "cloud-form") flash.cloud = { err: true, text: err.message };
       else if (form.id === "cos-form") flash.cos = { err: true, text: err.message };
+      else if (form.id === "delivery-form") flash.delivery = { err: true, text: err.message };
       else if (form.id === "mail-form") flash.mail = { err: true, text: err.message };
       else if (form.dataset.channel) flash.channels = { err: true, text: err.message };
       else flash.users = { err: true, text: err.message };
@@ -587,6 +616,23 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
     const b = e.target.closest("button");
     if (!b) return;
     try {
+      if (b.dataset.reveal) {
+        const input = b.parentElement.querySelector("input");
+        if (input.type === "password") {
+          if (!input.value && !input.disabled) {
+            const r = await api(`/admin/secret?item=${encodeURIComponent(b.dataset.reveal)}`);
+            if (r.value) input.value = r.value;
+          }
+          input.type = "text";
+          b.innerHTML = ICON.eyeOff;
+          b.setAttribute("aria-label", "隐藏密钥");
+        } else {
+          input.type = "password";
+          b.innerHTML = ICON.eye;
+          b.setAttribute("aria-label", "显示密钥");
+        }
+        return;
+      }
       if (b.dataset.adjustOpen) {
         const id = Number(b.dataset.adjustOpen);
         adjustUser = adjustUser === id ? null : id;

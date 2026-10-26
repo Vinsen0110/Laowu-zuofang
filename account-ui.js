@@ -323,14 +323,80 @@ button.lw-gate-face:hover{transform:scale(1.04)}
     return data;
   }
 
+  // 土豆 straight from the browser: the canvas asks to be charged before it sends a
+  // generation, and refunded when 土豆 fails. The admin is never charged.
+  globalThis.__lwDirectCharge = async (url, body) => {
+    let result;
+    try {
+      result = await api("/direct/charge", { method: "POST", body: { url, body } });
+    } catch (error) {
+      if (/余额不足/.test(error.message)) window.dispatchEvent(new CustomEvent("lw-insufficient"));
+      throw error;
+    }
+    // Users see their new balance; the admin sees the 土豆 site balance refresh.
+    window.dispatchEvent(new CustomEvent("lw-balance-changed", { detail: { url } }));
+    return result.ref || "";
+  };
+  globalThis.__lwDirectRefund = async (ref, reason) => {
+    if (!ref) return;
+    try {
+      const result = await api("/direct/refund", { method: "POST", body: { ref, reason } });
+      if (result.refunded > 0) window.dispatchEvent(new CustomEvent("lw-refunded", { detail: { amount: result.refunded } }));
+    } catch (error) {
+      console.error("土豆退款失败：", error.message);
+    }
+  };
+
   const SITE_SHORT = { tudou: "土豆", apimart: "Mart", grsai: "Grsai", runninghub: "RH", soon: "Soon" };
 
   // GPT Image 2.5 "official" mode is admin-only. The app bundle reads this flag
   // and the shared option list; the server refuses official requests from users.
+  // Users and guests: keep the browser's developer tools shut (the 土豆 key lives in
+  // this page). A determined user can still get around it; the owner accepted that.
+  // The admin is never blocked.
+  let devtoolsTimer = null;
+  let devtoolsLocked = false;
+  const DEVTOOLS_KEYS = new Set(["KeyI", "KeyJ", "KeyC"]);
+  function blockDevtoolsKeys(event) {
+    const mod = event.ctrlKey || event.metaKey;
+    const opens = event.key === "F12"
+      || (mod && (event.shiftKey || event.altKey) && DEVTOOLS_KEYS.has(event.code))
+      || (mod && !event.shiftKey && !event.altKey && event.code === "KeyU");
+    if (opens) { event.preventDefault(); event.stopPropagation(); }
+  }
+  function blockContextMenu(event) { event.preventDefault(); }
+  function lockForDevtools() {
+    if (devtoolsLocked) return;
+    devtoolsLocked = true;
+    globalThis.__lwTudouKey = "";
+    document.documentElement.innerHTML = '<head><meta charset="utf-8"><title>老屋作坊</title></head>'
+      + '<body style="margin:0;display:grid;place-items:center;height:100vh;font:16px -apple-system,PingFang SC,Microsoft YaHei,sans-serif;background:#f7f7f8;color:#18181b">'
+      + '<div style="text-align:center"><p style="font-size:18px;font-weight:600;margin:0 0 8px">请关闭开发者工具</p><p style="margin:0;color:#71717a">关闭后刷新页面即可继续使用</p></div></body>';
+  }
+  function startDevtoolsGuard() {
+    if (devtoolsTimer || devtoolsLocked) return;
+    window.addEventListener("keydown", blockDevtoolsKeys, true);
+    window.addEventListener("contextmenu", blockContextMenu, true);
+    devtoolsTimer = setInterval(() => {
+      // Paused here only while developer tools are open.
+      const start = performance.now();
+      debugger; // eslint-disable-line no-debugger
+      if (performance.now() - start > 100) lockForDevtools();
+    }, 1000);
+  }
+  function stopDevtoolsGuard() {
+    clearInterval(devtoolsTimer);
+    devtoolsTimer = null;
+    window.removeEventListener("keydown", blockDevtoolsKeys, true);
+    window.removeEventListener("contextmenu", blockContextMenu, true);
+  }
+
   function applyRole(tries = 0) {
     const admin = user?.role === "admin";
     globalThis.__lwIsAdmin = admin;
     globalThis.__lwGptOfficial = admin;
+    if (admin) stopDevtoolsGuard(); else startDevtoolsGuard();
+    window.dispatchEvent(new Event("laowu-role"));
     const options = globalThis.__lwGptModeOptions;
     if (!options) {
       if (tries < 40) setTimeout(() => applyRole(tries + 1), 250);
@@ -442,6 +508,11 @@ button.lw-gate-face:hover{transform:scale(1.04)}
     siteBalances = null;
     globalThis.__lwCloudinary = null;
     globalThis.__lwPrices = null;
+    globalThis.__lwTudouKey = "";
+    if (user) {
+      // 土豆 is called straight from this browser with the site key (no relay, no COS).
+      api("/tudou-key").then((k) => { globalThis.__lwTudouKey = k.apiKey || ""; }).catch(() => {});
+    }
     if (user && user.role !== "admin") {
       // Selling prices for the canvas price display (the relay charges the same table).
       api("/prices").then((r) => { globalThis.__lwPrices = r.items || []; window.dispatchEvent(new Event("lw-prices-loaded")); }).catch(() => {});
@@ -736,6 +807,7 @@ button.lw-gate-face:hover{transform:scale(1.04)}
         <button type="button" class="lw-am-item" data-act="avatar-pick">${ICON.image}更换头像</button>
         ${user.avatar ? `<button type="button" class="lw-am-item" data-act="avatar-reset">${ICON.reset}恢复默认头像</button>` : ""}
         ${isAdmin ? `<a class="lw-am-item" href="/admin.html" target="_blank" rel="noopener">${ICON.admin}管理后台<span class="lw-am-kbd">${ICON.ext}</span></a>` : ""}
+        <a class="lw-am-item" href="./proxy-help.html" target="_blank" rel="noopener">${ICON.ext}开着代理出图慢？看设置方法</a>
         <button type="button" class="lw-am-item is-danger" data-act="logout">${ICON.out}退出登录</button>
       </div>`;
   }

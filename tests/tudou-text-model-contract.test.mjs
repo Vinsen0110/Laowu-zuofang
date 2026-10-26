@@ -20,7 +20,7 @@ test("Tudou offers Gemini 3.8 Flash as its text model; the default stays on ц╕ащ
 test("Tudou text requests keep the existing single-key Chat Completions route and reference handling", () => {
     assert.match(bundle, /messages:await prepareTextChatMessages\(chatCompletionMessages\(t\),e,r\?\.signal\)/);
     assert.match(bundle, /isTudouSite\(e\)\?xA\(e,"\/chat\/completions"\)/);
-    assert.match(bundle, /headers:\{\.\.\.wA\(e,"application\/json"\),Accept:"application\/json"\}/);
+    assert.match(bundle, /headers:\{\.\.\.wA\(isTudouSite\(e\)\?\{\.\.\.e,apiKey:"lw-balance"\}:e,"application\/json"\),Accept:"application\/json"\}/);
 });
 
 test("Tudou's text model stays out of the image price table", () => {

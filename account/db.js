@@ -49,6 +49,12 @@ CREATE TABLE IF NOT EXISTS lw_ledger (
     created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS lw_ledger_user ON lw_ledger(user_id, id DESC);
+-- One row per refunded 土豆 direct charge: the primary key makes "refund once" atomic.
+CREATE TABLE IF NOT EXISTS lw_direct_refunds (
+    ref        TEXT PRIMARY KEY,
+    user_id    BIGINT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 CREATE TABLE IF NOT EXISTS lw_codes (
     code         TEXT PRIMARY KEY,
     amount_milli BIGINT NOT NULL CHECK (amount_milli > 0),

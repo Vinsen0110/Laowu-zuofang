@@ -6,6 +6,12 @@
 // link. Originals are uploaded untouched: no re-encoding, no quality loss.
 // When COS is not configured or an upload fails, callers fall back to serving
 // the image from this server as before.
+//
+// delivery = "direct" switches link-type results (RH, Grsai, Soon, APIMart) back to
+// the supplier's own link, so the browser downloads them straight from the supplier
+// as before accounts existed; users can then see the supplier's image domain.
+// 土豆 is called from the browser in both modes; COS only sees it on the relay
+// fallback (a generation sent before the browser has the 土豆 key).
 
 import { createHash, createHmac, randomBytes } from "node:crypto";
 import { AccountError } from "./service.js";
@@ -26,9 +32,10 @@ export async function getCos(db) {
             bucket: String(v.bucket || ""),
             region: String(v.region || "ap-guangzhou"),
             enabled: v.enabled !== false,
+            delivery: v.delivery === "direct" ? "direct" : "cos",
         };
     } catch {
-        return { secretId: "", secretKey: "", bucket: "", region: "ap-guangzhou", enabled: true };
+        return { secretId: "", secretKey: "", bucket: "", region: "ap-guangzhou", enabled: true, delivery: "cos" };
     }
 }
 
@@ -41,6 +48,7 @@ export function publicCos(cos) {
         region: cos.region,
         enabled: cos.enabled,
         ready: cosReady(cos),
+        delivery: cos.delivery === "direct" ? "direct" : "cos",
     };
 }
 
@@ -56,6 +64,7 @@ export async function saveCos(db, input) {
         bucket: input?.bucket === undefined ? current.bucket : String(input.bucket).trim(),
         region: input?.region === undefined || input.region === "" ? current.region : String(input.region).trim(),
         enabled: input?.enabled === undefined ? current.enabled : input.enabled !== false && input.enabled !== "false",
+        delivery: input?.delivery === undefined ? current.delivery : input.delivery === "direct" ? "direct" : "cos",
     };
     if (next.bucket && !BUCKET.test(next.bucket)) {
         throw new AccountError(400, "bad_bucket", "存储桶名称格式不对，应类似 laowu-images-1250000000（名字-APPID）");
