@@ -252,3 +252,29 @@ test("mail is sent through Resend when configured", async () => {
         delete process.env.LW_MAIL_FROM;
     }
 });
+
+test("admin-only 土豆 and key eyes: the admin reads saved keys, users get neither keys nor 土豆 prices", async () => {
+    const { saveChannel, savePrice } = await import("../account/channels.js");
+    await saveChannel(db, { id: "tudou", apiKey: "sk-tudou-eye-123456" });
+    await savePrice(db, { channel: "tudou", model: "gemini-3-pro-image-preview", spec: "1k", price: "0.4" });
+    await savePrice(db, { channel: "runninghub", model: "rhart-image-n-pro", spec: "1k", price: "0.95" });
+    const bossCookie = cookieOf(await call("/login", { method: "POST", body: { email: "boss@test.com", password: "password123" } }));
+    await register(db, { email: "eye-user@test.com", password: "password123" });
+    const userCookie = cookieOf(await call("/login", { method: "POST", body: { email: "eye-user@test.com", password: "password123" } }));
+
+    let res = await call("/admin/secret?item=channel:tudou:apiKey", { cookie: bossCookie });
+    assert.equal((await res.json()).value, "sk-tudou-eye-123456");
+    res = await call("/admin/tudou-key", { cookie: bossCookie });
+    assert.equal((await res.json()).apiKey, "sk-tudou-eye-123456");
+    res = await call("/admin/secret?item=nope", { cookie: bossCookie });
+    assert.equal(res.status, 400);
+
+    assert.equal((await call("/admin/secret?item=channel:tudou:apiKey", { cookie: userCookie })).status, 403);
+    assert.equal((await call("/admin/tudou-key", { cookie: userCookie })).status, 403);
+
+    const userPrices = (await (await call("/prices", { cookie: userCookie })).json()).items;
+    assert.ok(userPrices.some((p) => p.channel === "runninghub"));
+    assert.ok(!userPrices.some((p) => p.channel === "tudou"));
+    const adminPrices = (await (await call("/prices", { cookie: bossCookie })).json()).items;
+    assert.ok(adminPrices.some((p) => p.channel === "tudou"));
+});

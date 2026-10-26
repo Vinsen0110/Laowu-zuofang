@@ -296,6 +296,20 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
             if (path === "/admin/cos/test" && method === "POST") {
                 return json(200, await testCos(await getCos(db)));
             }
+            // The eye next to a key box on the admin page: the saved key, so it can be copied.
+            if (path === "/admin/secret" && method === "GET") {
+                const item = url.searchParams.get("item") || "";
+                let value;
+                if (item.startsWith("channel:")) {
+                    const [, id, field] = item.split(":");
+                    const c = await channelConfig(db, id);
+                    value = field === "apiKey2" ? c.apiKey2 : c.apiKey;
+                } else if (item === "mail") value = (await getMailSettings(db)).key;
+                else if (item === "cloudinary") value = (await getCloudinary(db)).apiSecret;
+                else if (item === "cos") value = (await getCos(db)).secretKey;
+                else throw new AccountError(400, "bad_item", "不认识的密钥");
+                return json(200, { value: value || "" }, { "Cache-Control": "no-store" });
+            }
             // The admin's canvas calls 土豆 directly (no relay, no COS) with this key.
             if (path === "/admin/tudou-key" && method === "GET") {
                 const tudou = await channelConfig(db, "tudou");
