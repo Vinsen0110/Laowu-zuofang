@@ -40,3 +40,9 @@ test("background tabs keep polling at full speed; badge stays out of the image v
     assert.match(html, /body:has\(\.ant-modal-wrap:not\(\[style\*="display: none"\]\) \.laowu-config-modal\) \.lw-acct \{ display: none !important; \}/);
     assert.match(accountUi, /placeChipLater\(\);/);
 });
+
+test("developer tools are blocked for users and guests, never for the admin", () => {
+    assert.match(accountUi, /if \(admin\) stopDevtoolsGuard\(\); else startDevtoolsGuard\(\);/);
+    assert.match(accountUi, /event\.key === "F12"/);
+    assert.match(accountUi, /globalThis\.__lwTudouKey = "";\n    document\.documentElement\.innerHTML/);
+});

@@ -351,10 +351,51 @@ button.lw-gate-face:hover{transform:scale(1.04)}
 
   // GPT Image 2.5 "official" mode is admin-only. The app bundle reads this flag
   // and the shared option list; the server refuses official requests from users.
+  // Users and guests: keep the browser's developer tools shut (the 土豆 key lives in
+  // this page). A determined user can still get around it; the owner accepted that.
+  // The admin is never blocked.
+  let devtoolsTimer = null;
+  let devtoolsLocked = false;
+  const DEVTOOLS_KEYS = new Set(["KeyI", "KeyJ", "KeyC"]);
+  function blockDevtoolsKeys(event) {
+    const mod = event.ctrlKey || event.metaKey;
+    const opens = event.key === "F12"
+      || (mod && (event.shiftKey || event.altKey) && DEVTOOLS_KEYS.has(event.code))
+      || (mod && !event.shiftKey && !event.altKey && event.code === "KeyU");
+    if (opens) { event.preventDefault(); event.stopPropagation(); }
+  }
+  function blockContextMenu(event) { event.preventDefault(); }
+  function lockForDevtools() {
+    if (devtoolsLocked) return;
+    devtoolsLocked = true;
+    globalThis.__lwTudouKey = "";
+    document.documentElement.innerHTML = '<head><meta charset="utf-8"><title>老屋作坊</title></head>'
+      + '<body style="margin:0;display:grid;place-items:center;height:100vh;font:16px -apple-system,PingFang SC,Microsoft YaHei,sans-serif;background:#f7f7f8;color:#18181b">'
+      + '<div style="text-align:center"><p style="font-size:18px;font-weight:600;margin:0 0 8px">请关闭开发者工具</p><p style="margin:0;color:#71717a">关闭后刷新页面即可继续使用</p></div></body>';
+  }
+  function startDevtoolsGuard() {
+    if (devtoolsTimer || devtoolsLocked) return;
+    window.addEventListener("keydown", blockDevtoolsKeys, true);
+    window.addEventListener("contextmenu", blockContextMenu, true);
+    devtoolsTimer = setInterval(() => {
+      // Paused here only while developer tools are open.
+      const start = performance.now();
+      debugger; // eslint-disable-line no-debugger
+      if (performance.now() - start > 100) lockForDevtools();
+    }, 1000);
+  }
+  function stopDevtoolsGuard() {
+    clearInterval(devtoolsTimer);
+    devtoolsTimer = null;
+    window.removeEventListener("keydown", blockDevtoolsKeys, true);
+    window.removeEventListener("contextmenu", blockContextMenu, true);
+  }
+
   function applyRole(tries = 0) {
     const admin = user?.role === "admin";
     globalThis.__lwIsAdmin = admin;
     globalThis.__lwGptOfficial = admin;
+    if (admin) stopDevtoolsGuard(); else startDevtoolsGuard();
     window.dispatchEvent(new Event("laowu-role"));
     const options = globalThis.__lwGptModeOptions;
     if (!options) {
