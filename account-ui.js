@@ -3,6 +3,23 @@
 (function () {
   "use strict";
 
+  // 土豆's image hosts only send CORS headers when the request has an Origin, and
+  // don't send Vary: Origin. The canvas <img> caches the copy without them, so a
+  // later fetch() of the same picture (download, save to project, use as a
+  // reference) is refused and comes back empty. Skip the cache for these hosts.
+  const NO_CACHE_IMAGE_HOSTS = /(^|\.)(ai-tudou\.net|aitohumanize\.com)$/i;
+  const nativeFetch = window.fetch.bind(window);
+  window.fetch = function (input, init) {
+    try {
+      const url = new URL(typeof input === "string" ? input : input instanceof URL ? input.href : input.url, location.href);
+      const method = String(init?.method || (input instanceof Request ? input.method : "GET")).toUpperCase();
+      if (method === "GET" && NO_CACHE_IMAGE_HOSTS.test(url.hostname) && url.hostname !== "api.ai-tudou.net") {
+        return nativeFetch(input, { ...init, cache: "no-store" });
+      }
+    } catch {}
+    return nativeFetch(input, init);
+  };
+
   const API = "/api/account";
   const listeners = new Set();
   let user = null;
@@ -364,7 +381,12 @@ button.lw-gate-face:hover{transform:scale(1.04)}
       || (mod && !event.shiftKey && !event.altKey && event.code === "KeyU");
     if (opens) { event.preventDefault(); event.stopPropagation(); }
   }
-  function blockContextMenu(event) { event.preventDefault(); }
+  // Right-click stays on pictures (图片另存为) and text boxes (paste); the
+  // debugger trap still catches 检查 from there.
+  function blockContextMenu(event) {
+    if (event.target instanceof Element && event.target.closest("img, video, input, textarea, [contenteditable=''], [contenteditable='true']")) return;
+    event.preventDefault();
+  }
   function lockForDevtools() {
     if (devtoolsLocked) return;
     devtoolsLocked = true;
