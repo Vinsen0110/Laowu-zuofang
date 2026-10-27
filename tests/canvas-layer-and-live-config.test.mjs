@@ -48,7 +48,7 @@ for (const retry of [false, true]) {
         };
         const source = retry
             ? block("const Tf=c.useCallback(async O=>", "const Ht=Ca(O.id")
-            : block("di=c.useCallback(async(O,K,Q)=>", "dt(O);const Mt=Ca");
+            : block("di=c.useCallback(async(O,K,Q)=>", "const Mt=Ca(O,O,O)");
         const callback = vm.runInNewContext(`${source.replace(/^const Tf=|^di=/, "")}return Se;})`, scope);
         const result = retry ? await callback({ id: "n", type: "image" }) : await callback("n", "image", "test");
         assert.equal(checked.channels[0].apiKey, "latest-key");
