@@ -46,7 +46,7 @@ test("a canvas image request that never answers fails after the timeout", async 
 test("土豆 refunds a request the canvas gave up on, but not one the user stopped", async () => {
     const refunds = [];
     const lwTudouDirect = vm.runInNewContext(`${block("async function lwTudouDirect(", "\nasync function tudouGeminiStreamImages(")};lwTudouDirect`, {
-        globalThis: { __lwDirectCharge: async () => "charge-ref", __lwDirectRefund: ref => refunds.push(ref) },
+        globalThis: { __lwDirectCharge: async () => "charge-ref", __lwDirectRefund: (ref, reason) => refunds.push([ref, reason]) },
     });
     const aborted = () => Promise.reject(new DOMException("aborted", "AbortError"));
     const stopped = new AbortController();
@@ -57,7 +57,7 @@ test("土豆 refunds a request the canvas gave up on, but not one the user stopp
     const timedOut = new AbortController();
     timedOut.abort(Object.assign(new Error("timeout"), { lwCanvasTimeout: true }));
     await assert.rejects(lwTudouDirect({ apiKey: "key" }, "url", {}, aborted, timedOut.signal));
-    assert.deepEqual(refunds, ["charge-ref"]);
+    assert.deepEqual(refunds, [["charge-ref", "生成超时"]]);
 });
 
 test("stopping the canvas task still aborts the wrapped request", async () => {

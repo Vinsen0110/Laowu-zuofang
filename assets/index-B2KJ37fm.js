@@ -683,7 +683,7 @@ function appendTudouGeminiSseEvent(e,t){
 function tudouStreamRequestId(e){return e.headers.get("x-oneapi-request-id")||e.headers.get("x-request-id")||""}
 // 土豆 straight from the browser: charge first (the relay would have), refund if it fails.
 // A user stop is not refunded; giving up on a request that never answered is.
-async function lwTudouDirect(e,url,payload,run,signal){const ref=e.apiKey!=="lw-balance"&&globalThis.__lwDirectCharge?await globalThis.__lwDirectCharge(url,payload):"";try{return await run()}catch(err){const cancelled=!signal?.reason?.lwCanvasTimeout&&(err?.name==="AbortError"||err?.name==="CanceledError"||err?.code==="ERR_CANCELED");ref&&!cancelled&&globalThis.__lwDirectRefund?.(ref,"生成失败");throw err}}
+async function lwTudouDirect(e,url,payload,run,signal){const ref=e.apiKey!=="lw-balance"&&globalThis.__lwDirectCharge?await globalThis.__lwDirectCharge(url,payload):"";try{return await run()}catch(err){const cancelled=!signal?.reason?.lwCanvasTimeout&&(err?.name==="AbortError"||err?.name==="CanceledError"||err?.code==="ERR_CANCELED");ref&&!cancelled&&globalThis.__lwDirectRefund?.(ref,signal?.reason?.lwCanvasTimeout?"生成超时":"生成失败");throw err}}
 async function tudouGeminiStreamImages(e,t,n){const url=isTudouNano21Model(e.model)?Jq(e,"generateContent"):`${Jq(e,"streamGenerateContent")}?alt=sse`;return lwTudouDirect(e,url,t,()=>tudouGeminiStreamImagesRaw(e,t,n),n)}
 async function tudouGeminiStreamImagesRaw(e,t,n){const tudouUrl=isTudouNano21Model(e.model)?Jq(e,"generateContent"):`${Jq(e,"streamGenerateContent")}?alt=sse`;
 // Gemini needs reference images inline. Balance requests go through the account relay, which fetches
