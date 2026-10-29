@@ -65,12 +65,48 @@ test("only a single dropped image replaces a node; several files become new node
     assert.deepEqual(JSON.parse(JSON.stringify(calls)), [["replace", "gen", "one.png"], ["create", ["a.png", "b.png"]], ["create", ["busy.png"]]]);
 });
 
-test("replacing clears the old generation and remote-cache state", () => {
-    const replace = block("_u=c.useCallback(async(O,K)=>{", ",Fh=c.useCallback(");
-    for (const field of ["generationType:void 0", "model:void 0", "prompt:void 0", "generationStage:void 0",
-        "remoteSourceUrl:void 0", "localCacheStatus:void 0", "localPromptPresetId:void 0"]) {
-        assert.ok(replace.includes(field), field);
+function replaceNodeImage() {
+    const source = `${block("function QM(", "function Kke(")}${block("function replaceNodeImage(", "function a$(")}`;
+    const Qa = image => ({ content: image.url, storageKey: image.storageKey, status: "success", naturalWidth: image.width, naturalHeight: image.height, bytes: image.bytes, mimeType: image.mimeType });
+    return vm.runInNewContext(`${source};replaceNodeImage`, { Ne, Qa });
+}
+
+const image = { url: "blob:new", storageKey: "image:new", width: 3000, height: 2000, bytes: 127381, mimeType: "image/png" };
+const size = { width: 600, height: 400 };
+const plain = value => JSON.parse(JSON.stringify(value));
+
+test("an image-generation node keeps its prompt and settings when an image is dropped on it", () => {
+    const replace = replaceNodeImage();
+    const generation = node("gen", { content: "", status: "idle", prompt: "左右延伸", model: "tudou::nano-banana-pro", size: "3:2", quality: "2k", gptImageQuality: "high", count: 1, localPromptPresetId: "p1", imageGenerationDraft: { size: "16:9" } }, { title: "图片生成" });
+    const result = plain(replace(generation, image, size, "drop.png"));
+    assert.equal(result.title, "图片生成");
+    assert.equal(result.metadata.content, "blob:new");
+    assert.equal(result.metadata.storageKey, "image:new");
+    assert.equal(result.metadata.bytes, 127381);
+    for (const [key, value] of Object.entries({ prompt: "左右延伸", model: "tudou::nano-banana-pro", size: "3:2", quality: "2k", gptImageQuality: "high", count: 1, localPromptPresetId: "p1" })) {
+        assert.equal(result.metadata[key], value, key);
     }
-    // Image-generation nodes and generated images (titled with their prompt) become 图片输入.
-    assert.match(replace, /title:QM\(Se\)\?"\\u56FE\\u7247\\u8F93\\u5165":Se\.title\|\|K\.name/);
+    assert.deepEqual(result.metadata.imageGenerationDraft, { size: "16:9" });
+});
+
+test("a generated image stays an image-generation node with its prompt, without the old result state", () => {
+    const replace = replaceNodeImage();
+    const generated = node("out", { content: "blob:old", status: "success", generationType: "edit", prompt: "旧提示词", model: "nano", references: ["image:ref"], generatedAt: "t", remoteSourceUrl: "https://x/y.png", localCacheStatus: "pending", localAssetPath: "生成图/图片1.png" }, { title: "旧提示词" });
+    const result = plain(replace(generated, image, size, "drop.png"));
+    assert.equal(result.title, "图片生成");
+    assert.equal(result.metadata.prompt, "旧提示词");
+    assert.equal(result.metadata.model, "nano");
+    for (const key of ["generationType", "references", "generatedAt", "remoteSourceUrl", "localCacheStatus", "localAssetPath"]) {
+        assert.equal(result.metadata[key], undefined, key);
+    }
+});
+
+test("an input node stays an input node", () => {
+    const replace = replaceNodeImage();
+    const input = node("in", { content: "blob:old", storageKey: "image:old" }, { title: "我的图" });
+    const result = plain(replace(input, image, size, "drop.png"));
+    assert.equal(result.title, "我的图");
+    assert.equal(result.metadata.content, "blob:new");
+    assert.equal(result.metadata.prompt, undefined);
+    assert.equal(plain(replace(node("in2", {}, { title: "" }), image, size, "drop.png")).title, "drop.png");
 });
