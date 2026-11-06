@@ -39,9 +39,12 @@ function upstream(status, seen) {
 
 test("only known provider hosts are allowed", () => {
     assert.equal(channelForUrl(GEN_URL).channel, "apimart");
-    assert.equal(channelForUrl("https://api-hk.soonstudio.ai/v1beta/models/x:generateContent").channel, "soon");
     assert.equal(channelForUrl("https://www.runninghub.ai/openapi/v2/query").channel, "runninghub");
     assert.throws(() => channelForUrl("https://evil.example/v1"), /不支持/);
+    // Soon was removed: its hosts are no longer charged through the relay.
+    for (const host of ["api.soonstudio.ai", "api-hk.soonstudio.ai", "api-us.soonstudio.ai"]) {
+        assert.throws(() => channelForUrl(`https://${host}/v1beta/models/x:generateContent`), /不支持/);
+    }
     assert.throws(() => channelForUrl("http://api.apimart.ai/v1"), /不正确/);
 });
 
@@ -49,7 +52,7 @@ test("model, spec and count are read from body or path", () => {
     const u = (s) => new URL(s);
     assert.deepEqual(describeRequest(u(GEN_URL), { model: "m", resolution: "4K", n: 2 }), { model: "m", spec: "4k", count: 2 });
     assert.deepEqual(
-        describeRequest(u("https://api.soonstudio.ai/v1beta/models/nano-pro:generateContent"), { generationConfig: { imageConfig: { imageSize: "2K" } } }),
+        describeRequest(u("https://api.ai-tudou.net/v1beta/models/nano-pro:generateContent"), { generationConfig: { imageConfig: { imageSize: "2K" } } }),
         { model: "nano-pro", spec: "2k", count: 1 },
     );
     assert.deepEqual(

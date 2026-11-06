@@ -10,7 +10,7 @@ test("canvas price table is loaded as a local module and keeps provider currency
   assert.match(html, /canvas-price-table\.js/);
   assert.match(script, /const DEFAULT_FX_RATE = 6\.7/);
   assert.match(script, /FX_STORAGE_KEY/);
-  assert.match(script, /runninghub: "RH", apimart: "Mart", soon: "Soon", tudou: "Tudou", grsai: "Grsai"/);
+  assert.match(script, /runninghub: "RH", apimart: "Mart", tudou: "Tudou", grsai: "Grsai" }/);
   assert.match(script, /\["runninghub", "apimart"\]\.includes\(provider\) \? "USD" : "CNY"/);
   assert.doesNotMatch(script, /DEFAULT_ROWS/);
   assert.match(script, /模型价格（人民币）/);
@@ -27,7 +27,6 @@ test("canvas price table is loaded as a local module and keeps provider currency
   assert.match(script, /Mart: "价格便宜"/);
   assert.match(script, /Tudou: "经济实惠"/);
   assert.match(script, /Grsai: "备选一"/);
-  assert.match(script, /Soon: "备选二"/);
   assert.match(script, /row\.note && !row\.fullWidthNote/);
 });
 
@@ -68,9 +67,9 @@ test("price table observer work is coalesced to one attach per animation frame",
   assert.match(script, /if \(document\.hidden\) return;/);
 });
 
-test("price table keeps Tudou and Grsai Nano Banana 2.1 while omitting Soon 2.1", () => {
-  assert.match(script, /if \(provider === "soon"\) return/);
-  assert.match(script, /return add\(model, "Nano Banana 2\.1"\)/);
+test("price table lists Nano Banana 2.1 for every site that offers it, and has no Soon group", () => {
+  assert.match(script, /if \(model === "nano-banana-2\.1"\) return add\(model, "Nano Banana 2\.1"\)/);
+  assert.doesNotMatch(script, /soon/i);
 });
 
 test("price table shows Tudou GPT Image 2.5 variants", () => {

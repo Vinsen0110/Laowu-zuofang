@@ -284,9 +284,9 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
   }
   const fmtBal = (b, unit) => b == null ? "--" : b < 0 ? "无限" : unit + Number(b).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  const SITE_ORDER = ["tudou", "apimart", "runninghub", "grsai", "soon"];
-  const SITE_NAME = { tudou: "Tudou", apimart: "Mart", runninghub: "RH", grsai: "Grsai", soon: "Soon" };
-  const CHANNEL_NAME = { tudou: "渠道 1", apimart: "渠道 2", grsai: "渠道 3", runninghub: "渠道 4", soon: "渠道 5" };
+  const SITE_ORDER = ["tudou", "apimart", "runninghub", "grsai"];
+  const SITE_NAME = { tudou: "Tudou", apimart: "Mart", runninghub: "RH", grsai: "Grsai" };
+  const CHANNEL_NAME = { tudou: "渠道 1", apimart: "渠道 2", grsai: "渠道 3", runninghub: "渠道 4" };
   const svg = (d, size = 16) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
   // Key boxes get an eye: it shows what was typed, or loads the saved key so it can be copied.
   const secret = (input, item) => `<span class="secret-wrap">${input}<button type="button" class="secret-eye" data-reveal="${item}" title="显示 / 隐藏" aria-label="显示密钥">${ICON.eye}</button></span>`;
@@ -511,9 +511,9 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
           <span class="tag ${cos.delivery === "direct" ? "ok" : ""}">${cos.delivery === "direct" ? "直连平台" : "腾讯云 COS"}</span></div>
         <div class="card-body"><form class="delivery-form" id="delivery-form">
           <label class="delivery-option"><input type="radio" name="delivery" value="cos" ${cos.delivery !== "direct" ? "checked" : ""}>
-            <span><b>腾讯云 COS</b>：RH、Grsai、Soon、APIMart 的结果图从广州存储下载。国内快，用户看不到平台域名；按流量付费，约 0.4 分/张</span></label>
+            <span><b>腾讯云 COS</b>：RH、Grsai、APIMart 的结果图从广州存储下载。国内快，用户看不到平台域名；按流量付费，约 0.4 分/张</span></label>
           <label class="delivery-option"><input type="radio" name="delivery" value="direct" ${cos.delivery === "direct" ? "checked" : ""}>
-            <span><b>直连平台</b>：RH、Grsai、Soon、APIMart 的结果图由浏览器直接从平台下载，和以前一样，免费；用户在开发者工具里能看到平台域名</span></label>
+            <span><b>直连平台</b>：RH、Grsai、APIMart 的结果图由浏览器直接从平台下载，和以前一样，免费；用户在开发者工具里能看到平台域名</span></label>
           <button class="primary small" type="submit" style="margin-top:8px">保存下发方式</button>
         </form>${msg(flash.delivery)}
         <details class="cos-backup" ${cos.delivery === "direct" ? "" : "open"}>

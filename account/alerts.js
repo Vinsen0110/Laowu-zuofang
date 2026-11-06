@@ -16,7 +16,7 @@ export async function checkLowBalances(db, { ids = null, minIntervalMs = 10 * 60
     const rows = await db.query("SELECT id, last_checked_at, alert_sent_at FROM lw_channels");
     const byId = new Map(rows.map((r) => [r.id, r]));
     const now = Date.now();
-    const wanted = ids || ["tudou", "apimart", "grsai", "runninghub", "soon"];
+    const wanted = ids || ["tudou", "apimart", "grsai", "runninghub"];
     const due = wanted.filter((id) => {
         const last = byId.get(id)?.last_checked_at;
         return !last || now - new Date(last).getTime() >= minIntervalMs;

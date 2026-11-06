@@ -20,14 +20,13 @@ export function unmaskTarget(token) {
     return xor(Buffer.from(String(token || ""), "base64url")).toString("utf8");
 }
 
-export const CHANNEL_LABELS = { tudou: "渠道 1", apimart: "渠道 2", grsai: "渠道 3", runninghub: "渠道 4", soon: "渠道 5" };
+export const CHANNEL_LABELS = { tudou: "渠道 1", apimart: "渠道 2", grsai: "渠道 3", runninghub: "渠道 4" };
 
 const NAME_PATTERNS = [
     [/ai-tudou|tudou|土豆/gi, CHANNEL_LABELS.tudou],
     [/api\s*mart|apimart/gi, CHANNEL_LABELS.apimart],
     [/grsai/gi, CHANNEL_LABELS.grsai],
     [/runninghub|rhart/gi, CHANNEL_LABELS.runninghub],
-    [/soonstudio|soon studio/gi, CHANNEL_LABELS.soon],
 ];
 
 export function scrubText(text) {

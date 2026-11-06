@@ -379,7 +379,7 @@ test("compiled app keeps APIMart isolated from the four existing sites", () => {
     assert.match(bundle, /provider:"apimart",models:APIMART_SITE_MODELS/);
     assert.match(
         bundle,
-        /e\?\.provider==="apimart"\?"apimart":e\?\.provider==="soon"\?"soon":""/,
+        /e\?\.provider==="apimart"\?"apimart":""/,
         "APIMart must survive provider normalization",
     );
     assert.match(bundle, /apiKey:u\?\.apiKey\|\|"",apiKeys:u\?\.apiKeys,activeKeyId:u\?\.activeKeyId,apiFormat:"openai",provider:"apimart"/);

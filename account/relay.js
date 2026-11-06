@@ -26,7 +26,6 @@ const HOSTS = [
     [/^api\.apimart\.ai$/, "apimart"],
     [/^grsaiapi\.com$/, "grsai"],
     [/^(?:www|llm)\.runninghub\.ai$/, "runninghub"],
-    [/^api(?:-[a-z]+)?\.soonstudio\.ai$/, "soon"],
 ];
 
 // GPT Image 2.5 official (usage-billed) models are for admins only.

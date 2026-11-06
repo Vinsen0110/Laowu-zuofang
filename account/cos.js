@@ -7,7 +7,7 @@
 // When COS is not configured or an upload fails, callers fall back to serving
 // the image from this server as before.
 //
-// delivery = "direct" switches link-type results (RH, Grsai, Soon, APIMart) back to
+// delivery = "direct" switches link-type results (RH, Grsai, APIMart) back to
 // the supplier's own link, so the browser downloads them straight from the supplier
 // as before accounts existed; users can then see the supplier's image domain.
 // 土豆 is called from the browser in both modes; COS only sees it on the relay

@@ -371,3 +371,22 @@ test("image retry delegates restoration to the same complete node config as the 
     const finish = source.indexOf("const Ht=Ca(O.id", start);
     assert.match(source.slice(start, finish), /Q0\(N,\{\.\.\.O,metadata:le\},"image"\)/);
 });
+
+test("an image generated on the removed Soon site regenerates on the active site's Nano Banana Pro", () => {
+    const scope = runtime();
+    const soonNode = { ...node, metadata: { model: "soon::nano-banana-pro", quality: "2k", size: "1:1", content: "blob:generated" } };
+    for (const active of ["tudou", "apimart", "runninghub", "grsai"]) {
+        const site = channels.find(item => item.id === active);
+        for (const name of ["vke", "cPe", "Q0"]) {
+            const restored = scope[name](config(active), plain(soonNode), "image");
+            assert.equal(restored.activeSiteId, active, `${active} ${name}`);
+            assert.equal(restored.model, `${active}::nano-banana-pro`, `${active} ${name}`);
+            assert.equal(restored.apiKey, site.apiKey, `${active} ${name}`);
+        }
+        const request = scope.Q0(config(active), plain(soonNode), "image");
+        assert.equal(scope.xxe(request, request.model), true, `${active} is ready to generate`);
+    }
+    // Other unknown sites still never move silently to another route.
+    const other = scope.Q0(config("tudou"), { ...node, metadata: { model: "missing-site::nano-banana-pro", content: "blob:generated" } }, "image");
+    assert.equal(scope.xxe(other, other.model), false);
+});

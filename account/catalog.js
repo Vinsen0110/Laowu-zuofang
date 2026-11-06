@@ -6,7 +6,6 @@
 import { APIMART_ORIGIN, apiMartImagePrice, apiMartImageRequestSpec } from "../apimart-api.js";
 import { GRSAI_ORIGIN, grsaiImagePrice, grsaiImageRequestSpec } from "../grsai-api.js";
 import { RUNNINGHUB_ORIGIN, runningHubImagePrice, runningHubImageRequestSpec } from "../runninghub-api.js";
-import { SOON_ORIGIN, soonImagePrice, soonImageRequestSpec } from "../soon-api.js";
 import { ADMIN_ONLY_MODELS, describeRequest } from "./relay.js";
 
 export const USD_TO_CNY = 6.7;
@@ -83,11 +82,6 @@ function grsaiRows() {
     return rows;
 }
 
-function soonRows() {
-    return RES.map((quality) => fromBuilder("soon", SOON_ORIGIN, soonImageRequestSpec, soonImagePrice, "CNY", "Nano Banana Pro",
-        { provider: "soon", size: "1:1", quality, model: "soon::nano-banana-pro" }));
-}
-
 // Text models (prompt helpers, chat) are charged per call; upstream cost depends on usage.
 function textRows() {
     return [
@@ -102,7 +96,7 @@ export function priceCatalog() {
     if (cached) return cached;
     const seen = new Set();
     // Admin-only models (GPT 2.5 official) are free for the admin and closed to users, so they are not priced.
-    cached = [...tudouRows(), ...apimartRows(), ...runningHubRows(), ...grsaiRows(), ...soonRows(), ...textRows()].filter((r) => {
+    cached = [...tudouRows(), ...apimartRows(), ...runningHubRows(), ...grsaiRows(), ...textRows()].filter((r) => {
         if (ADMIN_ONLY_MODELS.has(r.model)) return false;
         const key = `${r.channel}|${r.model}|${r.spec}`;
         if (seen.has(key)) return false;

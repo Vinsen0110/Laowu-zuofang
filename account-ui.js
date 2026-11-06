@@ -364,7 +364,7 @@ button.lw-gate-face:hover{transform:scale(1.04)}
     }
   };
 
-  const SITE_SHORT = { tudou: "土豆", apimart: "Mart", grsai: "Grsai", runninghub: "RH", soon: "Soon" };
+  const SITE_SHORT = { tudou: "土豆", apimart: "Mart", grsai: "Grsai", runninghub: "RH" };
 
   // GPT Image 2.5 "official" mode is admin-only. The app bundle reads this flag
   // and the shared option list; the server refuses official requests from users.
@@ -551,7 +551,7 @@ button.lw-gate-face:hover{transform:scale(1.04)}
   // only the site that was just used.
   const SITE_BY_HOST = [
     [/(^|\.)ai-tudou\.net$/, "tudou"], [/(^|\.)apimart\.ai$/, "apimart"], [/(^|\.)grsaiapi\.com$/, "grsai"],
-    [/(^|\.)runninghub\.ai$/, "runninghub"], [/(^|\.)soonstudio\.ai$/, "soon"],
+    [/(^|\.)runninghub\.ai$/, "runninghub"],
   ];
   const pendingSites = new Set();
   let balanceRefreshTimer = null;
