@@ -102,7 +102,7 @@ test("canvas-price-table.js takes every color from theme.css and has dark provid
     const styleText = table.slice(table.indexOf("const css = `"), table.indexOf("`;", table.indexOf("const css = `")));
     const values = [...styleText.matchAll(/:([^;{}]*)(?=[;}])/g)].map(match => match[1]);
     assert.deepEqual(values.filter(value => /#[0-9a-fA-F]{3,8}\b|rgba?\((?!var\()/.test(value)), []);
-    for (const site of ["rh", "mart", "soon", "tudou", "grsai"])
+    for (const site of ["rh", "mart", "tudou", "grsai"])
         assert.match(styleText, new RegExp(`\\.dark \\.canvas-price-table-group\\.provider-${site} \\.canvas-price-table-group-head\\{`));
     assert.match(styleText, /\.dark \.canvas-price-table-thinking-select\{/);
 });

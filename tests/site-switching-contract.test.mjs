@@ -148,12 +148,12 @@ test("each site keeps its own image model: 2.1 → a site without 2.1 → back a
     vm.runInContext(source, scope);
     const channels = [
         { id: "tudou", baseUrl: "", apiFormat: "openai", models: ["nano-banana-pro", "nano-banana-2.1"] },
-        { id: "soon", baseUrl: "", apiFormat: "openai", models: ["nano-banana-pro"] },
+        { id: "runninghub", baseUrl: "", apiFormat: "openai", models: ["nano-banana-pro", "gpt-image-2.5"] },
     ];
     let config = { activeSiteId: "tudou", channels, imageModel: "tudou::nano-banana-2.1", model: "tudou::nano-banana-2.1", imageModelBySite: {} };
-    config = { ...config, ...scope.buildSiteConfigPatch(config, "soon") };
-    assert.equal(config.imageModel, "soon::nano-banana-pro", "Soon has no 2.1, so it falls back to Pro");
+    config = { ...config, ...scope.buildSiteConfigPatch(config, "runninghub") };
+    assert.equal(config.imageModel, "runninghub::nano-banana-pro", "RH has no 2.1, so it falls back to Pro");
     config = { ...config, ...scope.buildSiteConfigPatch(config, "tudou") };
     assert.equal(config.imageModel, "tudou::nano-banana-2.1", "back on 土豆 the earlier 2.1 is restored");
-    assert.equal(config.imageModelBySite.soon, "nano-banana-pro");
+    assert.equal(config.imageModelBySite.runninghub, "nano-banana-pro");
 });

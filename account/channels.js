@@ -1,11 +1,10 @@
-// Upstream channels (the 5 platforms) and their balances, for the admin page.
+// Upstream channels (the 4 platforms) and their balances, for the admin page.
 // API keys live on the server only: in the database (set from the admin page)
 // or in environment variables LW_KEY_<CHANNEL>, which take priority.
 
 import { APIMART_IMAGE_MODELS, APIMART_TEXT_MODELS, fetchApiMartTokenBalance, fetchApiMartUserBalance } from "../apimart-api.js";
 import { GRSAI_IMAGE_MODELS, fetchGrsaiAccountCredits, fetchGrsaiApiKeyCredits } from "../grsai-api.js";
 import { RUNNINGHUB_IMAGE_MODELS, RUNNINGHUB_TEXT_MODELS, fetchRunningHubAccount } from "../runninghub-api.js";
-import { SOON_IMAGE_MODELS } from "../soon-api.js";
 import { AccountError, milliToYuan, yuanToMilli } from "./service.js";
 
 const TUDOU_ORIGIN = "https://api.ai-tudou.net";
@@ -15,13 +14,12 @@ export const CHANNELS = [
     { id: "apimart", name: "APIMart", unit: "$", topupUrl: "https://apimart.ai/zh/billing", models: [...APIMART_IMAGE_MODELS, ...APIMART_TEXT_MODELS] },
     { id: "grsai", name: "Grsai", unit: "$", topupUrl: "https://grsai.com/zh/dashboard/billing", models: [...GRSAI_IMAGE_MODELS], extraKey: "账户 Token（查账户总余额用，可选）" },
     { id: "runninghub", name: "RunningHub", unit: "$", topupUrl: "https://www.runninghub.ai/vip-rights/4", models: [...RUNNINGHUB_IMAGE_MODELS, ...RUNNINGHUB_TEXT_MODELS] },
-    { id: "soon", name: "Soon", unit: "$", topupUrl: "https://soonstudio.ai/account?tab=transactions&entry=main", models: [...SOON_IMAGE_MODELS] },
 ];
 
 const CHANNEL_IDS = new Set(CHANNELS.map((c) => c.id));
 
 // What users see in the canvas for each site (see display-order.js).
-export const CHANNEL_LABELS = { tudou: "渠道 1", apimart: "渠道 2", grsai: "渠道 3", runninghub: "渠道 4", soon: "渠道 5" };
+export const CHANNEL_LABELS = { tudou: "渠道 1", apimart: "渠道 2", grsai: "渠道 3", runninghub: "渠道 4" };
 
 export const CHANNEL_SCHEMA = `
 CREATE TABLE IF NOT EXISTS lw_channels (
@@ -235,9 +233,11 @@ function publicPrice(r) {
     };
 }
 
+// Prices saved for a channel that was later removed stay in the database for
+// the record but are no longer shown or used.
 export async function listPrices(db) {
     const rows = await db.query("SELECT * FROM lw_prices ORDER BY channel, model, spec");
-    return rows.map(publicPrice);
+    return rows.filter((r) => CHANNEL_IDS.has(r.channel)).map(publicPrice);
 }
 
 export async function savePrice(db, input) {

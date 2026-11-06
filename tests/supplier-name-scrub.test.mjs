@@ -12,7 +12,6 @@ test("users see channel labels instead of supplier names and links in errors", (
     assert.equal(lwScrubText("RH 请求失败（HTTP 402）"), "渠道 4 请求失败（HTTP 402）");
     assert.equal(lwScrubText("Tudou 流式响应格式异常"), "渠道 1 流式响应格式异常");
     assert.equal(lwScrubText("Grsai 图片生成超时"), "渠道 3 图片生成超时");
-    assert.equal(lwScrubText("Soon 没有返回 task_id"), "渠道 5 没有返回 task_id");
     assert.equal(lwScrubText("APIMart: see https://api.apimart.ai/x"), "渠道 2: see [链接已隐藏]");
     assert.equal(lwScrubText("please retry soon, smart RHINO"), "please retry soon, smart RHINO");
 });

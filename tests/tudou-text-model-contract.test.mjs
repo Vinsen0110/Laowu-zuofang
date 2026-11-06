@@ -9,7 +9,7 @@ test("Tudou offers Gemini 3.8 Flash as its text model; the default stays on 渠�
     assert.match(bundle, /TUDOU_TEXT_MODELS=\["gemini-3\.8-flash"\]/);
     assert.match(
         bundle,
-        /function siteTextModelNames\(e\)\{return e===RUNNINGHUB_SITE_ID\?RUNNINGHUB_TEXT_MODELS:e===TUDOU_SITE_ID\?TUDOU_TEXT_MODELS:e===GRSAI_SITE_ID\?GRSAI_TEXT_MODELS:e===APIMART_SITE_ID\?APIMART_TEXT_MODELS:e===SOON_SITE_ID\?\[\]:RUNNINGHUB_TEXT_MODELS\}/,
+        /function siteTextModelNames\(e\)\{return e===RUNNINGHUB_SITE_ID\?RUNNINGHUB_TEXT_MODELS:e===TUDOU_SITE_ID\?TUDOU_TEXT_MODELS:e===GRSAI_SITE_ID\?GRSAI_TEXT_MODELS:e===APIMART_SITE_ID\?APIMART_TEXT_MODELS:RUNNINGHUB_TEXT_MODELS\}/,
     );
     // New users' default text model is on 渠道 2 (Mart), never Tudou.
     assert.match(bundle, /l7=\[\`\$\{APIMART_SITE_ID\}::gemini-3\.8-flash\`\]/);

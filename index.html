@@ -6,7 +6,7 @@
         <meta name="description" content="老屋作坊创作工具" />
         <link rel="icon" type="image/png" href="./kitty.png" />
         <link rel="preload" href="./assets/index-DT58oPsm.css" as="style" crossorigin>
-        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261029-dropreplace-03" crossorigin>
+        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261106-nosoon-02" crossorigin>
         <link rel="preload" href="./icons/gemini.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/openai.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/claude.svg" as="image" type="image/svg+xml" />
@@ -137,7 +137,7 @@
                 // account's balance. Those requests go through /api/account/relay,
                 // which uses the site's own key and charges per generation.
                 var balanceKey = "Bearer lw-balance";
-                var balanceHost = /^(?:api\.ai-tudou\.net|api\.apimart\.ai|grsaiapi\.com|(?:www|llm)\.runninghub\.ai|api(?:-[a-z]+)?\.soonstudio\.ai)$/;
+                var balanceHost = /^(?:api\.ai-tudou\.net|api\.apimart\.ai|grsaiapi\.com|(?:www|llm)\.runninghub\.ai)$/;
                 var isBalanceTarget = function (rawUrl) {
                     try {
                         return balanceHost.test(new URL(rawUrl, location.href).hostname);
@@ -694,15 +694,15 @@
                 else document.addEventListener("DOMContentLoaded", observe, { once: true });
             })();
         </script>
-        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261029-dropreplace-03"></script>
+        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261106-nosoon-02"></script>
       <script type="module" src="./display-model-names.js?v=20261008-nano21-01"></script>
-      <script type="module" src="./canvas-price-table.js?v=20261022-mart-01"></script>
+      <script type="module" src="./canvas-price-table.js?v=20261106-nosoon-01"></script>
       <script src="./prevent-canvas-drag-download.js?v=20260827-01"></script>
       <script src="./avatar.js?v=20261022-avatar-01"></script>
-      <script src="./account-ui.js?v=20261026-imgsave-01"></script>
+      <script src="./account-ui.js?v=20261106-nosoon-01"></script>
       <script src="./canvas-polish.js?v=20261023-reveal-02"></script>
       <link rel="stylesheet" crossorigin href="./assets/index-DT58oPsm.css">
-      <link rel="stylesheet" href="./theme.css?v=20261022-sitemenu-01">
+      <link rel="stylesheet" href="./theme.css?v=20261106-nosoon-01">
       <link rel="stylesheet" href="./startup-entry.css?v=20261015-theme-03">
       <style>
         /* 图床设置 reuses the old API page; only its Cloudinary block is shown. */
@@ -865,7 +865,6 @@
         .canvas-site-menu-item[data-site="apimart"] { --site: var(--lw-site-apimart); }
         .canvas-site-menu-item[data-site="runninghub"] { --site: var(--lw-site-runninghub); }
         .canvas-site-menu-item[data-site="grsai"] { --site: var(--lw-site-grsai); }
-        .canvas-site-menu-item[data-site="soon"] { --site: var(--lw-site-soon); }
         .canvas-site-menu-dot {
           width: 8px;
           height: 8px;

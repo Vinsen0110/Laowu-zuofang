@@ -71,11 +71,11 @@ test("内联器同时支持 Node 与浏览器（Vercel 代理仍可回退使用�
     assert.match(inliner, /options\.redirect/);
 });
 
-test("其它 4 个站点不受直连改动影响", () => {
+test("其它 3 个站点不受直连改动影响", () => {
     // xA 是唯一拼土豆地址的入口，且只在 isTudouSite 为真时被使用。
     const body = functionSource("xA");
     assert.match(body, /localTudouRequestBase\(e\)/);
-    for (const scope of ["grsai", "apimart", "runninghub", "soon"]) {
+    for (const scope of ["grsai", "apimart", "runninghub"]) {
         assert.ok(
             bundle.includes(`provider==="${scope}"`) || bundle.includes(`is${scope[0].toUpperCase()}${scope.slice(1)}Site`),
             `missing ${scope} detection`,

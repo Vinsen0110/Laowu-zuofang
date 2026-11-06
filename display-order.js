@@ -1,9 +1,9 @@
 // Keep the visible site selector aligned with the user's preferred workflow.
-export const SITE_DISPLAY_ORDER = ["tudou", "apimart", "grsai", "runninghub", "soon"];
+export const SITE_DISPLAY_ORDER = ["tudou", "apimart", "grsai", "runninghub"];
 
 // Users see numbered channels instead of provider names; admins see the real names.
-export const SITE_CHANNEL_LABELS = { tudou: "渠道 1", apimart: "渠道 2", grsai: "渠道 3", runninghub: "渠道 4", soon: "渠道 5" };
-export const SITE_CHANNEL_NOTES = { tudou: "推荐 · 性价比高", apimart: "便宜", grsai: "备用", runninghub: "最稳定 · 价格较高", soon: "备用" };
+export const SITE_CHANNEL_LABELS = { tudou: "渠道 1", apimart: "渠道 2", grsai: "渠道 3", runninghub: "渠道 4" };
+export const SITE_CHANNEL_NOTES = { tudou: "推荐 · 性价比高", apimart: "便宜", grsai: "备用", runninghub: "最稳定 · 价格较高" };
 
 // Sites only the admin sees (none for now).
 export const ADMIN_ONLY_SITES = new Set();
