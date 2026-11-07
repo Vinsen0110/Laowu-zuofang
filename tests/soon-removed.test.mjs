@@ -68,7 +68,7 @@ test("Soon data already in the database stays stored but is hidden from the admi
 
 test("admin page lists no Soon section and no Soon wording", async () => {
     const admin = await read("admin.html");
-    assert.match(admin, /const SITE_ORDER = \["tudou", "apimart", "runninghub", "grsai"\];/);
+    assert.match(admin, /const COLS = \["tudou", "apimart", "grsai", "runninghub"\];/);
     assert.match(admin, /RH、Grsai、APIMart 的结果图从广州存储下载/);
     assert.match(admin, /RH、Grsai、APIMart 的结果图由浏览器直接从平台下载/);
 });
