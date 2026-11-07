@@ -4,198 +4,488 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
+<meta name="color-scheme" content="light">
 <title>老屋作坊 · 管理后台</title>
 <link rel="icon" type="image/png" href="./kitty.png">
 <script src="./avatar.js?v=20261022-avatar-01"></script>
 <style>
+/* 老屋作坊 admin. Neutral ink-and-paper UI in the style of large-company consoles:
+   black, white and grays carry the page; one blue marks actions and data;
+   amber, green and red appear only as status. No gradients, no tinted washes. */
 :root{
-  --bg:#f7f7f8;--panel:#fff;--text:#18181b;--text-2:#3f3f46;--muted:#71717a;--faint:#a1a1aa;
-  --border:#e4e4e7;--border-2:#efeff1;--soft:#f4f4f5;--hover:#fafafa;
-  --primary:#1f7a55;--primary-h:#196647;--primary-soft:rgb(31 122 85 / .09);
-  --danger:#c2410c;--danger-soft:#fff4ed;--danger-line:#fed7aa;
-  --radius:10px;--shadow:0 1px 2px rgb(24 24 27 / .04),0 1px 1px rgb(24 24 27 / .02);
+  color-scheme:light;
+  --bg:#f7f8fa;--panel:#fff;--raise:#f7f8fa;--sunk:#f2f3f5;--hover:#f7f8fa;
+  --ink:#1d2129;--ink-2:#4e5969;--muted:#86909c;--faint:#c9cdd4;
+  --line:#e5e6eb;--line-2:#f2f3f5;--line-h:#c9cdd4;
+  --brand:#2d6bf5;--brand-h:#1e56d6;--brand-soft:#eef3fe;--brand-line:#bed0fb;
+  --ok:#0e8a45;--ok-bg:#e9f7ef;--warn:#b45309;--warn-bg:#fff7e8;--warn-line:#fbd8a5;--warn-fill:#f59e0b;
+  --bad:#d63c41;--bad-bg:#fdeeee;--bad-line:#f8c9cb;
+  --r-lg:12px;--r:8px;--r-sm:6px;
+  --shadow:0 1px 2px rgb(29 33 41 / .04);
+  --shadow-lift:0 4px 6px -2px rgb(29 33 41 / .05),0 12px 24px -8px rgb(29 33 41 / .12);
+  --ease:cubic-bezier(.2,.7,.2,1);
+  --mono:"SF Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
 }
-@media (prefers-color-scheme:dark){:root{
-  --bg:#0d0d0f;--panel:#151518;--text:#f4f4f5;--text-2:#d4d4d8;--muted:#a1a1aa;--faint:#71717a;
-  --border:#27272a;--border-2:#1f1f23;--soft:#1c1c20;--hover:#18181c;
-  --primary:#34a874;--primary-h:#46b984;--primary-soft:rgb(52 168 116 / .12);
-  --danger:#fb923c;--danger-soft:#2a1709;--danger-line:#7c2d12;--shadow:none;
-}}
 *{box-sizing:border-box}
-html{-webkit-font-smoothing:antialiased}
-body{margin:0;background:var(--bg);color:var(--text);font:13.5px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;letter-spacing:-.003em}
+html{-webkit-font-smoothing:antialiased;scrollbar-gutter:stable}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.57 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Segoe UI",sans-serif}
 a{color:inherit}
+h1,h2,h3{font-weight:600}
 .muted{color:var(--muted)}
-code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+code,.mono{font-family:var(--mono)}
+.num,.money{font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+[hidden]{display:none!important}
+.grow{flex:1}
+svg{flex:0 0 auto}
 
-/* shell */
-.shell{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100vh}
-.side{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:2px;padding:16px 12px;border-right:1px solid var(--border);background:var(--panel)}
-.brand{display:flex;align-items:center;gap:9px;padding:4px 8px 16px;font-weight:600;font-size:14px}
-.brand img{width:26px;height:26px}
-.brand small{display:block;color:var(--muted);font-weight:400;font-size:11.5px;line-height:1.2}
-.nav{display:flex;align-items:center;gap:9px;height:32px;padding:0 9px;border-radius:7px;color:var(--text-2);font-weight:500;text-decoration:none;transition:background .1s,color .1s}
-.nav:hover{background:var(--soft);color:var(--text)}
-.nav.is-on{background:var(--soft);color:var(--text);box-shadow:inset 0 0 0 1px var(--border)}
-.nav svg{flex:0 0 auto;color:var(--muted)}
-.nav.is-on svg{color:var(--primary)}
-.nav .count{margin-left:auto;color:var(--faint);font-size:11.5px;font-variant-numeric:tabular-nums}
-.nav .dot{margin-left:auto;width:7px;height:7px;border-radius:50%;background:var(--danger)}
-.side-foot{margin-top:auto;display:flex;align-items:center;gap:9px;padding:10px 8px 2px;border-top:1px solid var(--border-2)}
-.side-foot img{width:28px;height:28px;border-radius:50%}
-.side-foot .who{min-width:0;font-size:12px;line-height:1.3}
-.side-foot .who b{display:block;overflow:hidden;font-weight:600;text-overflow:ellipsis;white-space:nowrap}
-.side-foot .who a{color:var(--muted);text-decoration:none}
-.side-foot .who a:hover{color:var(--text)}
-.main{min-width:0;padding:28px 36px 64px}
-.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px}
-.page-head h1{margin:0;font-size:20px;font-weight:600;letter-spacing:-.015em}
-.page-head p{margin:4px 0 0;color:var(--muted);font-size:13px}
-.page{max-width:none}
+/* ---------- top bar ---------- */
+.top{position:sticky;top:0;z-index:30;background:var(--panel);border-bottom:1px solid var(--line)}
+.top-in{max-width:1280px;height:60px;margin:0 auto;padding:0 32px;display:flex;align-items:center;gap:32px}
+.brand{display:flex;align-items:center;gap:10px;flex:0 0 auto;text-decoration:none;white-space:nowrap}
+.brand-mark{display:grid;place-items:center;width:30px;height:30px;border-radius:8px;background:var(--ink);color:#fff;font-size:15px;font-weight:700}
+.brand b{font-size:15px;font-weight:650}
+.brand span{color:var(--muted);font-size:13px}
+.tabs{position:relative;align-self:stretch;display:flex;align-items:center;gap:4px;min-width:0;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{display:flex;align-items:center;gap:7px;flex:0 0 auto;height:34px;padding:0 12px;border-radius:var(--r-sm);color:var(--ink-2);font-weight:500;text-decoration:none;transition:background .15s,color .15s}
+.tab svg{color:var(--muted);transition:color .15s}
+.tab:hover{background:var(--sunk);color:var(--ink)}
+.tab.is-on{color:var(--ink)}
+.tab.is-on svg{color:var(--brand)}
+.tab .badge{min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--sunk);color:var(--ink-2);font-size:11px;line-height:18px;text-align:center;font-variant-numeric:tabular-nums}
+.tab .badge.is-draft{background:var(--warn-fill);color:#fff}
+.tab .dot{width:7px;height:7px;border-radius:50%;background:var(--warn-fill)}
+.tab-ink{position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--ink);transition:left .3s var(--ease),width .3s var(--ease)}
+.me{margin-left:auto;display:flex;align-items:center;gap:12px;flex:0 0 auto}
+.kbd-btn{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 8px 0 11px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--panel);color:var(--muted);font-size:13px;font-weight:400}
+.kbd-btn:hover:not(:disabled){border-color:var(--line-h);color:var(--ink-2);background:var(--panel)}
+kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;background:var(--panel);color:var(--ink-2);font:500 11px var(--mono)}
+.me-sep{width:1px;height:20px;background:var(--line)}
+.me img{width:30px;height:30px;border-radius:50%;object-fit:cover;background:var(--sunk)}
+.me b{max-width:130px;overflow:hidden;font-size:13px;font-weight:500;text-overflow:ellipsis;white-space:nowrap}
 
-/* panels */
-.card{margin-bottom:16px;border:1px solid var(--border);border-radius:var(--radius);background:var(--panel);box-shadow:var(--shadow)}
-.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border-2)}
-.card-head h2{margin:0;font-size:14px;font-weight:600}
-.card-head .sub{margin-left:8px;color:var(--muted);font-size:12.5px;font-weight:400}
-.card-body{padding:16px}
-.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+/* ---------- page ---------- */
+.wrap{max-width:1280px;margin:0 auto;padding:28px 32px 130px}
+.page.is-enter{animation:page-in .22s var(--ease)}
+@keyframes page-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.page-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:24px}
+.page-head h1{margin:0;font-size:24px;font-weight:600;letter-spacing:-.01em}
+.page-head p{margin:4px 0 0;color:var(--muted)}
+.head-tools{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.sec-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;margin:0 0 12px}
+.sec-head h2{margin:0;font-size:16px;white-space:nowrap}
+.sec-head .muted{font-size:13px}
 
-/* kpis */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:16px;border:1px solid var(--border);border-radius:var(--radius);background:var(--panel);box-shadow:var(--shadow);overflow:hidden}
-.stat{padding:14px 16px;border-left:1px solid var(--border-2)}
-.stat:first-child{border-left:0}
-.stat span{color:var(--muted);font-size:12px}
-.stat b{display:block;margin-top:4px;font-size:22px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-
-/* controls */
-input,select{height:32px;padding:0 10px;border:1px solid var(--border);border-radius:7px;background:var(--panel);color:var(--text);font:inherit;transition:border-color .12s,box-shadow .12s}
-input::placeholder{color:var(--faint)}
-input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
-input:disabled{background:var(--soft);color:var(--muted)}
-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 12px;border:1px solid transparent;border-radius:7px;background:var(--text);color:var(--panel);font:inherit;font-weight:500;font-size:13px;white-space:nowrap;cursor:pointer;transition:background .12s,border-color .12s,opacity .12s}
-button:hover{opacity:.88}
+/* ---------- controls ---------- */
+input,select,textarea{font:inherit;color:var(--ink)}
+input,select{min-width:0;height:36px;padding:0 11px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--panel);transition:border-color .15s,box-shadow .15s,background .15s}
+input::placeholder{color:var(--muted)}
+input:hover{border-color:var(--line-h)}
+input:focus,select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgb(45 107 245 / .14)}
+input:disabled{background:var(--sunk);color:var(--muted)}
+input[type=number]{font-variant-numeric:tabular-nums}
+button{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 14px;border:1px solid transparent;border-radius:var(--r-sm);background:var(--ink);color:#fff;font:inherit;font-weight:500;white-space:nowrap;cursor:pointer;transition:background .15s,border-color .15s,color .15s,box-shadow .15s,transform .08s}
+button:active:not(:disabled){transform:translateY(1px)}
 button:disabled{opacity:.45;cursor:default}
-button.primary{background:var(--primary);color:#fff}
-button.primary:hover{background:var(--primary-h);opacity:1}
-button.ghost{background:var(--panel);color:var(--text);border-color:var(--border)}
-button.ghost:hover{background:var(--soft);opacity:1}
-button.quiet{background:transparent;color:var(--muted)}
-button.quiet:hover{background:var(--soft);color:var(--text);opacity:1}
-button.danger{background:transparent;color:var(--danger);border-color:transparent}
-button.danger:hover{background:var(--danger-soft);opacity:1}
-button.small{height:28px;padding:0 9px;font-size:12.5px}
-label.field{display:flex;flex-direction:column;gap:5px;color:var(--muted);font-size:12px;font-weight:500}
-
-/* tables */
-.table-box{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{padding:10px 16px;border-top:1px solid var(--border-2);text-align:left;white-space:nowrap;vertical-align:middle}
-thead th{border-top:0;color:var(--muted);font-weight:500;font-size:12px;background:var(--panel)}
-tbody tr:hover td{background:var(--hover)}
-td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
-.tag{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px;border-radius:5px;background:var(--soft);color:var(--muted);font-size:11.5px;font-weight:500}
-.tag::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.7}
-.tag.ok{background:var(--primary-soft);color:var(--primary)}
-.tag.off{background:var(--danger-soft);color:var(--danger)}
+button.primary{background:var(--brand)}
+button.primary:hover:not(:disabled){background:var(--brand-h)}
+button.dark{background:var(--ink)}
+button.dark:hover:not(:disabled){background:#000}
+button.ghost{background:var(--panel);color:var(--ink);border-color:var(--line)}
+button.ghost:hover:not(:disabled){background:var(--hover);border-color:var(--line-h)}
+button.danger{background:var(--panel);color:var(--bad);border-color:var(--line)}
+button.danger:hover:not(:disabled){background:var(--bad-bg);border-color:var(--bad-line)}
+button.danger-solid{background:var(--bad)}
+button.danger-solid:hover:not(:disabled){filter:brightness(.93)}
+button.small{height:30px;padding:0 11px;font-size:13px}
+button.block{width:100%}
+.icon-btn{width:32px;height:32px;padding:0;background:transparent;color:var(--muted)}
+.icon-btn:hover:not(:disabled){background:var(--sunk);color:var(--ink)}
+.text-btn{height:auto;padding:0;background:none;color:var(--brand);font-weight:500}
+.text-btn:hover{text-decoration:underline;text-underline-offset:3px}
+button.is-busy{color:transparent!important;pointer-events:none}
+button.is-busy svg{opacity:0}
+button.is-busy::after{content:"";position:absolute;width:14px;height:14px;border:2px solid var(--muted);border-right-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
+button.primary.is-busy::after,button.danger-solid.is-busy::after,button.dark.is-busy::after{border-color:#fff;border-right-color:transparent}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin .8s linear infinite}
+.link-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:30px;padding:0 11px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--panel);font-size:13px;font-weight:500;text-decoration:none;white-space:nowrap;transition:background .15s,border-color .15s}
+.link-btn:hover{background:var(--hover);border-color:var(--line-h)}
+.text-link{display:inline-flex;align-items:center;gap:2px;color:var(--brand);font-size:13px;font-weight:500;text-decoration:none}
+.text-link:hover{text-decoration:underline;text-underline-offset:3px}
+label.field{display:flex;flex-direction:column;gap:6px;color:var(--ink-2);font-size:13px;font-weight:500}
+.chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.chip{height:28px;padding:0 11px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--panel);color:var(--ink-2);font-size:13px;font-weight:500}
+.chip:hover:not(:disabled){border-color:var(--line-h);color:var(--ink)}
+.chip.is-on{border-color:var(--ink);background:var(--ink);color:#fff}
+.chip .n{margin-left:3px;color:var(--muted);font-weight:400;font-variant-numeric:tabular-nums}
+.chip.is-on .n{color:#c9cdd4}
+.search{position:relative;display:inline-flex}
+.search svg{position:absolute;left:10px;top:50%;translate:0 -50%;color:var(--muted);pointer-events:none}
+.search input{width:240px;padding-left:32px}
+.tag{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:var(--r-sm);background:var(--sunk);color:var(--ink-2);font-size:12px;font-weight:500;white-space:nowrap}
+.tag::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.tag.ok{background:var(--ok-bg);color:var(--ok)}
+.tag.warn{background:var(--warn-bg);color:var(--warn)}
+.tag.off{background:var(--bad-bg);color:var(--bad)}
 .tag.plain::before{display:none}
-.msg{margin:12px 16px 0;padding:8px 12px;border-radius:7px;font-size:12.5px}
-.card-body .msg{margin:12px 0 0}
-.msg:last-child{margin-bottom:16px}
-.card-body .msg:last-child{margin-bottom:0}
-.msg.err{background:var(--danger-soft);color:var(--danger)}
-.msg.ok{background:var(--primary-soft);color:var(--primary)}
-textarea{width:100%;min-height:150px;margin-top:10px;padding:10px 12px;border:1px solid var(--border);border-radius:7px;background:var(--soft);color:var(--text);font:12.5px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace}
-.gate{max-width:380px;margin:16vh auto;padding:28px;text-align:center}
-.gate h1{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 6px;font-size:18px}
-.gate h1 img{width:30px;height:30px}
-.gate a{color:var(--primary)}
-dialog{width:min(600px,calc(100vw - 32px));padding:0;border:1px solid var(--border);border-radius:12px;background:var(--panel);color:var(--text);box-shadow:0 24px 64px rgb(0 0 0 / .18)}
-dialog::backdrop{background:rgb(9 9 11 / .4);backdrop-filter:blur(2px)}
-.alert{display:flex;align-items:center;gap:10px;padding:10px 14px;margin-bottom:16px;border:1px solid var(--danger-line);border-radius:var(--radius);background:var(--danger-soft);color:var(--danger);font-weight:500}
+.tag.ink{background:var(--ink);color:#fff}
 
-/* channels */
-.channels{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-.ch{display:flex;flex-direction:column;gap:12px;padding:14px;border:1px solid var(--border);border-radius:var(--radius);background:var(--panel)}
-.ch.is-low{border-color:var(--danger-line);background:linear-gradient(var(--danger-soft),var(--panel) 60%)}
-.ch-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.ch-name{font-weight:600}
-.ch-label{margin-left:6px;color:var(--muted);font-size:12px;font-weight:400}
-.ch-bal-row{display:flex;justify-content:space-between;align-items:flex-end;gap:8px}
-.ch-bal{font-size:22px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-.ch-topup{display:inline-flex;align-items:center;gap:4px;height:26px;padding:0 9px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;white-space:nowrap}
-.ch-topup:hover{background:var(--soft)}
-.ch.is-low .ch-topup{border-color:var(--danger);background:var(--danger);color:#fff}
-.ch-sub{margin-top:-6px;color:var(--muted);font-size:12px;min-height:16px}
-.ch form{display:flex;flex-direction:column;gap:8px;padding-top:12px;border-top:1px solid var(--border-2)}
-.ch input{width:100%}
-.ch-save{display:flex;gap:8px;align-items:flex-end}
-.ch-save label{flex:1}
+/* ---------- panels and tables ---------- */
+.panel{border:1px solid var(--line);border-radius:var(--r-lg);background:var(--panel);box-shadow:var(--shadow)}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;padding:12px 20px;border-bottom:1px solid var(--line)}
+.panel-head h2{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0;font-size:15px}
+.panel-head p.sub{margin:2px 0 0;color:var(--muted);font-size:12.5px}
+.panel-body{padding:20px}
+.ic{display:grid;place-items:center;width:28px;height:28px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--panel);color:var(--ink-2)}
+.table-box{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{padding:12px 20px;border-top:1px solid var(--line-2);text-align:left;white-space:nowrap;vertical-align:middle}
+thead th{border-top:0;border-bottom:1px solid var(--line);background:var(--raise);color:var(--muted);font-size:12.5px;font-weight:500}
+thead+tbody tr:first-child td{border-top:0}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.empty{padding:48px 20px;color:var(--muted);text-align:center}
+.empty svg{display:block;margin:0 auto 10px;color:var(--faint)}
+.user{display:flex;align-items:center;gap:12px;min-width:0}
+.user img{flex:0 0 auto;width:34px;height:34px;border-radius:50%;object-fit:cover;background:var(--sunk)}
+.user .nm{display:flex;align-items:center;gap:6px;font-weight:500}
+.user .em{color:var(--muted);font-size:12.5px}
+tr.click{cursor:pointer}
+tr.click td{transition:background .12s}
+tr.click:hover td,tr.click.is-sel td{background:var(--hover)}
+tr.click.is-sel td:first-child{box-shadow:inset 2px 0 0 var(--brand)}
+td.go{width:44px;color:var(--faint)}
+tr.click:hover td.go{color:var(--ink)}
+td small{margin-left:6px;color:var(--muted)}
+.bal-cell{display:flex;align-items:center;justify-content:flex-end;gap:10px}
+.mini-bar{width:64px;height:4px;border-radius:2px;background:var(--sunk);overflow:hidden}
+.mini-bar i{display:block;height:100%;border-radius:2px;background:var(--brand)}
 
-/* price table */
-.pt-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border-2)}
-.pt-tools .grow{flex:1}
-.pt-site{border-top:1px solid var(--border-2)}
-.pt-site:first-of-type{border-top:0}
-.pt-site>summary{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;list-style:none;user-select:none}
-.pt-site>summary::-webkit-details-marker{display:none}
-.pt-site>summary:hover{background:var(--hover)}
-.pt-site>summary .chev{color:var(--faint);transition:transform .15s}
-.pt-site[open]>summary .chev{transform:rotate(90deg)}
-.pt-site>summary b{font-weight:600}
-.pt-site>summary .meta{color:var(--muted);font-size:12px}
-.pt-site>summary .bar{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
-.pt-site>summary .bar i{display:block;width:72px;height:4px;border-radius:2px;background:var(--soft);overflow:hidden}
-.pt-site>summary .bar i::after{content:"";display:block;height:100%;width:var(--p);background:var(--primary)}
-.pt-site>summary .dirty{color:var(--primary);font-weight:500}
-.pt-site .table-box{border-top:1px solid var(--border-2)}
-.pt td{vertical-align:middle}
-.pt .cost-col{color:var(--muted);font-variant-numeric:tabular-nums}
-.pt th.cost-head,.pt th.price-head{text-align:center}
-.pt th.price-head{color:var(--primary)}
-.pt td:nth-child(2),.pt td:nth-child(5),.pt th.cost-head,.pt th.price-head,.pt tr:nth-child(2) th:nth-child(1),.pt tr:nth-child(2) th:nth-child(4){border-left:1px solid var(--border-2)}
-.pt input{width:84px;height:28px;padding:0 8px;text-align:right;font-variant-numeric:tabular-nums}
-.pt input.is-dirty{border-color:var(--primary);background:var(--primary-soft)}
-.pt .label{font-weight:500}
-.pt .key{display:block;color:var(--faint);font-size:11px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+/* ---------- overview: one stat strip ---------- */
+.stat-strip{display:grid;grid-template-columns:1.5fr repeat(3,minmax(0,1fr));margin-bottom:20px}
+.stat{position:relative;display:flex;flex-direction:column;padding:22px 24px;border-left:1px solid var(--line);color:inherit;text-decoration:none}
+.stat:first-child{border-left:0}
+.stat-top{display:flex;align-items:center;gap:8px;color:var(--ink-2);font-size:13px}
+.stat-top svg{color:var(--muted)}
+.stat b{margin-top:10px;font-size:28px;font-weight:600;letter-spacing:-.02em;line-height:1.15;font-variant-numeric:tabular-nums}
+.stat b small{margin-right:2px;color:var(--muted);font-size:16px;font-weight:500}
+.stat>small{margin-top:6px;color:var(--muted);font-size:12.5px}
+.stat.is-link{transition:background .15s}
+.stat.is-link:hover{background:var(--hover)}
+.stat .go{position:absolute;top:22px;right:20px;color:var(--faint);transition:color .15s,transform .15s}
+.stat.is-link:hover .go{color:var(--ink);transform:translate(2px,-2px)}
+.stat.is-lead b{font-size:36px}
+.split{margin-top:auto;padding-top:18px}
+.split-bar{display:flex;gap:2px;height:8px}
+.split-bar i{display:block;height:100%;border-radius:2px;min-width:2px;transition:flex-grow .9s var(--ease)}
+.split-bar .s-used{background:var(--brand)}
+.split-bar .s-left{background:var(--faint)}
+.split-legend{display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:10px;color:var(--ink-2);font-size:12.5px;font-variant-numeric:tabular-nums}
+.split-legend span{display:inline-flex;align-items:center;gap:6px}
+.split-legend i{width:8px;height:8px;border-radius:2px}
 
-/* users */
-.user{display:flex;align-items:center;gap:10px;min-width:0}
-.user img{flex:0 0 auto;width:30px;height:30px;border-radius:50%;object-fit:cover}
-.user .nm{font-weight:500}
-.user .em{color:var(--muted);font-size:12px}
-.acts{display:flex;justify-content:flex-end;gap:2px}
-tr.adjust-row td{background:var(--hover)}
-.cos-backup{margin-top:16px;padding-top:14px;border-top:1px solid var(--border-2)}
-.cos-backup>summary{cursor:pointer;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+/* channels: one panel, four columns */
+.ch-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.ch-card{position:relative;display:flex;flex-direction:column;gap:10px;padding:20px 22px;border-left:1px solid var(--line);transition:background .15s}
+.ch-card:first-child{border-left:0}
+.ch-card::before{content:"";position:absolute;left:0;right:0;top:-1px;height:2px;background:transparent}
+.ch-card[data-state="low"]::before{background:var(--warn-fill)}
+.ch-card[data-state="error"]::before{background:var(--bad)}
+.ch-top{display:flex;align-items:center;gap:10px}
+.ch-badge{display:grid;place-items:center;width:30px;height:30px;border-radius:var(--r-sm);background:var(--sunk);color:var(--ink);font-size:13px;font-weight:600}
+.ch-name{flex:1;min-width:0}
+.ch-name b{display:block;font-size:14px;font-weight:600;line-height:1.3}
+.ch-name small{color:var(--muted);font-size:12px}
+.ch-amount{margin-top:6px;font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1.2;font-variant-numeric:tabular-nums}
+.ch-card[data-state="low"] .ch-amount{color:var(--warn)}
+.ch-card[data-state="no_key"] .ch-amount,.ch-card[data-state="error"] .ch-amount{color:var(--faint)}
+.gauge{position:relative;height:6px;border-radius:3px;background:var(--sunk)}
+.gauge i{position:absolute;inset:0 auto 0 0;width:calc(var(--fill,0) * 100%);border-radius:3px;background:var(--ink);transition:width .9s var(--ease)}
+.ch-card[data-state="low"] .gauge i{background:var(--warn-fill)}
+.gauge em{position:absolute;top:-3px;bottom:-3px;left:calc(var(--at) * 100%);width:2px;border-radius:1px;background:var(--panel);box-shadow:0 0 0 1px var(--faint)}
+.ch-card.is-loading .gauge{background:linear-gradient(90deg,var(--sunk),#e8eaee,var(--sunk));background-size:200% 100%;animation:shimmer 1.1s linear infinite}
+.ch-card.is-loading .gauge i{opacity:0}
+.skel{display:inline-block;width:110px;height:26px;border-radius:6px;background:linear-gradient(90deg,var(--sunk),#e8eaee,var(--sunk));background-size:200% 100%;animation:shimmer 1.1s linear infinite;vertical-align:middle}
+@keyframes shimmer{to{background-position:-200% 0}}
+.ch-note{margin:0;min-height:19px;color:var(--muted);font-size:12.5px}
+.ch-foot{display:flex;gap:6px;margin-top:4px}
+.ch-foot .link-btn,.ch-foot button{flex:1}
+.ch-foot .link-btn.is-warn{border-color:var(--warn-fill);background:var(--warn-fill);color:#fff}
+
+.duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start;margin-top:20px}
+.act{display:flex;gap:16px;padding:20px}
+.act+.act{border-top:1px solid var(--line-2)}
+.act-ic{display:grid;place-items:center;flex:0 0 auto;width:38px;height:38px;border-radius:var(--r);background:var(--sunk);color:var(--ink)}
+.act-main{flex:1;min-width:0}
+.act-main h3{margin:0;font-size:14px}
+.act-main>p{margin:2px 0 12px;color:var(--muted);font-size:12.5px}
+.qa-row{display:flex;gap:8px;margin-bottom:10px}
+.qa-row input{flex:1}
+.qa-row .w-amt{flex:0 0 108px}
+.qa-row .w-cnt{flex:0 0 84px}
+.qa-hint{margin:0;color:var(--muted);font-size:12.5px}
+.qa-hint b{color:var(--ink);font-variant-numeric:tabular-nums}
+.qa-hint .is-err{color:var(--bad)}
+.chips .qa-hint{margin-left:4px}
+.feed{margin:0;padding:6px 0;list-style:none}
+.person{display:flex;align-items:center;justify-content:flex-start;gap:12px;width:100%;height:auto;padding:10px 20px;border-radius:0;background:transparent;color:var(--ink);font-weight:400;text-align:left}
+.person:hover{background:var(--hover)}
+.person img{flex:0 0 auto;width:34px;height:34px;border-radius:50%;object-fit:cover;background:var(--sunk)}
+.p-main{flex:1;min-width:0}
+.p-main b,.p-side b{display:block;font-weight:500}
+.p-main small,.p-side small{display:block;overflow:hidden;color:var(--muted);font-size:12.5px;text-overflow:ellipsis;white-space:nowrap}
+.p-side{text-align:right;font-variant-numeric:tabular-nums}
+
+/* ---------- user drawer ---------- */
+.scrim{position:fixed;inset:0;z-index:40;background:rgb(29 33 41 / .32)}
+.drawer{position:fixed;top:0;right:0;bottom:0;z-index:41;display:flex;flex-direction:column;width:min(440px,100vw);background:var(--panel);box-shadow:-12px 0 40px -12px rgb(29 33 41 / .25)}
+.scrim.is-new{animation:fade-in .2s ease}
+.drawer.is-new{animation:drawer-in .26s var(--ease)}
+.scrim.is-out{animation:fade-out .2s ease forwards}
+.drawer.is-out{animation:drawer-out .2s ease forwards}
+@keyframes drawer-in{from{opacity:0;transform:translateX(32px)}to{opacity:1;transform:none}}
+@keyframes drawer-out{to{opacity:0;transform:translateX(32px)}}
+@keyframes fade-in{from{opacity:0}}
+@keyframes fade-out{to{opacity:0}}
+.dr-head{display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line)}
+.dr-head img{width:44px;height:44px;border-radius:50%;object-fit:cover;background:var(--sunk)}
+.dr-who{flex:1;min-width:0}
+.dr-who b{display:flex;align-items:center;gap:6px;font-size:16px}
+.dr-who small{color:var(--muted)}
+.dr-body{flex:1;overflow-y:auto;padding:20px}
+.dr-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border:1px solid var(--line);border-radius:var(--r-lg)}
+.dr-stats div{padding:14px 16px}
+.dr-stats div+div{border-left:1px solid var(--line)}
+.dr-stats span{color:var(--muted);font-size:12.5px}
+.dr-stats b{display:block;margin-top:4px;font-size:22px;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.dr-meta{margin:10px 2px 0;color:var(--muted);font-size:12.5px}
+.dr-block{margin-top:26px}
+.dr-block h3{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:14px}
+.dr-block h3 svg{color:var(--muted)}
+.dr-row{display:flex;gap:8px;margin-top:10px}
+.dr-row input{flex:1}
+.dr-row.between{align-items:center;justify-content:space-between}
+.adj-preview{color:var(--muted);font-variant-numeric:tabular-nums}
+.adj-preview b{color:var(--ink)}
+.adj-preview.is-down b{color:var(--bad)}
+.ledger{position:relative;margin:0;padding:0 0 0 20px;list-style:none}
+.ledger::before{content:"";position:absolute;left:5px;top:8px;bottom:8px;width:1px;background:var(--line)}
+.ledger li{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1px 12px;padding:8px 0}
+.ledger li::before{content:"";position:absolute;left:-19px;top:14px;width:9px;height:9px;border:2px solid var(--panel);border-radius:50%;background:var(--faint);box-shadow:0 0 0 1px var(--line)}
+.ledger li.up::before{background:var(--brand)}
+.ledger li.down::before{background:var(--ink-2)}
+.l-main{grid-row:span 2;min-width:0}
+.l-main b{display:block;overflow:hidden;font-size:13.5px;font-weight:500;text-overflow:ellipsis;white-space:nowrap}
+.l-main small{color:var(--muted);font-size:12px}
+.l-amt{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.l-amt.up{color:var(--ok)}
+.l-bal{color:var(--muted);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+.skel-row{height:44px;margin:4px 0;border-radius:6px;background:linear-gradient(90deg,var(--sunk),#e8eaee,var(--sunk));background-size:200% 100%;animation:shimmer 1.1s linear infinite}
+.dr-acts{display:flex;flex-wrap:wrap;gap:8px}
+
+/* ---------- price matrix ---------- */
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--line)}
+.seg{display:inline-flex;gap:2px;padding:3px;border-radius:var(--r);background:var(--sunk)}
+.seg button{height:28px;padding:0 12px;border-radius:var(--r-sm);background:transparent;color:var(--ink-2);font-size:13px}
+.seg button:hover{color:var(--ink)}
+.seg button.is-on{background:var(--panel);color:var(--ink);box-shadow:0 1px 2px rgb(29 33 41 / .1),0 0 0 1px var(--line)}
+.w-mk{width:64px}
+.legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px;padding:10px 20px;border-bottom:1px solid var(--line);background:var(--raise);color:var(--muted);font-size:12.5px}
+.mx-wrap{overflow-x:auto}
+.mx{min-width:1000px}
+.mx th,.mx td{padding:9px 5px}
+.mx .model{position:sticky;left:0;z-index:1;min-width:186px;padding-left:20px;border-right:1px solid var(--line);background:var(--panel);color:var(--ink);font-weight:500;text-align:left;white-space:normal}
+.mx thead .model{background:var(--raise);color:var(--muted)}
+.mx thead th{border-bottom:0}
+.mx thead tr:last-child th{border-bottom:1px solid var(--line)}
+.mx .ch-h{padding:12px 8px 6px;border-left:1px solid var(--line);color:var(--ink);text-align:center;transition:background .15s,color .15s}
+.mx .ch-h b{display:block;font-size:13.5px;font-weight:600}
+.mx .ch-h small{color:var(--muted);font-size:11.5px;font-weight:400}
+.mx .res{padding-top:2px;padding-bottom:8px;color:var(--muted);font-size:12px;text-align:center;transition:background .15s,color .15s}
+.mx .first{border-left:1px solid var(--line)}
+.mx th.is-focus{background:var(--brand-soft);color:var(--brand)}
+.mx th.is-focus small{color:var(--brand)}
+.mx tbody tr:hover td,.mx tbody tr:hover .model{background:var(--hover)}
+.mx tbody tr.is-focus .model{background:var(--brand-soft);color:var(--brand)}
+.mx tbody tr.group-start>*{border-top:1px solid var(--line)}
+.mx td.na,.mx tbody tr:hover td.na{background:var(--raise)}
+.mx td.na::after{content:"—";display:block;color:var(--faint);text-align:center}
+.pc{display:flex;flex-direction:column;gap:3px;width:72px;margin:0 auto}
+.pc.wide{width:140px}
+.pc input{width:100%;height:30px;padding:0 8px;text-align:right}
+.pc input.is-dirty{border-color:var(--warn-fill);background:var(--warn-bg)}
+.pc-meta{display:flex;justify-content:space-between;gap:4px;color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.x{font-style:normal;font-weight:600}
+.x.good{color:var(--ok)}
+.x.thin{color:var(--warn)}
+.x.loss{color:var(--bad)}
+.savebar{position:fixed;left:50%;bottom:24px;z-index:20;display:flex;align-items:center;gap:14px;padding:8px 8px 8px 16px;border-radius:var(--r-lg);background:var(--ink);color:#fff;box-shadow:0 12px 32px -10px rgb(0 0 0 / .4);translate:-50% 140%;opacity:0;visibility:hidden;transition:translate .3s var(--ease),opacity .2s,visibility .3s}
+.savebar.is-on{translate:-50% 0;opacity:1;visibility:visible}
+.savebar b{font-variant-numeric:tabular-nums}
+.savebar .sb-dot{width:8px;height:8px;border-radius:50%;background:var(--warn-fill)}
+.savebar button.quiet{background:transparent;color:#c9cdd4}
+.savebar button.quiet:hover{background:rgb(255 255 255 / .1);color:#fff}
+.savebar button.primary{background:#fff;color:var(--ink)}
+.savebar button.primary:hover:not(:disabled){background:#e5e6eb}
+
+/* ---------- codes ---------- */
+.codes-layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:20px;align-items:start}
+.codes-table th,.codes-table td{padding-left:14px;padding-right:14px}
+.codes-table td:first-child,.codes-table th:first-child{padding-left:16px}
+.codes-table .used{max-width:180px;overflow:hidden;text-overflow:ellipsis}
+.gen{position:sticky;top:80px}
+.gen-form{display:flex;flex-direction:column;gap:14px}
+.gen-form input{width:100%}
+.stepper{display:flex}
+.stepper input{border-radius:0;text-align:center}
+.stepper .step{flex:0 0 36px;height:36px;padding:0;border:1px solid var(--line);background:var(--raise);color:var(--ink-2)}
+.stepper .step:hover{background:var(--sunk);color:var(--ink)}
+.stepper .step:first-child{border-right:0;border-radius:var(--r-sm) 0 0 var(--r-sm)}
+.stepper .step:last-child{border-left:0;border-radius:0 var(--r-sm) var(--r-sm) 0}
+.ticket{position:relative;margin-top:2px;padding:16px 18px;border:1px dashed var(--line-h);border-radius:var(--r);background:var(--raise)}
+.ticket::before,.ticket::after{content:"";position:absolute;top:50%;width:14px;height:14px;margin-top:-7px;border:1px dashed var(--line-h);border-radius:50%;background:var(--panel)}
+.ticket::before{left:-8px;clip-path:inset(0 0 0 50%)}
+.ticket::after{right:-8px;clip-path:inset(0 50% 0 0)}
+.ticket span{display:block;color:var(--muted);font-size:12.5px}
+.ticket b{display:block;margin-top:2px;font-size:24px;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.ticket small{color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums}
+.gen-out{padding:16px 20px 20px;border-top:1px solid var(--line)}
+.gen-out p{margin:0 0 8px}
+textarea{width:100%;min-height:120px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--raise);font:12.5px/1.7 var(--mono);resize:vertical}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.code-btn{gap:6px;height:auto;padding:3px 8px;border:1px solid transparent;border-radius:var(--r-sm);background:transparent;color:var(--ink);font:500 13px var(--mono);letter-spacing:.02em}
+.code-btn:hover{border-color:var(--line);background:var(--panel);color:var(--brand)}
+.code-btn svg{opacity:0;transition:opacity .12s}
+.code-btn:hover svg,.code-btn:focus-visible svg{opacity:1}
+
+/* ---------- settings ---------- */
+.set-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start}
+.set-grid .wide{grid-column:1 / -1}
+.stack{display:flex;flex-direction:column;gap:14px}
+.stack input{width:100%}
+.stack .acts{display:flex;justify-content:flex-end;gap:8px}
 .secret-wrap{position:relative;display:flex;align-items:center}
-.secret-wrap input{flex:1;min-width:0;padding-right:36px}
-.secret-eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:28px;height:28px;padding:0;border:0;border-radius:6px;background:transparent;color:var(--muted);cursor:pointer}
-.secret-eye:hover{background:var(--hover);color:var(--text)}
-.secret-eye svg{width:16px;height:16px}
-.delivery-option{display:flex;gap:8px;align-items:flex-start;margin:6px 0;font-size:13px;line-height:1.55;cursor:pointer}
-.delivery-option input{margin-top:3px}
-tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
-.search{position:relative}
-.search svg{position:absolute;left:9px;top:50%;translate:0 -50%;color:var(--faint)}
-.search input{width:240px;padding-left:30px}
+.secret-wrap input{flex:1;padding-right:40px}
+.secret-eye{position:absolute;right:3px;top:50%;display:grid;place-items:center;width:30px;height:30px;padding:0;border:0;border-radius:var(--r-sm);background:transparent;color:var(--muted);transform:translateY(-50%)}
+.secret-eye:hover:not(:disabled){background:var(--sunk);color:var(--ink)}
+.secret-eye:active:not(:disabled){transform:translateY(-50%)}
+.radio-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.radio-card{display:flex;align-items:flex-start;gap:12px;padding:16px;border:1px solid var(--line);border-radius:var(--r);line-height:1.6;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.radio-card:hover{border-color:var(--line-h)}
+.radio-card:has(input:checked){border-color:var(--brand);box-shadow:0 0 0 1px var(--brand)}
+.radio-card input{width:16px;height:16px;margin:3px 0 0;accent-color:var(--brand)}
+.radio-card b{display:block;margin-bottom:2px}
+.radio-card span{color:var(--ink-2);font-size:13px}
+.cos-backup{margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+.cos-backup>summary{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-weight:600;list-style:none;cursor:pointer}
+.cos-backup>summary::-webkit-details-marker{display:none}
+.cos-backup>summary .chev{color:var(--muted);transition:transform .2s var(--ease)}
+.cos-backup[open]>summary .chev{transform:rotate(90deg)}
+.cos-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:end}
+.cos-grid input{width:100%}
 
-@media (max-width:860px){
-  .shell{grid-template-columns:1fr}
-  .side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;border-right:0;border-bottom:1px solid var(--border)}
-  .brand{padding:4px 8px}
-  .side-foot{display:none}
-  .main{padding:20px 16px 48px}
-  .stat{border-left:0;border-top:1px solid var(--border-2)}
+/* ---------- dialogs, command palette, toasts ---------- */
+dialog{width:min(460px,calc(100vw - 32px));padding:0;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--panel);color:var(--ink);box-shadow:0 24px 60px -20px rgb(29 33 41 / .4)}
+dialog[open]{animation:dlg-in .2s var(--ease)}
+dialog::backdrop{background:rgb(29 33 41 / .32)}
+@keyframes dlg-in{from{opacity:0;transform:translateY(6px) scale(.985)}to{opacity:1;transform:none}}
+.dlg-form{display:flex;flex-direction:column;gap:16px;padding:20px 22px}
+.dlg-form input{width:100%}
+.dlg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.dlg-head h2{margin:0;font-size:16px}
+.dlg-head p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.dlg-acts{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+#confirm-dialog{width:min(420px,calc(100vw - 32px))}
+#confirm-dialog form{padding:22px}
+#confirm-dialog h2{margin:0 0 8px;font-size:16px}
+#confirm-dialog p{margin:0 0 20px;color:var(--ink-2);white-space:pre-line}
+#cmdk{width:min(560px,calc(100vw - 32px));margin-top:14vh}
+.cmdk-in{display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid var(--line)}
+.cmdk-in svg{color:var(--muted)}
+.cmdk-in input{flex:1;height:52px;padding:0;border:0;font-size:15px}
+.cmdk-in input:focus{box-shadow:none}
+.cmdk-list{max-height:360px;margin:0;padding:6px;overflow-y:auto;list-style:none}
+.cmdk-group{padding:8px 10px 4px;color:var(--muted);font-size:12px}
+.cmdk-item{display:flex;align-items:center;justify-content:flex-start;gap:10px;width:100%;height:auto;padding:9px 10px;border-radius:var(--r-sm);background:transparent;color:var(--ink);font-weight:400;text-align:left}
+.cmdk-item svg{color:var(--muted)}
+.cmdk-item img{width:22px;height:22px;border-radius:50%}
+.cmdk-item small{margin-left:auto;color:var(--muted);font-size:12px}
+.cmdk-item.is-on{background:var(--sunk)}
+.cmdk-foot{display:flex;gap:14px;padding:9px 16px;border-top:1px solid var(--line);background:var(--raise);color:var(--muted);font-size:12px}
+.cmdk-foot span{display:inline-flex;align-items:center;gap:5px}
+.toasts{position:fixed;right:24px;bottom:24px;z-index:60;display:flex;flex-direction:column;align-items:flex-end;gap:8px;pointer-events:none}
+.toast{display:flex;align-items:center;gap:10px;max-width:420px;padding:11px 14px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel);color:var(--ink);font-size:13.5px;box-shadow:var(--shadow-lift);pointer-events:auto;animation:toast-in .24s var(--ease)}
+.toast svg{color:var(--ok)}
+.toast.is-err svg{color:var(--bad)}
+.toast.is-out{animation:toast-out .2s ease forwards}
+@keyframes toast-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes toast-out{to{opacity:0;transform:translateX(12px)}}
+.gate{max-width:400px;margin:18vh auto;padding:32px;text-align:center}
+.gate h1{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 0 8px;font-size:18px}
+.gate .brand-mark{width:32px;height:32px}
+.gate a{color:var(--brand);font-weight:500}
+
+/* ---------- smaller screens ---------- */
+@media (max-width:1100px){
+  .stat-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat{border-top:1px solid var(--line)}
+  .stat:nth-child(-n+2){border-top:0}
+  .stat:nth-child(odd){border-left:0}
+  .ch-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ch-card:nth-child(n+3){border-top:1px solid var(--line)}
+  .ch-card:nth-child(odd){border-left:0}
+  .cos-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:900px){
+  .top-in{gap:16px;padding:0 16px}
+  .brand span,.me b,.me-sep,.kbd-btn span{display:none}
+  .duo,.codes-layout,.set-grid{grid-template-columns:minmax(0,1fr)}
+  .gen{position:static}
+}
+@media (max-width:640px){
+  .top-in{height:56px}
+  .brand b,.kbd-btn{display:none}
+  .me .link-btn{display:none}
+  .wrap{padding:20px 16px 120px}
+  .page-head h1{font-size:21px}
+  .stat-strip,.ch-grid{grid-template-columns:minmax(0,1fr)}
+  .stat,.ch-card{border-left:0!important;border-top:1px solid var(--line)}
+  .stat:first-child,.ch-card:first-child{border-top:0}
+  .search,.search input{width:100%}
+  .head-tools{width:100%}
+  .cos-grid{grid-template-columns:minmax(0,1fr)}
+  .qa-row{flex-wrap:wrap}
+  .qa-row input{flex:1 1 140px}
+  .toasts{left:16px;right:16px;align-items:stretch}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 </style>
 </head>
 <body>
-<div id="app"><p class="muted" style="padding:28px">加载中…</p></div>
+<div id="app"><p class="muted" style="padding:30px">加载中…</p></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
 
-<dialog id="ledger-dialog">
-  <div class="card-head"><h2 id="ledger-title">余额记录</h2><button class="quiet small" type="button" onclick="this.closest('dialog').close()">关闭</button></div>
-  <div class="table-box" style="max-height:60vh"><table><thead><tr><th>时间</th><th>说明</th><th class="num">变动</th><th class="num">余额</th></tr></thead><tbody id="ledger-body"></tbody></table></div>
+<dialog id="ch-dialog"><div id="ch-dialog-body"></div></dialog>
+
+<dialog id="confirm-dialog">
+  <form method="dialog">
+    <h2></h2>
+    <p></p>
+    <div class="dlg-acts"><button class="ghost" value="cancel" data-cancel>取消</button><button class="primary" value="ok" data-ok>确定</button></div>
+  </form>
+</dialog>
+
+<dialog id="cmdk" aria-label="快速跳转">
+  <div class="cmdk-in">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    <input id="cmdk-input" placeholder="搜索页面、用户或操作" autocomplete="off" aria-label="快速跳转">
+    <kbd>Esc</kbd>
+  </div>
+  <ul class="cmdk-list" id="cmdk-list" role="listbox"></ul>
+  <div class="cmdk-foot"><span><kbd>↑</kbd><kbd>↓</kbd>选择</span><span><kbd>↵</kbd>打开</span></div>
 </dialog>
 
 <script>
@@ -204,8 +494,21 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
   const app = document.getElementById("app");
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const money = (n) => "¥" + (Math.round(Number(n) * 1000) % 10 ? Number(n).toFixed(3) : Number(n).toFixed(2));
+  const signed = (n) => (n > 0 ? "+" : "") + money(n).replace("¥-", "-¥");
   const time = (t) => t ? new Date(t).toLocaleString("zh-CN", { hour12: false }) : "";
+  const day = (t) => t ? new Date(t).toLocaleDateString("zh-CN") : "";
+  function ago(t) {
+    if (!t) return "";
+    const s = (Date.now() - new Date(t).getTime()) / 1000;
+    if (s < 60) return "刚刚";
+    if (s < 3600) return Math.floor(s / 60) + " 分钟前";
+    if (s < 86400) return Math.floor(s / 3600) + " 小时前";
+    if (s < 86400 * 30) return Math.floor(s / 86400) + " 天前";
+    return day(t);
+  }
   const KIND = { redeem: "兑换码", admin: "管理员调整", usage: "生成消费", refund: "失败退款" };
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
 
   async function api(path, body, method) {
     const res = await fetch("/api/account" + path, {
@@ -220,11 +523,13 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
     return data;
   }
 
+  // ---------- state ----------
   let me = null;
-  let users = [];
+  let statsData = null;
+  let users = [];      // what the users page shows (may be a search result)
+  let allUsers = [];   // everyone, for the overview, quick top-up and ⌘K
   let codes = [];
   let lastBatch = null;
-  let flash = { users: null, codes: null, channels: null, prices: null };
   let channels = [];
   let balances = null;
   let balancesLoading = false;
@@ -237,34 +542,122 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
   let markup = 2;
   const draft = new Map(); // "channel|model|spec" -> price string being edited
   const TABS = ["overview", "prices", "users", "codes", "settings"];
+  const TAB_LABEL = { overview: "概览", prices: "价格表", users: "用户", codes: "兑换码", settings: "设置" };
   let tab = TABS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "overview";
-  const openSites = new Set(["tudou"]); // price-table groups left open
-  let adjustUser = null; // user id whose balance form is open
+  let renderedTab = null;
+  let introPending = true; // count-up and bars grow the first time the overview shows
+  let gaugesFresh = false; // channel gauges grow after each balance check
   let userQ = "";
-  const userQuery = () => (document.getElementById("user-q")?.value ?? userQ).trim();
-  window.addEventListener("hashchange", () => {
-    const next = location.hash.slice(1);
-    if (TABS.includes(next) && next !== tab) { tab = next; render(); window.scrollTo(0, 0); }
-  });
+  let userFilter = "all";
+  let searchTimer = null;
+  let searchSeq = 0;
+  let ptFilter = "";
+  let ptFamily = "all";
+  let codeFilter = "all";
+  const codeDraft = { amountYuan: "", count: "10", batch: "" };
+  const qa = { who: "", amount: "", codeAmount: "", codeCount: "10" };
+  let drawerUser = null;
+  let drawerLedger = null;
+  let drawerIsNew = false;
+  const adj = { amount: "", note: "" };
 
-  function msg(m) { return m ? `<div class="msg ${m.err ? "err" : "ok"}" role="${m.err ? "alert" : "status"}">${esc(m.text)}</div>` : ""; }
+  const COLS = ["tudou", "apimart", "grsai", "runninghub"];
+  const CHANNEL_NAME = { tudou: "渠道 1", apimart: "渠道 2", grsai: "渠道 3", runninghub: "渠道 4" };
+  const RES = ["1k", "2k", "4k"];
+  const chName = (id) => channels.find((c) => c.id === id)?.name || id;
+  const displayName = (u) => u.customName || u.username.split("@")[0];
+  const avatarOf = (u) => (typeof lwAvatarUrl === "function" ? lwAvatarUrl({ ...u, email: u.email || u.username }) : "");
+  const userById = (id) => allUsers.find((u) => u.id === id) || users.find((u) => u.id === id);
+  const priceKey = (r) => `${r.channel}|${r.model}|${r.spec}`;
+  const savedPrice = (r) => prices.find((p) => priceKey(p) === priceKey(r));
+  const fmtBal = (b, unit) => b == null ? "--" : b < 0 ? "无限" : unit + Number(b).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+  const svg = (d, size = 16) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const ICON = {
+    eye: svg('<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>'),
+    eyeOff: svg('<path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-2.6 3.6M6.6 6.6C3.9 8.4 2 12 2 12s3.6 7 10 7a9.8 9.8 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="m2 2 20 20"/>'),
+    overview: svg('<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>'),
+    prices: svg('<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.5"/>'),
+    users: svg('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/>'),
+    codes: svg('<path d="M3 9a3 3 0 0 0 0 6v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a3 3 0 0 0 0-6V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1Z"/><path d="M13 5v2M13 17v2M13 11v2"/>'),
+    settings: svg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/>'),
+    wallet: svg('<path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2Z"/><circle cx="16.5" cy="14.5" r="1"/>'),
+    bolt: svg('<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/>'),
+    layers: svg('<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/>'),
+    clock: svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
+    shield: svg('<path d="M12 3 4 6v6c0 4.5 3.2 8 8 9 4.8-1 8-4.5 8-9V6l-8-3Z"/>'),
+    mail: svg('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>'),
+    image: svg('<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/>'),
+    send: svg('<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>'),
+    plus: svg('<path d="M12 5v14M5 12h14"/>'),
+    chev: svg('<path d="m9 18 6-6-6-6"/>', 14).replace("<svg", '<svg class="chev"'),
+    search: svg('<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>', 15),
+    ext: svg('<path d="M7 17 17 7"/><path d="M8 7h9v9"/>', 13),
+    check: svg('<path d="M20 6 9 17l-5-5"/>'),
+    alert: svg('<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/>'),
+    refresh: svg('<path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 4v5h-5"/>', 15),
+    copy: svg('<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>', 13),
+    close: svg('<path d="M18 6 6 18M6 6l12 12"/>', 18),
+    inbox: svg('<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13L22 12v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6l3.5-7Z"/>', 28),
+  };
+  // Key boxes get an eye: it shows what was typed, or loads the saved key so it can be copied.
+  const secret = (input, item) => `<span class="secret-wrap">${input}<button type="button" class="secret-eye" data-reveal="${item}" title="显示 / 隐藏" aria-label="显示密钥">${ICON.eye}</button></span>`;
+  const ic = (name) => `<span class="ic">${ICON[name]}</span>`;
+
+  // ---------- feedback ----------
+  const toastBox = document.getElementById("toasts");
+  function toast(text, err) {
+    const el = document.createElement("div");
+    el.className = "toast" + (err ? " is-err" : "");
+    el.setAttribute("role", err ? "alert" : "status");
+    el.innerHTML = `${err ? ICON.alert : ICON.check}<span>${esc(text)}</span>`;
+    toastBox.appendChild(el);
+    setTimeout(() => { el.classList.add("is-out"); setTimeout(() => el.remove(), 220); }, err ? 6000 : 3200);
+  }
+  function busy(btn, on) {
+    if (!btn) return;
+    btn.disabled = on;
+    btn.classList.toggle("is-busy", on);
+  }
+  const confirmDialog = document.getElementById("confirm-dialog");
+  function ask({ title, text = "", ok = "确定", danger = false }) {
+    confirmDialog.querySelector("h2").textContent = title;
+    confirmDialog.querySelector("p").textContent = text;
+    const okBtn = confirmDialog.querySelector("[data-ok]");
+    okBtn.textContent = ok;
+    okBtn.className = danger ? "danger-solid" : "primary";
+    return new Promise((resolve) => {
+      confirmDialog.returnValue = "";
+      confirmDialog.addEventListener("close", () => resolve(confirmDialog.returnValue === "ok"), { once: true });
+      confirmDialog.showModal();
+      (danger ? confirmDialog.querySelector("[data-cancel]") : okBtn).focus();
+    });
+  }
+
+  // ---------- data ----------
   async function load() {
     me = (await api("/me")).user;
     if (!me || me.role !== "admin") {
-      app.innerHTML = `<div class="gate card"><h1><img src="./kitty.png" alt="">管理后台</h1>
+      app.innerHTML = `<div class="gate panel"><h1><span class="brand-mark">老</span>管理后台</h1>
         <p class="muted">${me ? "当前账号没有管理员权限。" : "请先在老屋作坊首页登录管理员账号。"}</p>
         <p><a href="/">返回老屋作坊</a></p></div>`;
       return;
     }
-    await Promise.all([loadStats(), loadUsers(), loadCodes(), loadChannels(), loadPrices(), loadCloud(), loadCos(), loadMail()]);
+    await Promise.all([loadStats(), refreshUsers(), loadCodes(), loadChannels(), loadPrices(), loadCloud(), loadCos(), loadMail()]);
+    shell();
     render();
     checkBalances();
   }
-
-  let statsData = null;
   async function loadStats() { statsData = await api("/admin/stats"); }
-  async function loadUsers(q) { users = (await api("/admin/users" + (q ? "?q=" + encodeURIComponent(q) : ""))).items; }
+  async function refreshUsers() {
+    const q = userQ;
+    const [list, all] = await Promise.all([
+      api("/admin/users" + (q ? "?q=" + encodeURIComponent(q) : "")),
+      q ? api("/admin/users") : null,
+    ]);
+    users = list.items;
+    allUsers = all ? all.items : list.items;
+  }
   async function loadCodes() { codes = (await api("/admin/codes")).items; }
   async function loadCloud() { cloud = await api("/admin/cloudinary"); }
   async function loadCos() { cos = await api("/admin/cos"); }
@@ -274,327 +667,704 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
     const r = await api("/admin/price-catalog");
     catalog = r.rows; prices = r.prices; fx = r.fx;
   }
-  const priceKey = (r) => `${r.channel}|${r.model}|${r.spec}`;
-  const savedPrice = (r) => prices.find((p) => priceKey(p) === priceKey(r));
-  async function checkBalances() {
+  async function checkBalances({ announce = false } = {}) {
     balancesLoading = true; render();
-    try { balances = await api("/admin/channel-balances"); flash.channels = null; }
-    catch (err) { flash.channels = { err: true, text: err.message }; }
+    try {
+      balances = await api("/admin/channel-balances");
+      gaugesFresh = true;
+      if (announce) toast("余额已刷新");
+    } catch (err) { toast(err.message, true); }
     balancesLoading = false; render();
   }
-  const fmtBal = (b, unit) => b == null ? "--" : b < 0 ? "无限" : unit + Number(b).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  const SITE_ORDER = ["tudou", "apimart", "runninghub", "grsai"];
-  const SITE_NAME = { tudou: "Tudou", apimart: "Mart", runninghub: "RH", grsai: "Grsai" };
-  const CHANNEL_NAME = { tudou: "渠道 1", apimart: "渠道 2", grsai: "渠道 3", runninghub: "渠道 4" };
-  const svg = (d, size = 16) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
-  // Key boxes get an eye: it shows what was typed, or loads the saved key so it can be copied.
-  const secret = (input, item) => `<span class="secret-wrap">${input}<button type="button" class="secret-eye" data-reveal="${item}" title="显示 / 隐藏" aria-label="显示密钥">${ICON.eye}</button></span>`;
-  const ICON = {
-    eye: svg('<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>'),
-    eyeOff: svg('<path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-2.6 3.6M6.6 6.6C3.9 8.4 2 12 2 12s3.6 7 10 7a9.8 9.8 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="m2 2 20 20"/>'),
-    overview: svg('<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>'),
-    prices: svg('<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.5"/>'),
-    users: svg('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/>'),
-    codes: svg('<path d="M3 9a3 3 0 0 0 0 6v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a3 3 0 0 0 0-6V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1Z"/><path d="M13 5v2M13 17v2M13 11v2"/>'),
-    settings: svg('<path d="M12.2 2h-.4a2 2 0 0 0-2 2v.2a2 2 0 0 1-1 1.7l-.4.3a2 2 0 0 1-2 0l-.2-.1a2 2 0 0 0-2.7.7l-.2.4a2 2 0 0 0 .7 2.7l.2.1a2 2 0 0 1 1 1.7v.6a2 2 0 0 1-1 1.7l-.2.1a2 2 0 0 0-.7 2.7l.2.4a2 2 0 0 0 2.7.7l.2-.1a2 2 0 0 1 2 0l.4.3a2 2 0 0 1 1 1.7v.2a2 2 0 0 0 2 2h.4a2 2 0 0 0 2-2v-.2a2 2 0 0 1 1-1.7l.4-.3a2 2 0 0 1 2 0l.2.1a2 2 0 0 0 2.7-.7l.2-.4a2 2 0 0 0-.7-2.7l-.2-.1a2 2 0 0 1-1-1.7v-.6a2 2 0 0 1 1-1.7l.2-.1a2 2 0 0 0 .7-2.7l-.2-.4a2 2 0 0 0-2.7-.7l-.2.1a2 2 0 0 1-2 0l-.4-.3a2 2 0 0 1-1-1.7V4a2 2 0 0 0-2-2Z"/><circle cx="12" cy="12" r="3"/>'),
-    chev: svg('<path d="m9 18 6-6-6-6"/>', 14).replace("<svg", '<svg class="chev"'),
-    search: svg('<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>', 14),
-    ext: svg('<path d="M7 17 17 7"/><path d="M8 7h9v9"/>', 12),
-  };
-  const avatarOf = (u) => (typeof lwAvatarUrl === "function" ? lwAvatarUrl({ ...u, email: u.email || u.username }) : "");
-
-  function priceTables() {
-    const costCell = (r) => r
-      ? `<td class="num cost-col">${r.cost == null ? `<span class="muted">${esc(r.costText)}</span>` : money(r.cost)}${r.costText.startsWith("$") ? `<span class="key">${esc(r.costText)}</span>` : ""}</td>`
-      : `<td class="num cost-col muted">—</td>`;
-    const priceCell = (r) => {
-      if (!r) return `<td class="muted">—</td>`;
-      const key = priceKey(r);
-      const saved = savedPrice(r);
-      const value = draft.has(key) ? draft.get(key) : saved ? String(saved.price) : "";
-      return `<td><input type="number" step="0.001" min="0" placeholder="客户价" aria-label="${esc(SITE_NAME[r.channel] + " " + r.label + " " + r.spec)} 客户价" data-price-key="${esc(key)}" value="${esc(value)}" class="${draft.has(key) ? "is-dirty" : ""}"></td>`;
+  // ---------- shell ----------
+  function shell() {
+    app.innerHTML = `<header class="top"><div class="top-in">
+        <a class="brand" href="#overview"><span class="brand-mark">老</span><b>老屋作坊</b><span>管理后台</span></a>
+        <nav class="tabs" aria-label="后台页面">${TABS.map((id) => `<a class="tab" href="#${id}" data-tab="${id}">${ICON[id]}${TAB_LABEL[id]}<span data-badge="${id}" hidden></span></a>`).join("")}<span class="tab-ink" aria-hidden="true"></span></nav>
+        <div class="me">
+          <button class="kbd-btn" type="button" id="open-cmdk" aria-label="快速跳转">${ICON.search}<span>快速跳转</span><kbd>${isMac ? "⌘" : "Ctrl"}</kbd><kbd>K</kbd></button>
+          <i class="me-sep"></i>
+          <img src="${esc(avatarOf(me))}" alt=""><b>${esc(me.displayName || me.username)}</b><a class="link-btn" href="/">返回画布</a>
+        </div>
+      </div></header>
+      <main class="wrap" id="main"></main>
+      <div id="layer"></div>`;
+  }
+  function positionInk() {
+    const on = app.querySelector(".tab.is-on");
+    const ink = app.querySelector(".tab-ink");
+    if (!on || !ink) return;
+    ink.style.left = on.offsetLeft + "px";
+    ink.style.width = on.offsetWidth + "px";
+  }
+  window.addEventListener("resize", positionInk);
+  function updateNav() {
+    const s = statsData || {};
+    const low = (balances?.items || []).some((b) => b.status === "low");
+    app.querySelectorAll(".tab").forEach((a) => {
+      const on = a.dataset.tab === tab;
+      a.classList.toggle("is-on", on);
+      if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+    });
+    const set = (id, text, cls = "badge", title = "") => {
+      const el = app.querySelector(`[data-badge="${id}"]`);
+      if (!el) return;
+      el.className = cls;
+      el.textContent = text ?? "";
+      el.title = title;
+      el.hidden = text == null;
     };
-    return SITE_ORDER.map((ch) => {
-      const rows = catalog.filter((r) => r.channel === ch);
-      if (!rows.length) return "";
-      const labels = [...new Set(rows.map((r) => r.label))];
-      const priced = rows.filter((r) => { const k = priceKey(r); return draft.has(k) ? draft.get(k).trim() !== "" : Boolean(savedPrice(r)); }).length;
-      const dirty = rows.filter((r) => draft.has(priceKey(r))).length;
-      const pct = Math.round((priced / rows.length) * 100);
-      return `<details class="pt-site" data-site="${ch}" ${openSites.has(ch) ? "open" : ""}>
-        <summary>${ICON.chev}<b>${esc(SITE_NAME[ch])}</b><span class="meta">${esc(CHANNEL_NAME[ch] || "")} · ${labels.length} 个模型</span>
-          <span class="bar">${dirty ? `<span class="dirty">${dirty} 处未保存</span>` : ""}已定价 ${priced}/${rows.length}<i style="--p:${pct}%"></i></span></summary>
-        <div class="table-box"><table class="pt">
-        <thead>
-          <tr><th rowspan="2">模型</th><th colspan="3" class="cost-head">原价（元/张）</th><th colspan="3" class="price-head">客户价（元/张）</th></tr>
-          <tr><th class="num">1K</th><th class="num">2K</th><th class="num">4K</th><th>1K</th><th>2K</th><th>4K</th></tr>
-        </thead>
-        <tbody>${labels.map((label) => {
-          const items = rows.filter((r) => r.label === label);
-          const single = items.length === 1 && !items[0].spec;
-          const byRes = (res) => single ? (res === "1k" ? items[0] : null) : items.find((r) => r.spec.split("/")[0] === res);
-          const res = ["1k", "2k", "4k"];
-          return `<tr><td><span class="label">${esc(label)}</span><span class="key">${esc(items[0].model)}${single ? " · 不分分辨率" : ""}</span></td>
-            ${res.map((x) => costCell(byRes(x))).join("")}${res.map((x) => priceCell(byRes(x))).join("")}</tr>`;
-        }).join("")}</tbody></table></div></details>`;
-    }).join("") + extraPrices();
+    set("overview", low ? "" : null, "dot", "有渠道该充值了");
+    set("prices", draft.size ? String(draft.size) : null, "badge is-draft", "未保存的价格");
+    set("users", String(s.users ?? allUsers.length));
+    set("codes", String(s.unusedCodes ?? 0), "badge", "未使用的兑换码");
+    positionInk();
   }
 
+  function render() {
+    const main = document.getElementById("main");
+    if (!main) return;
+    const active = document.activeElement;
+    const keepId = active && active.id && app.contains(active) ? active.id : null;
+    let caret = null;
+    try { caret = keepId ? active.selectionStart : null; } catch (_) {}
+    const entering = renderedTab !== tab;
+    main.innerHTML = `<div class="page ${entering ? "is-enter" : ""}">${PAGES[tab]()}</div>`;
+    document.getElementById("layer").innerHTML = drawerHtml();
+    drawerIsNew = false;
+    renderedTab = tab;
+    document.body.style.overflow = drawerUser != null ? "hidden" : "";
+    updateNav();
+    if (keepId) {
+      const el = document.getElementById(keepId);
+      if (el && el !== document.activeElement) {
+        el.focus({ preventScroll: true });
+        if (caret != null) try { el.setSelectionRange(caret, caret); } catch (_) {}
+      }
+    }
+    afterRender(main);
+  }
+
+  function afterRender(main) {
+    const onOverview = tab === "overview";
+    const fills = [...main.querySelectorAll("[data-fill]")];
+    const grow = reduceMotion || !onOverview ? [] : fills.filter((el) => introPending || (gaugesFresh && el.closest(".gauge")));
+    fills.forEach((el) => el.style.setProperty("--fill", grow.includes(el) ? "0" : el.dataset.fill));
+    if (grow.length) requestAnimationFrame(() => requestAnimationFrame(() => grow.forEach((el) => el.style.setProperty("--fill", el.dataset.fill))));
+    if (onOverview) {
+      if (introPending && !reduceMotion) countUp();
+      introPending = false;
+      if (!balancesLoading) gaugesFresh = false;
+    }
+    if (tab === "prices") { applyPriceFilter(); syncSavebar(); }
+  }
+
+  const kpiMoney = (n) => `<small>¥</small>${Number(n).toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  function countUp() {
+    const start = performance.now();
+    const dur = 750;
+    // Re-query every frame: a balance check can re-render the page while this runs.
+    const step = (now) => {
+      const t = Math.min(1, (now - start) / dur);
+      const e = 1 - Math.pow(1 - t, 3);
+      for (const el of document.querySelectorAll(".stat-strip [data-count]")) {
+        const v = Number(el.dataset.count) * e;
+        el.innerHTML = el.dataset.kind === "money" ? kpiMoney(v) : String(Math.round(v));
+      }
+      if (t < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  const head = (title, sub, right = "") => `<div class="page-head"><div><h1>${title}</h1>${sub ? `<p>${sub}</p>` : ""}</div>${right}</div>`;
+  function greet() {
+    const h = new Date().getHours();
+    return h < 6 ? "夜深了" : h < 11 ? "早上好" : h < 14 ? "中午好" : h < 18 ? "下午好" : "晚上好";
+  }
+
+  // ---------- overview ----------
+  function channelCard(c) {
+    const b = (balances?.items || []).find((x) => x.id === c.id);
+    const loading = balancesLoading && !b;
+    const state = b ? b.status : loading ? "loading" : c.hasKey ? "idle" : "no_key";
+    const label = { ok: "正常", low: "该充值了", no_key: "未设置 Key", error: "查询失败", loading: "查询中" }[state] || "";
+    const tag = { ok: "ok", low: "warn", error: "off" }[state] || "";
+    const balance = b && b.balance !== undefined ? b.balance : c.lastBalance;
+    const threshold = Number(c.alertThreshold) || 0;
+    // A full bar is four times the alert line, so the alert tick sits a quarter of the way in.
+    const full = Math.max(threshold * 4, 1);
+    const fill = balance == null ? 0 : balance < 0 ? 1 : Math.max(0, Math.min(1, balance / full));
+    const note = state === "no_key" ? "还没有填写 API Key"
+      : state === "error" ? (b?.message || "查询失败")
+      : [b?.detail, threshold ? `提醒线 ${c.unit}${threshold}` : ""].filter(Boolean).join("，");
+    return `<article class="ch-card ${loading ? "is-loading" : ""}" data-state="${state}">
+      <div class="ch-top"><span class="ch-badge">${esc(String(c.name).slice(0, 1).toUpperCase())}</span><div class="ch-name"><b>${esc(c.name)}</b><small>${esc(c.channelLabel || "")}</small></div>${label ? `<span class="tag ${tag}">${label}</span>` : ""}</div>
+      <div class="ch-amount">${loading && balance == null ? '<span class="skel"></span>' : esc(fmtBal(balance, c.unit))}</div>
+      <div class="gauge" aria-hidden="true"><i data-fill="${fill}"></i>${threshold ? `<em style="--at:${threshold / full}"></em>` : ""}</div>
+      <p class="ch-note">${esc(note)}</p>
+      <div class="ch-foot">${c.topupUrl ? `<a class="link-btn ${state === "low" ? "is-warn" : ""}" href="${esc(c.topupUrl)}" target="_blank" rel="noopener noreferrer">去充值${ICON.ext}</a>` : ""}<button class="ghost small" type="button" data-ch-settings="${c.id}">设置</button></div>
+    </article>`;
+  }
+
+  function findUser(who) {
+    const w = String(who || "").trim().toLowerCase();
+    if (!w) return null;
+    return allUsers.find((u) => u.username.toLowerCase() === w || displayName(u).toLowerCase() === w || String(u.id) === w) || null;
+  }
+  function qaHint() {
+    if (!qa.who.trim()) return "输入邮箱或昵称，也可以从下拉列表里选";
+    const u = findUser(qa.who);
+    if (!u) return `<span class="is-err">找不到这个用户</span>`;
+    const amt = Number(qa.amount);
+    return `${esc(displayName(u))} 现在 <b>${money(u.balance)}</b>${amt ? `，充值后 <b>${money(u.balance + amt)}</b>` : ""}`;
+  }
+
+  function overview() {
+    const s = statsData || {};
+    const topup = Number(s.totalTopup ?? 0);
+    const usage = Number(s.totalUsage ?? 0);
+    const left = Number(s.totalBalance ?? 0);
+    const bar = usage + left > 0
+      ? `${usage > 0 ? `<i class="s-used" style="flex-grow:${usage}"></i>` : ""}${left > 0 ? `<i class="s-left" style="flex-grow:${left}"></i>` : ""}`
+      : `<i style="flex:1;background:var(--sunk)"></i>`;
+    return `
+      ${head(`${greet()}，${esc(me.displayName || me.username)}`, "老屋作坊的收入、用户和上游渠道都在这里")}
+      <section class="panel stat-strip">
+        <div class="stat is-lead">
+          <div class="stat-top">${ICON.wallet}累计充值</div>
+          <b data-count="${topup}" data-kind="money">${kpiMoney(topup)}</b>
+          <div class="split">
+            <div class="split-bar">${bar}</div>
+            <div class="split-legend"><span><i style="background:var(--brand)"></i>已消费 ${money(usage)}</span><span><i style="background:var(--faint)"></i>用户还剩 ${money(left)}</span></div>
+          </div>
+        </div>
+        <a class="stat is-link" href="#users"><span class="go">${ICON.ext}</span>
+          <div class="stat-top">${ICON.users}注册用户</div><b data-count="${s.users ?? 0}">${s.users ?? 0}</b><small>点击查看全部用户</small></a>
+        <div class="stat"><div class="stat-top">${ICON.prices}累计消费</div><b data-count="${usage}" data-kind="money">${kpiMoney(usage)}</b><small>用户生成图片花掉的钱</small></div>
+        <a class="stat is-link" href="#codes"><span class="go">${ICON.ext}</span>
+          <div class="stat-top">${ICON.codes}未使用兑换码</div><b data-count="${s.unusedCodes ?? 0}">${s.unusedCodes ?? 0}</b><small>点击去生成新的一批</small></a>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h2>${ic("layers")}渠道余额<span class="muted" style="font-weight:400;font-size:13px">${balancesLoading ? "正在查询…" : balances ? "上次查询 " + esc(time(balances.checkedAt)) : ""}</span></h2>
+          <button class="ghost small" type="button" id="check-balances" ${balancesLoading ? "disabled" : ""}>${balancesLoading ? ICON.refresh.replace("<svg", '<svg class="spin"') + "查询中" : ICON.refresh + "刷新余额"}</button></div>
+        <div class="ch-grid">${channels.map(channelCard).join("") || `<div class="empty">还没有渠道</div>`}</div>
+      </section>
+
+      <section class="duo">
+        <div class="panel">
+          <div class="panel-head"><h2>${ic("bolt")}快捷操作</h2></div>
+          <form class="act" id="qa-topup" autocomplete="off">
+            <span class="act-ic">${ICON.wallet}</span>
+            <div class="act-main"><h3>给用户充值</h3><p>输入邮箱或昵称，余额立即到账</p>
+              <div class="qa-row">
+                <input id="qa-who" name="who" list="user-list" placeholder="邮箱或昵称" value="${esc(qa.who)}" aria-label="充值给谁">
+                <input id="qa-amount" class="w-amt" name="amount" type="number" step="0.01" placeholder="金额" value="${esc(qa.amount)}" aria-label="充值金额">
+                <button class="primary" type="submit">充值</button>
+              </div>
+              <div class="chips">${[10, 50, 100, 200].map((n) => `<button class="chip" type="button" data-qa-amount="${n}">+${n}</button>`).join("")}<span class="qa-hint" id="qa-hint">${qaHint()}</span></div>
+              <datalist id="user-list">${allUsers.map((u) => `<option value="${esc(u.username)}">${esc(displayName(u))}，余额 ${money(u.balance)}</option>`).join("")}</datalist>
+            </div>
+          </form>
+          <form class="act" id="qa-codes" autocomplete="off">
+            <span class="act-ic">${ICON.codes}</span>
+            <div class="act-main"><h3>生成兑换码</h3><p>拿去卡密平台出售，用户在画布里兑换</p>
+              <div class="qa-row">
+                <input id="qa-camount" name="amountYuan" type="number" step="0.01" min="0.01" required placeholder="面额，如 60" value="${esc(qa.codeAmount)}" aria-label="兑换码面额">
+                <input id="qa-ccount" class="w-cnt" name="count" type="number" min="1" max="500" required value="${esc(qa.codeCount)}" aria-label="生成数量">
+                <button class="primary" type="submit">生成</button>
+              </div>
+              <p class="qa-hint" style="margin:0">${lastBatch ? `刚生成 ${lastBatch.codes.length} 个 ${money(lastBatch.amount)} 兑换码，<button class="text-btn" type="button" id="copy-codes">复制全部</button>，或<a class="text-link" href="#codes">去兑换码页查看</a>` : "数量最多一次 500 个"}</p>
+            </div>
+          </form>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>${ic("users")}最近注册</h2><a class="text-link" href="#users">全部用户${ICON.chev}</a></div>
+          <div class="feed">${allUsers.slice(0, 6).map((u) => `<button class="person" type="button" data-open-user="${u.id}">
+              <img src="${esc(avatarOf(u))}" alt=""><span class="p-main"><b>${esc(displayName(u))}</b><small>${esc(u.username)}</small></span>
+              <span class="p-side"><b>${money(u.balance)}</b><small>${esc(ago(u.createdAt))}</small></span></button>`).join("") || `<div class="empty">${ICON.inbox}还没有用户</div>`}</div>
+        </div>
+      </section>`;
+  }
+
+  // ---------- users ----------
+  function usersPage() {
+    const funded = users.filter((u) => u.balance > 0).length;
+    const disabled = users.filter((u) => u.disabled).length;
+    const shown = users.filter((u) => userFilter === "all" || (userFilter === "funded" ? u.balance > 0 : u.disabled));
+    const maxBal = Math.max(1, ...users.map((u) => Number(u.balance) || 0));
+    const chip = (id, label, n) => `<button class="chip ${userFilter === id ? "is-on" : ""}" type="button" data-user-filter="${id}">${label}<span class="n">${n}</span></button>`;
+    return `
+      ${head("用户", "点一行，查看余额记录、调整余额或停用账号",
+        `<div class="head-tools"><span class="search">${ICON.search}<input id="user-q" placeholder="搜索邮箱或昵称" value="${esc(userQ)}" aria-label="搜索用户" autocomplete="off"></span>
+         <button class="ghost" type="button" id="renumber-users" title="按注册先后把用户编号改成 1、2、3…，余额和记录都会跟着走">重新编号</button></div>`)}
+      <div class="chips" style="margin-bottom:14px">${chip("all", "全部", users.length)}${chip("funded", "有余额", funded)}${chip("disabled", "已停用", disabled)}
+        ${userQ ? `<span class="muted" style="margin-left:6px;font-size:13px">搜索“${esc(userQ)}”的结果</span>` : ""}</div>
+      <section class="panel"><div class="table-box"><table>
+        <thead><tr><th>用户</th><th class="num">余额</th><th class="num">已消费</th><th>状态</th><th>注册时间</th><th></th></tr></thead>
+        <tbody>${shown.map((u) => `<tr class="click ${drawerUser === u.id ? "is-sel" : ""}" data-open-user="${u.id}" tabindex="0">
+            <td><div class="user"><img src="${esc(avatarOf(u))}" alt=""><div><div class="nm">${esc(displayName(u))}${u.role === "admin" ? '<span class="tag ink plain">管理员</span>' : ""}</div><div class="em">${esc(u.username)}，ID ${u.id}</div></div></div></td>
+            <td class="num"><div class="bal-cell"><span class="mini-bar"><i style="width:${Math.round(((Number(u.balance) || 0) / maxBal) * 100)}%"></i></span>${money(u.balance)}</div></td>
+            <td class="num muted">${money(u.spent)}</td>
+            <td>${u.disabled ? '<span class="tag off">已停用</span>' : '<span class="tag ok">正常</span>'}</td>
+            <td class="muted">${esc(day(u.createdAt))}<small>${esc(ago(u.createdAt))}</small></td>
+            <td class="go">${ICON.chev}</td></tr>`).join("") || `<tr><td colspan="6" class="empty">${ICON.inbox}${userQ ? "没有找到这个用户，换个关键词试试" : users.length ? "这个筛选下没有用户" : "还没有用户"}</td></tr>`}</tbody>
+      </table></div></section>`;
+  }
+
+  function adjustPreview(u) {
+    const amount = Number(adj.amount);
+    if (!adj.amount.trim() || !Number.isFinite(amount) || amount === 0) return { cls: "adj-preview", html: `调整后余额会显示在这里` };
+    return { cls: "adj-preview" + (amount < 0 ? " is-down" : ""), html: `调整后 <b>${money(u.balance + amount)}</b>` };
+  }
+
+  function drawerHtml() {
+    if (drawerUser == null) return "";
+    const u = userById(drawerUser);
+    if (!u) return "";
+    const p = adjustPreview(u);
+    const ledger = drawerLedger == null
+      ? `<div>${'<div class="skel-row"></div>'.repeat(3)}</div>`
+      : drawerLedger.length
+        ? `<ol class="ledger">${drawerLedger.map((i) => `<li class="${i.amount > 0 ? "up" : "down"}"><span class="l-main"><b>${esc(i.note || KIND[i.kind] || i.kind)}</b><small>${esc(time(i.createdAt))}</small></span>
+            <span class="l-amt ${i.amount > 0 ? "up" : "down"}">${esc(signed(i.amount))}</span><span class="l-bal">余额 ${money(i.balanceAfter)}</span></li>`).join("")}</ol>`
+        : `<div class="empty" style="padding:26px">${ICON.inbox}还没有余额记录</div>`;
+    const self = u.id === me.id;
+    return `<div class="scrim ${drawerIsNew ? "is-new" : ""}" data-close-drawer></div>
+      <aside class="drawer ${drawerIsNew ? "is-new" : ""}" role="dialog" aria-modal="true" aria-labelledby="dr-title">
+        <header class="dr-head"><img src="${esc(avatarOf(u))}" alt=""><div class="dr-who"><b id="dr-title">${esc(displayName(u))}${u.role === "admin" ? '<span class="tag ink plain">管理员</span>' : ""}${u.disabled ? '<span class="tag off">已停用</span>' : ""}</b><small>${esc(u.username)}，ID ${u.id}</small></div>
+          <button class="icon-btn" type="button" id="dr-close" data-close-drawer aria-label="关闭">${ICON.close}</button></header>
+        <div class="dr-body">
+          <div class="dr-stats"><div><span>当前余额</span><b>${money(u.balance)}</b></div><div><span>已消费</span><b>${money(u.spent)}</b></div></div>
+          <p class="dr-meta">${esc(day(u.createdAt))} 注册，${esc(ago(u.createdAt))}</p>
+          <form class="dr-block" data-adjust="${u.id}" autocomplete="off">
+            <h3>${ICON.wallet}调整余额</h3>
+            <div class="chips">${[10, 50, 100, 200].map((n) => `<button class="chip" type="button" data-quick="${n}">+${n}</button>`).join("")}<button class="chip" type="button" data-quick="-10">-10</button></div>
+            <div class="dr-row"><input id="dr-amount" name="amount" type="number" step="0.01" placeholder="金额，如 50 或 -10" value="${esc(adj.amount)}" aria-label="调整的金额"><input id="dr-note" name="note" placeholder="备注（可选）" value="${esc(adj.note)}" aria-label="备注"></div>
+            <div class="dr-row between"><span class="${p.cls}" id="dr-preview">${p.html}</span><button class="primary" type="submit">确认调整</button></div>
+          </form>
+          <section class="dr-block"><h3>${ICON.clock}余额记录</h3>${ledger}</section>
+          <section class="dr-block"><h3>${ICON.shield}账号操作</h3>
+            <div class="dr-acts">
+              ${u.balance > 0 ? `<button class="ghost small" type="button" data-zero="${u.id}">余额清零</button>` : ""}
+              ${self ? "" : `<button class="${u.disabled ? "ghost" : "danger"} small" type="button" data-disable="${u.id}" data-to="${!u.disabled}">${u.disabled ? "启用账号" : "停用账号"}</button>`}
+              ${self || u.role === "admin" ? "" : `<button class="danger small" type="button" data-delete-user="${u.id}">删除账号</button>`}
+            </div>${self ? `<p class="muted" style="margin:10px 0 0;font-size:12.5px">这是你自己的账号，不能停用或删除。</p>` : ""}</section>
+        </div>
+      </aside>`;
+  }
+
+  function openUser(id) {
+    if (!userById(id)) return;
+    drawerUser = id; drawerIsNew = true; drawerLedger = null;
+    adj.amount = ""; adj.note = "";
+    render();
+    document.getElementById("dr-close")?.focus({ preventScroll: true });
+    loadLedger(id);
+  }
+  async function loadLedger(id) {
+    try {
+      const items = (await api("/admin/user-ledger?userId=" + id)).items;
+      if (drawerUser === id) { drawerLedger = items; render(); }
+    } catch (err) {
+      if (drawerUser === id) { drawerLedger = []; toast(err.message, true); render(); }
+    }
+  }
+  function closeDrawer() {
+    const d = document.querySelector(".drawer");
+    const s = document.querySelector(".scrim");
+    if (!d || reduceMotion) { drawerUser = null; render(); return; }
+    d.classList.add("is-out"); s?.classList.add("is-out");
+    setTimeout(() => { drawerUser = null; render(); }, 190);
+  }
+
+  // ---------- prices ----------
+  const family = (label) => label.startsWith("Nano Banana") ? "nano" : label.startsWith("GPT Image") ? "gpt" : "text";
+  function ratioHtml(r, value) {
+    const v = String(value ?? "").trim();
+    if (v === "" || !(r.cost > 0)) return "";
+    const x = Number(v) / r.cost;
+    const cls = x < 1 ? "loss" : x < 1.3 ? "thin" : "good";
+    return `<b class="x ${cls}">${x < 1 ? "亏本" : "×" + (x >= 10 ? x.toFixed(0) : x.toFixed(1))}</b>`;
+  }
+  function priceInput(r, wide) {
+    const key = priceKey(r);
+    const saved = savedPrice(r);
+    const dirty = draft.has(key);
+    const value = dirty ? draft.get(key) : saved ? String(saved.price) : "";
+    const was = dirty ? (saved ? `原来 ${money(saved.price)}` : "原来未开放") : "";
+    return `<div class="pc ${wide ? "wide" : ""}"><input type="number" step="0.001" min="0" placeholder="不开放" aria-label="${esc(chName(r.channel) + " " + r.label + " " + (r.spec || "每次"))} 客户价" data-price-key="${esc(key)}" value="${esc(value)}" class="${dirty ? "is-dirty" : ""}" title="${esc(was)}">
+      <span class="pc-meta"><span title="上游成本">${r.cost == null ? "按用量" : money(r.cost).slice(1)}</span><span data-ratio="${esc(key)}">${ratioHtml(r, value)}</span></span></div>`;
+  }
+  function priceCell(ch, label, res, i) {
+    const rows = catalog.filter((r) => r.channel === ch && r.label === label);
+    const first = i === 0 ? "first" : "";
+    if (!rows.length) return `<td class="na ${first}" data-col="${ch}-${res}"></td>`;
+    if (rows.length === 1 && !rows[0].spec) return i === 0 ? `<td class="first" colspan="3" data-col="${ch}-1k">${priceInput(rows[0], true)}</td>` : "";
+    const r = rows.find((x) => x.spec.split("/")[0] === res);
+    return r ? `<td class="${first}" data-col="${ch}-${res}">${priceInput(r)}</td>` : `<td class="na ${first}" data-col="${ch}-${res}"></td>`;
+  }
+  function coverage(ch) {
+    const rows = catalog.filter((r) => r.channel === ch);
+    const priced = rows.filter((r) => { const k = priceKey(r); return draft.has(k) ? draft.get(k).trim() !== "" : Boolean(savedPrice(r)); }).length;
+    return `已开放 ${priced}/${rows.length}`;
+  }
+  function pricesPage() {
+    const labels = [];
+    for (const r of catalog) if (!labels.includes(r.label)) labels.push(r.label);
+    const cols = COLS.filter((ch) => catalog.some((r) => r.channel === ch));
+    const seg = [["all", "全部"], ["nano", "Nano Banana"], ["gpt", "GPT Image 2.5"], ["text", "文本"]];
+    return `
+      ${head("价格表", `客户价是用户每张图扣的钱，留空就不开放这个规格。成本按 1 美元 = ${fx} 元换算`)}
+      <section class="panel">
+        <div class="toolbar">
+          <div class="seg" role="group" aria-label="按模型筛选">${seg.map(([id, l]) => `<button type="button" class="${ptFamily === id ? "is-on" : ""}" data-family="${id}" aria-pressed="${ptFamily === id}">${l}</button>`).join("")}</div>
+          <span class="search">${ICON.search}<input id="pt-filter" placeholder="搜索模型" value="${esc(ptFilter)}" aria-label="搜索模型" autocomplete="off"></span>
+          <span class="grow"></span>
+          <label class="muted" for="pt-markup">空白格按成本的</label><input id="pt-markup" class="w-mk" type="number" step="0.1" min="1" value="${markup}"><span class="muted">倍</span>
+          <button class="ghost" type="button" id="pt-fill">${ICON.bolt}一键填好</button>
+        </div>
+        <div class="legend"><span>每格下方：左边是上游成本（元），右边是客户价为成本的几倍</span><span><b class="x good">×2.0</b> 正常</span><span><b class="x thin">×1.2</b> 利润很薄</span><span><b class="x loss">亏本</b> 低于成本</span><span>— 这个渠道没有该规格</span></div>
+        <div class="mx-wrap"><table class="mx">
+          <thead>
+            <tr><th class="model" rowspan="2">模型</th>${cols.map((ch) => `<th class="ch-h" colspan="3" data-colgroup="${ch}"><b>${esc(chName(ch))}</b><small>${CHANNEL_NAME[ch] || ""}，${coverage(ch)}</small></th>`).join("")}</tr>
+            <tr>${cols.map((ch) => RES.map((res, i) => `<th class="res ${i === 0 ? "first" : ""}" data-col="${ch}-${res}">${res.toUpperCase()}</th>`).join("")).join("")}</tr>
+          </thead>
+          <tbody>${labels.map((label, n) => `<tr data-find="${esc(label.toLowerCase())}" data-family="${family(label)}" ${n > 0 && family(labels[n - 1]) !== family(label) ? 'class="group-start"' : ""}><th class="model" scope="row">${esc(label)}</th>${cols.map((ch) => RES.map((res, i) => priceCell(ch, label, res, i)).join("")).join("")}</tr>`).join("")}</tbody>
+        </table></div>
+        <div class="empty" id="pt-none" hidden>${ICON.inbox}没有符合筛选的模型</div>
+      </section>
+      ${extraPrices()}
+      <div class="savebar" id="savebar" role="region" aria-label="未保存的价格">
+        <span class="sb-dot"></span><span><b id="savebar-count">${draft.size}</b> 处价格还没保存</span>
+        <button class="quiet small" type="button" id="pt-discard">放弃修改</button>
+        <button class="primary small" type="button" id="pt-save">保存价格表</button>
+      </div>`;
+  }
   // Prices saved earlier that are not in the built-in catalog.
   function extraPrices() {
     const known = new Set(catalog.map(priceKey));
     const extra = prices.filter((p) => !known.has(priceKey(p)));
     if (!extra.length) return "";
-    return `<details class="pt-site" open><summary>${ICON.chev}<b>其他已保存的价格</b><span class="meta">不在内置模型列表里</span></summary><div class="table-box"><table>
-      <thead><tr><th>渠道</th><th>模型</th><th>规格</th><th class="num">售价</th><th></th></tr></thead>
-      <tbody>${extra.map((r) => `<tr><td>${esc(SITE_NAME[r.channel] || r.channel)}</td><td>${esc(r.model)}</td><td>${esc(r.spec)}</td><td class="num">${money(r.price)}</td>
-        <td><button class="danger small" type="button" data-del-price="${r.id}">删除</button></td></tr>`).join("")}</tbody></table></div></details>`;
+    return `<section class="panel" style="margin-top:20px"><div class="panel-head"><div><h2>其他已保存的价格</h2><p class="sub">不在内置模型列表里，可以删掉</p></div></div>
+      <div class="table-box"><table><thead><tr><th>渠道</th><th>模型</th><th>规格</th><th class="num">售价</th><th></th></tr></thead>
+      <tbody>${extra.map((r) => `<tr><td>${esc(chName(r.channel))}</td><td>${esc(r.model)}</td><td>${esc(r.spec)}</td><td class="num">${money(r.price)}</td>
+        <td class="num"><button class="danger small" type="button" data-del-price="${r.id}">删除</button></td></tr>`).join("")}</tbody></table></div></section>`;
+  }
+  function applyPriceFilter() {
+    const q = ptFilter.trim().toLowerCase();
+    let any = false;
+    document.querySelectorAll(".mx tbody tr").forEach((tr) => {
+      const hit = (ptFamily === "all" || tr.dataset.family === ptFamily) && (!q || tr.dataset.find.includes(q));
+      tr.hidden = !hit;
+      if (hit) any = true;
+    });
+    const none = document.getElementById("pt-none");
+    if (none) none.hidden = any;
+  }
+  function syncSavebar() {
+    const bar = document.getElementById("savebar");
+    if (bar) {
+      bar.classList.toggle("is-on", draft.size > 0);
+      document.getElementById("savebar-count").textContent = draft.size;
+    }
+    updateNav();
   }
 
-  function render() {
-    const s = statsData || {};
-    const low = (balances?.items || []).filter((b) => b.status === "low");
-    const nav = (id, label, extra = "") => `<a class="nav ${tab === id ? "is-on" : ""}" href="#${id}">${ICON[id]}${label}${extra}</a>`;
-    const head = (title, sub, right = "") => `<div class="page-head"><div><h1>${title}</h1>${sub ? `<p>${sub}</p>` : ""}</div>${right}</div>`;
-    app.innerHTML = `<div class="shell">
-      <aside class="side">
-        <div class="brand"><img src="./kitty.png" alt=""><span>老屋作坊<small>管理后台</small></span></div>
-        ${nav("overview", "概览", low.length ? '<span class="dot" title="有渠道该充值了"></span>' : "")}
-        ${nav("prices", "价格表", draft.size ? `<span class="count">${draft.size} 未保存</span>` : "")}
-        ${nav("users", "用户", `<span class="count">${s.users ?? users.length}</span>`)}
-        ${nav("codes", "兑换码", `<span class="count">${s.unusedCodes ?? 0}</span>`)}
-        ${nav("settings", "设置")}
-        <div class="side-foot"><img src="${esc(avatarOf(me))}" alt=""><span class="who"><b>${esc(me.displayName || me.username)}</b><a href="/">返回画布 ↗</a></span></div>
-      </aside>
-      <main class="main"><div class="page">${PAGES[tab]({ s, low, head })}</div></main>
-    </div>`;
-  }
-
-  const PAGES = {
-    overview: ({ s, low, head }) => `
-      ${head("概览", "收入、余额和各渠道状态")}
-      <div class="stats">
-        <div class="stat"><span>用户数</span><b>${s.users ?? 0}</b></div>
-        <div class="stat"><span>累计充值</span><b>${money(s.totalTopup ?? 0)}</b></div>
-        <div class="stat"><span>累计消费</span><b>${money(s.totalUsage ?? 0)}</b></div>
-        <div class="stat"><span>用户余额合计</span><b>${money(s.totalBalance ?? 0)}</b></div>
-        <div class="stat"><span>未使用兑换码</span><b>${s.unusedCodes ?? 0}</b></div>
-      </div>
-      ${low.length ? `<div class="alert" role="alert">该充值了：${low.map((b) => `${esc(b.name)}（剩 ${fmtBal(b.balance, b.unit)}，低于提醒线 ${b.unit}${b.alertThreshold}）`).join("；")}</div>` : ""}
-      <section class="card">
-        <div class="card-head"><h2>渠道余额<span class="sub">${balances ? "上次查询 " + esc(time(balances.checkedAt)) : ""}</span></h2>
-          <button class="ghost small" type="button" id="check-balances" ${balancesLoading ? "disabled" : ""}>${balancesLoading ? "查询中…" : "刷新余额"}</button></div>
-        <div class="card-body"><div class="channels">${channels.map((c) => {
-          const b = (balances?.items || []).find((x) => x.id === c.id);
-          const status = !b ? (balancesLoading ? "查询中" : "") : b.status === "ok" ? "正常" : b.status === "low" ? "该充值了" : b.status === "no_key" ? "未设置 Key" : "查询失败";
-          const tag = !b ? "" : b.status === "ok" ? "ok" : b.status === "low" || b.status === "error" ? "off" : "";
-          return `<div class="ch ${b?.status === "low" ? "is-low" : ""}">
-            <div class="ch-head"><span class="ch-name">${esc(c.name)}${c.channelLabel ? `<span class="ch-label">${esc(c.channelLabel)}</span>` : ""}</span>${status ? `<span class="tag ${tag}">${status}</span>` : ""}</div>
-            <div class="ch-bal-row"><div class="ch-bal">${b && b.balance !== undefined ? fmtBal(b.balance, c.unit) : c.lastBalance != null ? fmtBal(c.lastBalance, c.unit) : "--"}</div>
-              ${c.topupUrl ? `<a class="ch-topup" href="${esc(c.topupUrl)}" target="_blank" rel="noopener noreferrer">去充值${ICON.ext}</a>` : ""}</div>
-            <div class="ch-sub">${esc(b?.detail || b?.message || (c.lastCheckedAt ? "上次 " + time(c.lastCheckedAt) : ""))}</div>
-            <form data-channel="${c.id}">
-              <label class="field">API Key ${c.keySource === "env" ? "（由环境变量提供）" : ""}
-                ${secret(`<input name="apiKey" type="password" autocomplete="off" placeholder="${c.hasKey ? "已设置 " + esc(c.keyPreview) + "，留空不修改" : "粘贴这个渠道的 API Key"}" ${c.keySource === "env" ? "disabled" : ""}>`, `channel:${c.id}:apiKey`)}</label>
-              ${c.extraKey ? `<label class="field">${esc(c.extraKey)}
-                ${secret(`<input name="apiKey2" type="password" autocomplete="off" placeholder="${c.hasKey2 ? "已设置 " + esc(c.key2Preview) + "，留空不修改" : "没有可以不填"}">`, `channel:${c.id}:apiKey2`)}</label>` : ""}
-              <div class="ch-save"><label class="field">余额低于多少提醒（${c.unit}）<input name="alertThreshold" type="number" step="0.01" min="0" value="${c.alertThreshold}"></label>
-              <button class="ghost" type="submit">保存</button></div>
-            </form>
-          </div>`;
-        }).join("")}</div>${msg(flash.channels)}</div>
-      </section>`,
-
-    prices: ({ head }) => `
-      ${head("价格表", "原价 = 上游成本；客户价 = 用户每张扣的钱；留空 = 不开放这个规格")}
-      <section class="card">
-        <div class="pt-tools">
-          <span class="muted">原价按 1 美元 = ${fx} 元换算</span><span class="grow"></span>
-          <label class="muted" for="pt-markup">倍率</label>
-          <input id="pt-markup" type="number" step="0.1" min="1" value="${markup}" style="width:72px">
-          <button class="ghost" type="button" id="pt-fill">按 原价 × 倍率 填空白</button>
-          <button class="primary" type="button" id="pt-save">保存价格表${draft.size ? `（${draft.size} 处修改）` : ""}</button>
-        </div>
-        ${priceTables()}
-        ${msg(flash.prices)}
-      </section>`,
-
-    users: ({ head }) => `
-      ${head("用户", "余额调整会记入用户的余额记录", `<button class="ghost small" type="button" id="renumber-users" title="按注册先后把用户编号改成 1、2、3…，余额和记录都会跟着走">重新编号用户 ID</button>`)}
-      <section class="card">
-        <div class="card-head"><form class="row" id="search-form">
-          <span class="search">${ICON.search}<input id="user-q" placeholder="搜索邮箱或昵称" value="${esc(userQ)}" aria-label="搜索用户"></span>
-          <button class="ghost small" type="submit">搜索</button>
-        </form><span class="muted" style="font-size:12px">共 ${users.length} 个</span></div>
-        <div class="table-box"><table>
-          <thead><tr><th style="width:40px">ID</th><th>用户</th><th>状态</th><th class="num">余额</th><th class="num">已消费</th><th>注册时间</th><th class="num">操作</th></tr></thead>
-          <tbody>${users.map((u) => `
-            <tr>
-              <td class="muted">${u.id}</td>
-              <td><div class="user"><img src="${esc(avatarOf(u))}" alt=""><div><div class="nm">${u.customName ? esc(u.customName) : esc(u.username.split("@")[0])} ${u.role === "admin" ? '<span class="tag ok plain">管理员</span>' : ""}</div><div class="em">${esc(u.username)}</div></div></div></td>
-              <td>${u.disabled ? '<span class="tag off">已停用</span>' : '<span class="tag ok">正常</span>'}</td>
-              <td class="num">${money(u.balance)}</td>
-              <td class="num muted">${money(u.spent)}</td>
-              <td class="muted">${esc(time(u.createdAt))}</td>
-              <td><div class="acts">
-                <button class="quiet small" type="button" data-adjust-open="${u.id}">调整余额</button>
-                <button class="quiet small" type="button" data-ledger="${u.id}" data-name="${esc(u.username)}">记录</button>
-                ${u.balance > 0 ? `<button class="quiet small" type="button" data-zero="${u.id}">清零</button>` : ""}
-                ${u.id === me.id ? "" : `<button class="${u.disabled ? "quiet" : "danger"} small" type="button" data-disable="${u.id}" data-to="${!u.disabled}">${u.disabled ? "启用" : "停用"}</button>`}
-                ${u.id === me.id || u.role === "admin" ? "" : `<button class="danger small" type="button" data-delete-user="${u.id}">删除</button>`}
-              </div></td>
-            </tr>
-            ${adjustUser === u.id ? `<tr class="adjust-row"><td></td><td colspan="6"><form data-adjust="${u.id}">
-              <span class="muted">给 ${esc(u.username)} 调整余额</span>
-              <input name="amount" type="number" step="0.01" placeholder="金额，如 50 或 -10" aria-label="调整的金额" style="width:170px" autofocus>
-              <input name="note" placeholder="备注（可选）" aria-label="备注" style="width:200px">
-              <button class="primary small" type="submit">确定</button>
-              <button class="quiet small" type="button" data-adjust-open="${u.id}">取消</button>
-            </form></td></tr>` : ""}`).join("") || `<tr><td colspan="7" class="muted">没有用户</td></tr>`}</tbody>
-        </table></div>
-        ${msg(flash.users)}
-      </section>`,
-
-    codes: ({ head }) => `
-      ${head("兑换码", "生成后复制到卡密平台出售")}
-      <section class="card">
-        <div class="card-head"><h2>生成兑换码</h2></div>
-        <div class="card-body">
-          <form class="row" id="codes-form" style="align-items:flex-end">
-            <label class="field">面额（算力）<input id="c-amount" name="amountYuan" type="number" step="0.01" min="0.01" required style="width:120px" placeholder="如 60"></label>
-            <label class="field">数量<input id="c-count" name="count" type="number" min="1" max="500" value="10" required style="width:90px"></label>
-            <label class="field">批次备注<input id="c-batch" name="batch" placeholder="如 常用装-10月" style="width:180px"></label>
-            <button class="primary" type="submit">生成</button>
-          </form>
-          ${lastBatch ? `<p class="muted" style="margin:14px 0 0">已生成 ${lastBatch.codes.length} 个 ${money(lastBatch.amount)} 兑换码（批次：${esc(lastBatch.batch)}），每行一个：</p>
-            <textarea readonly id="new-codes" aria-label="新生成的兑换码">${esc(lastBatch.codes.join("\n"))}</textarea>
-            <div class="row" style="margin-top:8px"><button class="ghost" type="button" id="copy-codes">复制全部</button><button class="ghost" type="button" id="dl-codes">下载 CSV</button></div>` : ""}
-          ${msg(flash.codes)}
-        </div>
-      </section>
-      <section class="card">
-        <div class="card-head"><h2>兑换码记录<span class="sub">最近 200 个</span></h2></div>
-        <div class="table-box"><table>
-          <thead><tr><th>兑换码</th><th class="num">面额</th><th>批次</th><th>状态</th><th>使用者</th><th>生成时间</th><th></th></tr></thead>
-          <tbody>${codes.map((c) => `<tr>
-            <td><code>${esc(c.code)}</code></td><td class="num">${money(c.amount)}</td><td>${esc(c.batch)}</td>
-            <td>${c.usedAt ? '<span class="tag">已使用</span>' : '<span class="tag ok">未使用</span>'}</td>
-            <td>${esc(c.usedBy || "")}${c.usedAt ? ` <span class="muted">${esc(time(c.usedAt))}</span>` : ""}</td>
-            <td class="muted">${esc(time(c.createdAt))}</td>
-            <td><button class="danger small" type="button" data-delete-code="${esc(c.code)}">删除</button></td></tr>`).join("") || `<tr><td colspan="7" class="muted">还没有兑换码</td></tr>`}</tbody>
-        </table></div>
-      </section>`,
-
-    settings: ({ head }) => `
-      ${head("设置", "邮件和图床")}
-      <section class="card">
-        <div class="card-head"><h2>邮件 Resend<span class="sub">注册、找回密码的验证码邮件 · ${mail.fromEnv ? "由环境变量提供" : mail.hasKey ? "已设置" : "未设置（验证码会直接显示在页面上，仅适合测试）"}</span></h2>
-          <a class="ch-topup" href="https://resend.com/api-keys" target="_blank" rel="noopener">去 Resend 创建${ICON.ext}</a></div>
-        <div class="card-body"><form class="row" id="mail-form" style="align-items:flex-end">
-          <label class="field" for="mail-key">API Key${secret(`<input id="mail-key" name="apiKey" type="password" autocomplete="new-password" style="width:340px" placeholder="${mail.hasKey ? "已设置 " + esc(mail.keyPreview) + "，留空不修改" : "粘贴 Resend API Key（re_ 开头）"}">`, "mail")}</label>
-          <button class="primary" type="submit">保存</button>
-        </form>${msg(flash.mail)}</div>
-      </section>
-      <section class="card">
-        <div class="card-head"><h2>图床 Cloudinary<span class="sub">管理员账号带参考图生成时用；普通用户在画布 设置 → 图床设置 里填自己的</span></h2>
-          <a class="ch-topup" href="https://console.cloudinary.com/settings/api-keys" target="_blank" rel="noopener">在哪里找${ICON.ext}</a></div>
-        <div class="card-body"><form class="row" id="cloud-form" style="align-items:flex-end">
-          <label class="field" for="cl-name">Cloud Name<input id="cl-name" name="cloudName" value="${esc(cloud.cloudName)}" style="width:170px" autocomplete="off"></label>
-          <label class="field" for="cl-key">API Key<input id="cl-key" name="apiKey" value="${esc(cloud.apiKey)}" style="width:190px" autocomplete="off"></label>
-          <label class="field" for="cl-secret">API Secret${secret(`<input id="cl-secret" name="apiSecret" type="password" placeholder="${cloud.apiSecret ? "已设置，留空不修改" : "粘贴 API Secret"}" style="width:210px" autocomplete="new-password">`, "cloudinary")}</label>
-          <button class="primary" type="submit">保存</button>
-        </form>${msg(flash.cloud)}</div>
-      </section>
-      <section class="card">
-        <div class="card-head"><h2>结果图下发方式<span class="sub">普通用户的结果图从哪里下载。土豆两种方式下都由浏览器直连，不经过服务器</span></h2>
-          <span class="tag ${cos.delivery === "direct" ? "ok" : ""}">${cos.delivery === "direct" ? "直连平台" : "腾讯云 COS"}</span></div>
-        <div class="card-body"><form class="delivery-form" id="delivery-form">
-          <label class="delivery-option"><input type="radio" name="delivery" value="cos" ${cos.delivery !== "direct" ? "checked" : ""}>
-            <span><b>腾讯云 COS</b>：RH、Grsai、APIMart 的结果图从广州存储下载。国内快，用户看不到平台域名；按流量付费，约 0.4 分/张</span></label>
-          <label class="delivery-option"><input type="radio" name="delivery" value="direct" ${cos.delivery === "direct" ? "checked" : ""}>
-            <span><b>直连平台</b>：RH、Grsai、APIMart 的结果图由浏览器直接从平台下载，和以前一样，免费；用户在开发者工具里能看到平台域名</span></label>
-          <button class="primary small" type="submit" style="margin-top:8px">保存下发方式</button>
-        </form>${msg(flash.delivery)}
-        <details class="cos-backup" ${cos.delivery === "direct" ? "" : "open"}>
-          <summary>备用：腾讯云 COS 设置 <span class="tag ${cos.ready ? "ok" : ""}">${cos.ready ? "已配置" : "未配置"}</span><span class="muted">（用户多了、选"腾讯云 COS"时才用到；密钥都保留着）</span></summary>
-          <div class="muted" style="margin:8px 0 10px">生成的原图放到国内存储桶，国内用户下载更快；不压缩，画质不变。没填或出错时自动改回由本服务器发图</div>
-          <form class="row" id="cos-form" style="align-items:flex-end;flex-wrap:wrap">
-          <label class="field" for="cos-bucket">存储桶名称<input id="cos-bucket" name="bucket" value="${esc(cos.bucket || "")}" placeholder="例如 laowu-images-1250000000" style="width:240px" autocomplete="off"></label>
-          <label class="field" for="cos-region">地域<input id="cos-region" name="region" value="${esc(cos.region || "ap-guangzhou")}" style="width:130px" autocomplete="off"></label>
-          <label class="field" for="cos-id">SecretId<input id="cos-id" name="secretId" value="${esc(cos.secretId || "")}" style="width:260px" autocomplete="off"></label>
-          <label class="field" for="cos-key">SecretKey${secret(`<input id="cos-key" name="secretKey" type="password" placeholder="${cos.hasSecret ? "已设置，留空不修改" : "粘贴 SecretKey"}" style="width:220px" autocomplete="new-password">`, "cos")}</label>
-          <button class="primary" type="submit">保存</button>
-          <button class="ghost" type="button" id="cos-test">测试上传</button>
-        </form>${msg(flash.cos)}
-        </details></div>
-      </section>`,
+  // ---------- codes ----------
+  const codeTotal = () => {
+    const amount = Number(codeDraft.amountYuan);
+    const count = Number(codeDraft.count);
+    return amount > 0 && count > 0 ? money(amount * count) : "--";
   };
+  const codeSub = () => {
+    const amount = Number(codeDraft.amountYuan);
+    const count = Number(codeDraft.count);
+    return amount > 0 && count > 0 ? `${count} 张 × ${money(amount)}` : "填写面额和数量后自动计算";
+  };
+  function codesPage() {
+    const used = codes.filter((c) => c.usedAt).length;
+    const shown = codes.filter((c) => codeFilter === "all" || (codeFilter === "used" ? c.usedAt : !c.usedAt));
+    const chip = (id, label, n) => `<button class="chip ${codeFilter === id ? "is-on" : ""}" type="button" data-code-filter="${id}">${label}<span class="n">${n}</span></button>`;
+    return `
+      ${head("兑换码", "生成后复制到卡密平台出售，用户在画布里兑换成余额")}
+      <div class="codes-layout">
+        <section class="panel gen">
+          <div class="panel-head"><h2>${ic("plus")}生成一批</h2></div>
+          <form class="panel-body gen-form" id="codes-form" autocomplete="off">
+            <label class="field">面额（元）<input id="c-amount" name="amountYuan" type="number" step="0.01" min="0.01" required placeholder="如 60" value="${esc(codeDraft.amountYuan)}"></label>
+            <div class="chips" id="c-amount-chips">${[10, 30, 60, 100].map((n) => `<button class="chip ${Number(codeDraft.amountYuan) === n ? "is-on" : ""}" type="button" data-c-amount="${n}">¥${n}</button>`).join("")}</div>
+            <label class="field">数量<span class="stepper"><button class="step" type="button" data-step="-1" aria-label="减少一个">−</button><input id="c-count" name="count" type="number" min="1" max="500" required value="${esc(codeDraft.count)}"><button class="step" type="button" data-step="1" aria-label="增加一个">+</button></span></label>
+            <label class="field">批次备注<input id="c-batch" name="batch" placeholder="如 常用装-11月" value="${esc(codeDraft.batch)}"></label>
+            <div class="ticket"><span>合计面额</span><b id="c-total">${codeTotal()}</b><small id="c-sub">${codeSub()}</small></div>
+            <button class="primary block" type="submit">生成兑换码</button>
+          </form>
+          ${lastBatch ? `<div class="gen-out"><p><b>刚生成 ${lastBatch.codes.length} 个 ${money(lastBatch.amount)} 兑换码</b>${lastBatch.batch ? `<span class="muted">，批次 ${esc(lastBatch.batch)}</span>` : ""}</p>
+            <textarea readonly id="new-codes" aria-label="新生成的兑换码">${esc(lastBatch.codes.join("\n"))}</textarea>
+            <div class="row" style="margin-top:10px"><button class="ghost small" type="button" id="copy-codes">${ICON.copy}复制全部</button><button class="ghost small" type="button" id="dl-codes">${ICON.send}下载 CSV</button></div></div>` : ""}
+        </section>
+        <section class="panel">
+          <div class="panel-head"><div><h2>${ic("codes")}兑换码记录</h2></div><span class="chips">${chip("all", "全部", codes.length)}${chip("unused", "未使用", codes.length - used)}${chip("used", "已使用", used)}</span></div>
+          <div class="table-box"><table class="codes-table">
+            <thead><tr><th>兑换码</th><th class="num">面额</th><th>批次</th><th>状态</th><th>使用者</th><th>生成</th><th></th></tr></thead>
+            <tbody>${shown.map((c) => `<tr>
+              <td><button class="code-btn" type="button" data-copy="${esc(c.code)}" title="点击复制">${esc(c.code)}${ICON.copy}</button></td>
+              <td class="num">${money(c.amount)}</td><td>${esc(c.batch)}</td>
+              <td>${c.usedAt ? '<span class="tag">已使用</span>' : '<span class="tag ok">未使用</span>'}</td>
+              <td class="used" title="${esc(c.usedBy ? c.usedBy + "，" + time(c.usedAt) : "")}">${esc(c.usedBy || "")}</td>
+              <td class="muted" title="${esc(time(c.createdAt))}">${esc(ago(c.createdAt))}</td>
+              <td class="num"><button class="danger small" type="button" data-delete-code="${esc(c.code)}">删除</button></td></tr>`).join("") || `<tr><td colspan="7" class="empty">${ICON.inbox}${codes.length ? "这个筛选下没有兑换码" : "还没有兑换码，在左边生成第一批"}</td></tr>`}</tbody>
+          </table></div>
+        </section>
+      </div>`;
+  }
 
-  app.addEventListener("submit", async (e) => {
+  // ---------- settings ----------
+  function settingsPage() {
+    return `
+      ${head("设置", "验证码邮件、图床和结果图下发方式")}
+      <div class="set-grid">
+        <section class="panel">
+          <div class="panel-head"><div><h2>${ic("mail")}邮件 Resend <span class="tag ${mail.fromEnv || mail.hasKey ? "ok" : "warn"}">${mail.fromEnv ? "由环境变量提供" : mail.hasKey ? "已设置" : "未设置"}</span></h2><p class="sub">注册、找回密码的验证码邮件</p></div>
+            <a class="link-btn" href="https://resend.com/api-keys" target="_blank" rel="noopener">去 Resend 创建${ICON.ext}</a></div>
+          <form class="panel-body stack" id="mail-form" autocomplete="off">
+            ${!mail.fromEnv && !mail.hasKey ? `<p class="muted" style="margin:0">没设置时，验证码会直接显示在页面上，只适合测试。</p>` : ""}
+            <label class="field" for="mail-key">API Key${secret(`<input id="mail-key" name="apiKey" type="password" autocomplete="new-password" placeholder="${mail.hasKey ? "已设置 " + esc(mail.keyPreview) + "，留空不修改" : "粘贴 Resend API Key（re_ 开头）"}">`, "mail")}</label>
+            <div class="acts"><button class="primary" type="submit">保存</button></div>
+          </form>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><div><h2>${ic("image")}图床 Cloudinary</h2><p class="sub">管理员带参考图生成时用；普通用户在画布设置里填自己的</p></div>
+            <a class="link-btn" href="https://console.cloudinary.com/settings/api-keys" target="_blank" rel="noopener">在哪里找${ICON.ext}</a></div>
+          <form class="panel-body stack" id="cloud-form" autocomplete="off">
+            <label class="field" for="cl-name">Cloud Name<input id="cl-name" name="cloudName" value="${esc(cloud.cloudName)}"></label>
+            <label class="field" for="cl-key">API Key<input id="cl-key" name="apiKey" value="${esc(cloud.apiKey)}"></label>
+            <label class="field" for="cl-secret">API Secret${secret(`<input id="cl-secret" name="apiSecret" type="password" placeholder="${cloud.apiSecret ? "已设置，留空不修改" : "粘贴 API Secret"}" autocomplete="new-password">`, "cloudinary")}</label>
+            <div class="acts"><button class="primary" type="submit">保存</button></div>
+          </form>
+        </section>
+        <section class="panel wide">
+          <div class="panel-head"><div><h2>${ic("send")}结果图下发方式 <span class="tag ${cos.delivery === "direct" ? "ok" : ""}">${cos.delivery === "direct" ? "直连平台" : "腾讯云 COS"}</span></h2><p class="sub">普通用户的结果图从哪里下载。土豆两种方式下都由浏览器直连，不经过服务器</p></div></div>
+          <div class="panel-body">
+            <form id="delivery-form">
+              <div class="radio-cards">
+                <label class="radio-card"><input type="radio" name="delivery" value="cos" ${cos.delivery !== "direct" ? "checked" : ""}>
+                  <span><b>腾讯云 COS</b>RH、Grsai、APIMart 的结果图从广州存储下载。国内快，用户看不到平台域名；按流量付费，约 0.4 分/张</span></label>
+                <label class="radio-card"><input type="radio" name="delivery" value="direct" ${cos.delivery === "direct" ? "checked" : ""}>
+                  <span><b>直连平台</b>RH、Grsai、APIMart 的结果图由浏览器直接从平台下载，和以前一样，免费；用户在开发者工具里能看到平台域名</span></label>
+              </div>
+              <button class="primary small" type="submit" style="margin-top:14px">保存下发方式</button>
+            </form>
+            <details class="cos-backup" ${cos.delivery === "direct" ? "" : "open"}>
+              <summary>${ICON.chev}备用：腾讯云 COS 设置 <span class="tag ${cos.ready ? "ok" : ""}">${cos.ready ? "已配置" : "未配置"}</span><span class="muted" style="font-weight:400;font-size:13px">选“腾讯云 COS”时才用到，密钥都保留着</span></summary>
+              <p class="muted" style="margin:10px 0 14px">生成的原图放到国内存储桶，国内用户下载更快；不压缩，画质不变。没填或出错时自动改回由本服务器发图。</p>
+              <form id="cos-form" autocomplete="off">
+                <div class="cos-grid">
+                  <label class="field" for="cos-bucket">存储桶名称<input id="cos-bucket" name="bucket" value="${esc(cos.bucket || "")}" placeholder="例如 laowu-images-1250000000"></label>
+                  <label class="field" for="cos-region">地域<input id="cos-region" name="region" value="${esc(cos.region || "ap-guangzhou")}"></label>
+                  <label class="field" for="cos-id">SecretId<input id="cos-id" name="secretId" value="${esc(cos.secretId || "")}"></label>
+                  <label class="field" for="cos-key">SecretKey${secret(`<input id="cos-key" name="secretKey" type="password" placeholder="${cos.hasSecret ? "已设置，留空不修改" : "粘贴 SecretKey"}" autocomplete="new-password">`, "cos")}</label>
+                </div>
+                <div class="row" style="margin-top:14px"><button class="primary" type="submit">保存</button><button class="ghost" type="button" id="cos-test">测试上传</button></div>
+              </form>
+            </details>
+          </div>
+        </section>
+      </div>`;
+  }
+
+  const PAGES = { overview, prices: pricesPage, users: usersPage, codes: codesPage, settings: settingsPage };
+
+  // ---------- channel settings dialog ----------
+  const chDialog = document.getElementById("ch-dialog");
+  function openChannelDialog(id) {
+    const c = channels.find((x) => x.id === id);
+    if (!c) return;
+    document.getElementById("ch-dialog-body").innerHTML = `<form class="dlg-form" data-channel="${c.id}" autocomplete="off">
+      <div class="dlg-head"><div><h2>${esc(c.name)} 设置</h2><p>${esc(c.channelLabel || "")}${c.keySource === "env" ? "，Key 由环境变量提供" : ""}</p></div>
+        <button class="icon-btn" type="button" data-close-dialog aria-label="关闭">${ICON.close}</button></div>
+      <label class="field">API Key
+        ${secret(`<input name="apiKey" type="password" autocomplete="off" placeholder="${c.hasKey ? "已设置 " + esc(c.keyPreview) + "，留空不修改" : "粘贴这个渠道的 API Key"}" ${c.keySource === "env" ? "disabled" : ""}>`, `channel:${c.id}:apiKey`)}</label>
+      ${c.extraKey ? `<label class="field">${esc(c.extraKey)}
+        ${secret(`<input name="apiKey2" type="password" autocomplete="off" placeholder="${c.hasKey2 ? "已设置 " + esc(c.key2Preview) + "，留空不修改" : "没有可以不填"}">`, `channel:${c.id}:apiKey2`)}</label>` : ""}
+      <label class="field">余额低于多少提醒（${esc(c.unit)}）<input name="alertThreshold" type="number" step="0.01" min="0" value="${c.alertThreshold}"></label>
+      <div class="dlg-acts"><button class="ghost" type="button" data-close-dialog>取消</button><button class="primary" type="submit">保存</button></div>
+    </form>`;
+    chDialog.showModal();
+  }
+
+  // ---------- quick jump (⌘K) ----------
+  const cmdk = document.getElementById("cmdk");
+  const cmdkInput = document.getElementById("cmdk-input");
+  const cmdkList = document.getElementById("cmdk-list");
+  let cmdkItems = [];
+  let cmdkSel = 0;
+  function go(id, focusId) {
+    if (cmdk.open) cmdk.close();
+    tab = id; drawerUser = null;
+    history.replaceState(null, "", "#" + id);
+    render();
+    window.scrollTo(0, 0);
+    if (focusId) document.getElementById(focusId)?.focus();
+  }
+  function cmdkBuild(q) {
+    const t = q.trim().toLowerCase();
+    const items = [];
+    TABS.forEach((id) => items.push({ g: "页面", icon: ICON[id], label: TAB_LABEL[id], run: () => go(id) }));
+    items.push({ g: "操作", icon: ICON.refresh, label: "刷新渠道余额", run: () => { go("overview"); checkBalances({ announce: true }); } });
+    items.push({ g: "操作", icon: ICON.wallet, label: "给用户充值", run: () => go("overview", "qa-who") });
+    items.push({ g: "操作", icon: ICON.plus, label: "生成兑换码", run: () => go("codes", "c-amount") });
+    allUsers.forEach((u) => items.push({ g: "用户", avatar: avatarOf(u), label: displayName(u), hint: u.username, run: () => { go("users"); openUser(u.id); } }));
+    return items.filter((i) => !t || (i.label + " " + (i.hint || "")).toLowerCase().includes(t)).slice(0, 30);
+  }
+  function cmdkDraw() {
+    let last = "";
+    cmdkList.innerHTML = cmdkItems.map((it, n) => {
+      const header = it.g !== last ? `<li class="cmdk-group" role="presentation">${it.g}</li>` : "";
+      last = it.g;
+      return `${header}<li role="presentation"><button type="button" class="cmdk-item ${n === cmdkSel ? "is-on" : ""}" role="option" aria-selected="${n === cmdkSel}" data-i="${n}">${it.avatar ? `<img src="${esc(it.avatar)}" alt="">` : it.icon}<span>${esc(it.label)}</span>${it.hint ? `<small>${esc(it.hint)}</small>` : ""}</button></li>`;
+    }).join("") || `<li class="empty" style="padding:28px 0">没有找到匹配的内容</li>`;
+    cmdkList.querySelector(".is-on")?.scrollIntoView({ block: "nearest" });
+  }
+  function openCmdk() {
+    if (cmdk.open) return;
+    cmdkInput.value = "";
+    cmdkItems = cmdkBuild(""); cmdkSel = 0; cmdkDraw();
+    cmdk.showModal();
+    cmdkInput.focus();
+  }
+  cmdkInput.addEventListener("input", () => { cmdkItems = cmdkBuild(cmdkInput.value); cmdkSel = 0; cmdkDraw(); });
+  cmdkInput.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      if (!cmdkItems.length) return;
+      cmdkSel = (cmdkSel + (e.key === "ArrowDown" ? 1 : -1) + cmdkItems.length) % cmdkItems.length;
+      cmdkDraw();
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      cmdkItems[cmdkSel]?.run();
+    }
+  });
+  cmdkList.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-i]");
+    if (b) cmdkItems[Number(b.dataset.i)]?.run();
+  });
+  cmdk.addEventListener("click", (e) => { if (e.target === cmdk) cmdk.close(); });
+
+  // ---------- events ----------
+  document.addEventListener("submit", async (e) => {
     const form = e.target;
+    if (form.method === "dialog" || !form.closest("#app, #ch-dialog")) return;
     e.preventDefault();
+    const btn = e.submitter || form.querySelector('[type="submit"]');
+    busy(btn, true);
     try {
-      if (form.id === "search-form") {
-        userQ = form.querySelector("#user-q").value.trim();
-        await loadUsers(userQ);
-        flash.users = null;
-      } else if (form.dataset.adjust) {
+      if (form.id === "qa-topup") {
+        const u = findUser(form.who.value);
         const amount = form.amount.value.trim();
-        if (!amount || Number(amount) === 0) throw new Error("请输入金额");
-        const u = users.find((x) => x.id === Number(form.dataset.adjust));
-        if (!confirm(`确认给 ${u.username} ${Number(amount) > 0 ? "充值" : "扣减"} ${money(Math.abs(Number(amount)))}？`)) return;
+        if (!u) throw new Error(form.who.value.trim() ? "找不到这个用户，请从下拉列表里选" : "请先输入要充值的用户");
+        if (!amount || Number(amount) === 0) throw new Error("请输入充值金额");
+        const up = Number(amount) > 0;
+        if (!await ask({ title: `${up ? "充值" : "扣减"} ${money(Math.abs(Number(amount)))}`, text: `给 ${u.username}${up ? "充值" : "扣减"} ${money(Math.abs(Number(amount)))}，调整后余额 ${money(u.balance + Number(amount))}。`, ok: up ? "确认充值" : "确认扣减", danger: !up })) return;
+        const r = await api("/admin/balance", { userId: u.id, amountYuan: amount, note: "" });
+        toast(`${u.username} 当前余额 ${money(r.balance)}`);
+        qa.amount = "";
+        await Promise.all([refreshUsers(), loadStats()]);
+      } else if (form.id === "qa-codes") {
+        lastBatch = await api("/admin/codes", { amountYuan: form.amountYuan.value, count: form.count.value, batch: "" });
+        toast(`已生成 ${lastBatch.codes.length} 个兑换码`);
+        qa.codeAmount = "";
+        await Promise.all([loadCodes(), loadStats()]);
+      } else if (form.dataset.adjust) {
+        const u = userById(Number(form.dataset.adjust));
+        const amount = form.amount.value.trim();
+        if (!amount || Number(amount) === 0) throw new Error("请输入调整金额，比如 50 或 -10");
+        const up = Number(amount) > 0;
+        if (!await ask({ title: `${up ? "充值" : "扣减"} ${money(Math.abs(Number(amount)))}`, text: `给 ${u.username}${up ? "充值" : "扣减"} ${money(Math.abs(Number(amount)))}，调整后余额 ${money(u.balance + Number(amount))}。`, ok: up ? "确认充值" : "确认扣减", danger: !up })) return;
         const r = await api("/admin/balance", { userId: u.id, amountYuan: amount, note: form.note.value.trim() });
-        flash.users = { text: `${u.username} 当前余额 ${money(r.balance)}` };
-        adjustUser = null;
-        await Promise.all([loadUsers(userQuery()), loadStats()]);
+        toast(`${u.username} 当前余额 ${money(r.balance)}`);
+        adj.amount = ""; adj.note = "";
+        await Promise.all([refreshUsers(), loadStats()]);
+        loadLedger(u.id);
       } else if (form.dataset.channel) {
         const data = Object.fromEntries(new FormData(form).entries());
         const body = { id: form.dataset.channel, alertThreshold: data.alertThreshold };
         if (data.apiKey) body.apiKey = data.apiKey;
         if (data.apiKey2) body.apiKey2 = data.apiKey2;
         await api("/admin/channels", body);
-        flash.channels = { text: "已保存" };
+        chDialog.close();
+        toast(`${chName(form.dataset.channel)} 已保存`);
         await loadChannels();
         checkBalances();
-
       } else if (form.id === "mail-form") {
         const key = new FormData(form).get("apiKey");
         if (!key) throw new Error("请粘贴 Resend API Key");
         mail = await api("/admin/mail", { apiKey: key });
-        flash.mail = { text: "已保存，之后的验证码会通过邮件发送" };
+        toast("已保存，之后的验证码会通过邮件发送");
       } else if (form.id === "delivery-form") {
         const delivery = new FormData(form).get("delivery") === "direct" ? "direct" : "cos";
         cos = await api("/admin/cos", { delivery });
-        flash.delivery = { text: delivery === "direct" ? "已切换为直连平台，之后的生成立即生效" : "已切换为腾讯云 COS，之后的生成立即生效" };
+        toast(delivery === "direct" ? "已切换为直连平台，之后的生成立即生效" : "已切换为腾讯云 COS，之后的生成立即生效");
       } else if (form.id === "cos-form") {
-        const data = Object.fromEntries(new FormData(form).entries());
-        cos = await api("/admin/cos", data);
-        flash.cos = { text: cos.ready ? "已保存，点「测试上传」确认能用" : "已保存，还差几项没填" };
+        cos = await api("/admin/cos", Object.fromEntries(new FormData(form).entries()));
+        toast(cos.ready ? "已保存，点“测试上传”确认能用" : "已保存，还差几项没填");
       } else if (form.id === "cloud-form") {
-        const data = Object.fromEntries(new FormData(form).entries());
-        cloud = await api("/admin/cloudinary", data);
-        flash.cloud = { text: "已保存，管理员账号刷新画布后生效" };
+        cloud = await api("/admin/cloudinary", Object.fromEntries(new FormData(form).entries()));
+        toast("已保存，管理员账号刷新画布后生效");
       } else if (form.id === "codes-form") {
-        const data = Object.fromEntries(new FormData(form).entries());
-        lastBatch = await api("/admin/codes", data);
-        flash.codes = { text: "生成成功" };
+        lastBatch = await api("/admin/codes", Object.fromEntries(new FormData(form).entries()));
+        codeDraft.amountYuan = ""; codeDraft.count = "10"; codeDraft.batch = "";
+        toast(`已生成 ${lastBatch.codes.length} 个兑换码`);
         await Promise.all([loadCodes(), loadStats()]);
       }
     } catch (err) {
-      if (form.id === "codes-form") flash.codes = { err: true, text: err.message };
-      else if (form.id === "cloud-form") flash.cloud = { err: true, text: err.message };
-      else if (form.id === "cos-form") flash.cos = { err: true, text: err.message };
-      else if (form.id === "delivery-form") flash.delivery = { err: true, text: err.message };
-      else if (form.id === "mail-form") flash.mail = { err: true, text: err.message };
-      else if (form.dataset.channel) flash.channels = { err: true, text: err.message };
-      else flash.users = { err: true, text: err.message };
+      toast(err.message, true);
+    } finally {
+      busy(btn, false);
     }
     render();
   });
 
-  app.addEventListener("input", (e) => {
-    const input = e.target.closest("[data-price-key]");
+  document.addEventListener("input", (e) => {
+    const t = e.target;
+    if (t.id === "user-q") {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(async () => {
+        const seq = ++searchSeq;
+        const q = t.value.trim();
+        let found;
+        try { found = (await api("/admin/users" + (q ? "?q=" + encodeURIComponent(q) : ""))).items; }
+        catch (err) { toast(err.message, true); return; }
+        if (seq !== searchSeq) return; // a newer search is already on its way
+        userQ = q; users = found;
+        render();
+      }, 260);
+      return;
+    }
+    if (t.id === "pt-filter") { ptFilter = t.value; applyPriceFilter(); return; }
+    if (t.id === "qa-who" || t.id === "qa-amount") {
+      qa[t.name === "who" ? "who" : "amount"] = t.value;
+      document.getElementById("qa-hint").innerHTML = qaHint();
+      return;
+    }
+    if (t.id === "qa-camount") { qa.codeAmount = t.value; return; }
+    if (t.id === "qa-ccount") { qa.codeCount = t.value; return; }
+    if (t.id === "c-amount" || t.id === "c-count" || t.id === "c-batch") {
+      codeDraft[t.name] = t.value;
+      document.getElementById("c-total").textContent = codeTotal();
+      document.getElementById("c-sub").textContent = codeSub();
+      document.querySelectorAll("[data-c-amount]").forEach((c) => c.classList.toggle("is-on", Number(c.dataset.cAmount) === Number(codeDraft.amountYuan)));
+      return;
+    }
+    if (t.id === "dr-amount" || t.id === "dr-note") {
+      adj[t.name] = t.value;
+      const u = userById(drawerUser);
+      const out = document.getElementById("dr-preview");
+      if (u && out) { const p = adjustPreview(u); out.className = p.cls; out.innerHTML = p.html; }
+      return;
+    }
+    const input = t.closest?.("[data-price-key]");
     if (!input) return;
     const key = input.dataset.priceKey;
     const r = catalog.find((x) => priceKey(x) === key);
@@ -602,20 +1372,52 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
     if ((saved ? String(saved.price) : "") === input.value.trim()) draft.delete(key);
     else draft.set(key, input.value);
     input.classList.toggle("is-dirty", draft.has(key));
-    const save = document.getElementById("pt-save");
-    if (save) save.textContent = "保存价格表" + (draft.size ? `（${draft.size} 处修改）` : "");
+    input.title = draft.has(key) ? (saved ? `原来 ${money(saved.price)}` : "原来未开放") : "";
+    const ratio = document.querySelector(`[data-ratio="${CSS.escape(key)}"]`);
+    if (ratio && r) ratio.innerHTML = ratioHtml(r, input.value);
+    syncSavebar();
   });
 
-  app.addEventListener("toggle", (e) => {
-    const site = e.target.dataset?.site;
-    if (!site) return;
-    if (e.target.open) openSites.add(site); else openSites.delete(site);
-  }, true);
+  document.addEventListener("keydown", (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k" && me?.role === "admin") {
+      e.preventDefault();
+      if (cmdk.open) cmdk.close(); else if (!document.querySelector("dialog[open]")) openCmdk();
+      return;
+    }
+    if (e.key === "Escape" && drawerUser != null && !document.querySelector("dialog[open]")) { closeDrawer(); return; }
+    if (e.key === "Enter" && e.target.matches?.("tr[data-open-user]")) { e.preventDefault(); openUser(Number(e.target.dataset.openUser)); return; }
+    // Enter in a price box moves to the next one, like a spreadsheet.
+    if (e.key === "Enter" && e.target.matches?.("[data-price-key]")) {
+      e.preventDefault();
+      const all = [...document.querySelectorAll("[data-price-key]")].filter((el) => el.offsetParent !== null);
+      const next = all[all.indexOf(e.target) + (e.shiftKey ? -1 : 1)];
+      if (next) { next.focus(); next.select(); }
+    }
+  });
 
-  app.addEventListener("click", async (e) => {
+  // Highlight the row and column of the price being edited.
+  document.addEventListener("focusin", (e) => {
+    const table = document.querySelector(".mx");
+    if (!table) return;
+    table.querySelectorAll(".is-focus").forEach((el) => el.classList.remove("is-focus"));
+    const input = e.target.closest?.("[data-price-key]");
+    if (!input) return;
+    const td = input.closest("td");
+    const col = td.dataset.col;
+    td.closest("tr").classList.add("is-focus");
+    table.querySelector(`th[data-col="${col}"]`)?.classList.add("is-focus");
+    table.querySelector(`th[data-colgroup="${col.split("-")[0]}"]`)?.classList.add("is-focus");
+  });
+
+  document.addEventListener("click", async (e) => {
+    if (e.target.closest("[data-close-drawer]")) { closeDrawer(); return; }
+    const opener = e.target.closest("[data-open-user]");
+    if (opener) { openUser(Number(opener.dataset.openUser)); return; }
     const b = e.target.closest("button");
-    if (!b) return;
+    if (!b || !b.closest("#app, #ch-dialog")) return;
     try {
+      if (b.id === "open-cmdk") { openCmdk(); return; }
+      if (b.dataset.closeDialog != null) { b.closest("dialog").close(); return; }
       if (b.dataset.reveal) {
         const input = b.parentElement.querySelector("input");
         if (input.type === "password") {
@@ -633,14 +1435,49 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
         }
         return;
       }
-      if (b.dataset.adjustOpen) {
-        const id = Number(b.dataset.adjustOpen);
-        adjustUser = adjustUser === id ? null : id;
-        render();
-        document.querySelector(`[data-adjust="${id}"] input[name="amount"]`)?.focus();
+      if (b.dataset.chSettings) { openChannelDialog(b.dataset.chSettings); return; }
+      if (b.dataset.qaAmount) {
+        qa.amount = b.dataset.qaAmount;
+        const input = document.getElementById("qa-amount");
+        input.value = qa.amount;
+        document.getElementById("qa-hint").innerHTML = qaHint();
+        input.focus();
         return;
       }
-      if (b.id === "check-balances") { checkBalances(); return; }
+      if (b.dataset.quick) {
+        adj.amount = b.dataset.quick;
+        const input = document.getElementById("dr-amount");
+        input.value = adj.amount;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.focus();
+        return;
+      }
+      if (b.dataset.cAmount) {
+        const input = document.getElementById("c-amount");
+        input.value = b.dataset.cAmount;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        return;
+      }
+      if (b.dataset.step) {
+        const input = document.getElementById("c-count");
+        input.value = Math.max(1, Math.min(500, (Number(input.value) || 0) + Number(b.dataset.step)));
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        return;
+      }
+      if (b.dataset.userFilter) { userFilter = b.dataset.userFilter; render(); return; }
+      if (b.dataset.codeFilter) { codeFilter = b.dataset.codeFilter; render(); return; }
+      if (b.dataset.family) {
+        ptFamily = b.dataset.family;
+        document.querySelectorAll("[data-family]").forEach((x) => { if (x.tagName === "BUTTON") { x.classList.toggle("is-on", x === b); x.setAttribute("aria-pressed", String(x === b)); } });
+        applyPriceFilter();
+        return;
+      }
+      if (b.dataset.copy) {
+        await navigator.clipboard.writeText(b.dataset.copy);
+        toast(`已复制 ${b.dataset.copy}`);
+        return;
+      }
+      if (b.id === "check-balances") { checkBalances({ announce: true }); return; }
       if (b.id === "pt-fill") {
         markup = Number(document.getElementById("pt-markup").value) || markup;
         let n = 0;
@@ -650,82 +1487,93 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
           draft.set(key, String(Math.ceil(r.cost * markup * 100) / 100));
           n++;
         }
-        flash.prices = { text: n ? `已填入 ${n} 个客户价（按量计费的规格没有原价，需要手动填），确认后点"保存价格表"` : "没有需要填的空白客户价" };
+        toast(n ? `已按成本的 ${markup} 倍填好 ${n} 个空白格，确认后点“保存价格表”` : "没有需要填的空白格");
+        render(); return;
+      }
+      if (b.id === "pt-discard") {
+        if (!await ask({ title: "放弃修改", text: `放弃这 ${draft.size} 处还没保存的价格？`, ok: "放弃修改", danger: true })) return;
+        draft.clear();
+        toast("已放弃修改");
         render(); return;
       }
       if (b.id === "pt-save") {
-        if (!draft.size) { flash.prices = { text: "没有修改" }; render(); return; }
+        if (!draft.size) { toast("没有修改"); return; }
         const items = [...draft.entries()].map(([key, price]) => {
           const [channel, model, spec] = key.split("|");
           const r = catalog.find((x) => priceKey(x) === key);
           return { channel, model, spec, price: price.trim(), cost: r?.costText || "", note: r?.label || "" };
         });
-        await api("/admin/prices/bulk", { items });
+        busy(b, true);
+        try { await api("/admin/prices/bulk", { items }); } finally { busy(b, false); }
         draft.clear();
         await loadPrices();
-        flash.prices = { text: `已保存 ${items.length} 处修改` };
+        toast(`已保存 ${items.length} 处价格`);
         render(); return;
       }
       if (b.dataset.delPrice) {
         const r = prices.find((x) => x.id === Number(b.dataset.delPrice));
-        if (!confirm(`删除 ${r.model} ${r.spec} 的价格？`)) return;
+        if (!await ask({ title: "删除价格", text: `删除 ${r.model} ${r.spec} 的价格？`, ok: "删除", danger: true })) return;
         await api("/admin/prices/delete", { id: r.id });
-        await loadPrices(); render(); return;
+        await loadPrices(); toast("已删除价格"); render(); return;
       }
-      if (b.dataset.ledger) {
-        const items = (await api("/admin/user-ledger?userId=" + b.dataset.ledger)).items;
-        document.getElementById("ledger-title").textContent = b.dataset.name + " 的余额记录";
-        document.getElementById("ledger-body").innerHTML = items.map((i) => `<tr><td>${esc(time(i.createdAt))}</td><td>${esc(i.note || KIND[i.kind] || i.kind)}</td><td class="num">${i.amount > 0 ? "+" : ""}${money(i.amount).replace("¥-", "-¥")}</td><td class="num">${money(i.balanceAfter)}</td></tr>`).join("") || `<tr><td colspan="4" class="muted">没有记录</td></tr>`;
-        document.getElementById("ledger-dialog").showModal();
-      } else if (b.dataset.disable) {
+      if (b.dataset.disable) {
         const to = b.dataset.to === "true";
-        if (to && !confirm("停用后该用户会被立即退出且无法登录，确认？")) return;
+        if (to && !await ask({ title: "停用这个账号", text: "停用后该用户会被立即退出，并且无法再登录。", ok: "停用", danger: true })) return;
+        busy(b, true);
         await api("/admin/disable", { userId: Number(b.dataset.disable), disabled: to });
-        await loadUsers(userQuery());
+        await refreshUsers();
+        toast(to ? "已停用" : "已启用");
         render();
       } else if (b.id === "renumber-users") {
-        if (!confirm("把所有用户按注册先后重新编号成 1、2、3…？\n余额、余额记录、兑换码使用记录、登录状态都会跟着新编号，用户不会被退出。")) return;
+        if (!await ask({ title: "重新编号用户 ID", text: "把所有用户按注册先后重新编号成 1、2、3…？\n余额、余额记录、兑换码使用记录、登录状态都会跟着新编号，用户不会被退出。", ok: "重新编号" })) return;
+        busy(b, true);
+        drawerUser = null;
         const r = await api("/admin/renumber-users", {});
-        flash.users = { text: `已重新编号 ${r.users} 个用户` };
-        await Promise.all([loadUsers(userQuery()), loadStats()]);
+        toast(`已重新编号 ${r.users} 个用户`);
+        await Promise.all([refreshUsers(), loadStats()]);
         render();
       } else if (b.dataset.zero) {
-        const u = users.find((x) => x.id === Number(b.dataset.zero));
-        if (!confirm(`把 ${u.username} 的余额 ${money(u.balance)} 清零？会记入余额记录。`)) return;
+        const u = userById(Number(b.dataset.zero));
+        if (!await ask({ title: "余额清零", text: `把 ${u.username} 的余额 ${money(u.balance)} 清零？会记入余额记录。`, ok: "清零", danger: true })) return;
+        busy(b, true);
         const r = await api("/admin/balance", { userId: u.id, amountYuan: -u.balance, note: "管理员清零" });
-        flash.users = { text: `${u.username} 余额已清零（当前 ${money(r.balance)}）` };
-        await Promise.all([loadUsers(userQuery()), loadStats()]);
+        toast(`${u.username} 余额已清零（当前 ${money(r.balance)}）`);
+        await Promise.all([refreshUsers(), loadStats()]);
+        loadLedger(u.id);
         render();
       } else if (b.dataset.deleteUser) {
-        const u = users.find((x) => x.id === Number(b.dataset.deleteUser));
-        if (!confirm(`永久删除 ${u.username}？该账号的登录和余额记录会一起删除，无法恢复。`)) return;
+        const u = userById(Number(b.dataset.deleteUser));
+        if (!await ask({ title: "永久删除账号", text: `永久删除 ${u.username}？该账号的登录和余额记录会一起删除，无法恢复。`, ok: "永久删除", danger: true })) return;
+        busy(b, true);
         await api("/admin/delete-user", { userId: u.id });
-        flash.users = { text: `已删除 ${u.username}` };
-        await Promise.all([loadUsers(userQuery()), loadStats()]);
+        drawerUser = null;
+        toast(`已删除 ${u.username}`);
+        await Promise.all([refreshUsers(), loadStats()]);
         render();
       } else if (b.dataset.deleteCode) {
         const c = codes.find((x) => x.code === b.dataset.deleteCode);
-        if (!confirm(c.usedAt
-          ? `删除已使用的兑换码 ${c.code}（${money(c.amount)}）？只删除这条记录，用户已到账的余额和余额记录不受影响。`
-          : `删除兑换码 ${c.code}（${money(c.amount)}）？删除后这个码就不能再兑换了。`)) return;
+        if (!await ask({
+          title: "删除兑换码",
+          text: c.usedAt
+            ? `删除已使用的兑换码 ${c.code}（${money(c.amount)}）？只删除这条记录，用户已到账的余额和余额记录不受影响。`
+            : `删除兑换码 ${c.code}（${money(c.amount)}）？删除后这个码就不能再兑换了。`,
+          ok: "删除", danger: true,
+        })) return;
+        busy(b, true);
         await api("/admin/delete-code", { code: c.code });
         if (lastBatch) lastBatch.codes = lastBatch.codes.filter((x) => x !== c.code);
-        flash.codes = { text: `已删除兑换码 ${c.code}` };
-        await loadCodes();
+        toast(`已删除兑换码 ${c.code}`);
+        await Promise.all([loadCodes(), loadStats()]);
         render();
       } else if (b.id === "cos-test") {
-        b.disabled = true;
-        b.textContent = "测试中…";
+        busy(b, true);
         try {
           await api("/admin/cos/test", {});
-          flash.cos = { text: "测试成功：能上传，也能从公开链接读取" };
-        } catch (err) {
-          flash.cos = { err: true, text: err.message };
-        }
-        render();
+          toast("测试成功：能上传，也能从公开链接读取");
+        } finally { busy(b, false); }
       } else if (b.id === "copy-codes") {
         await navigator.clipboard.writeText(lastBatch.codes.join("\n"));
-        b.textContent = "已复制";
+        toast(`已复制 ${lastBatch.codes.length} 个兑换码`);
       } else if (b.id === "dl-codes") {
         const csv = "兑换码,面额,批次\n" + lastBatch.codes.map((c) => `${c},${lastBatch.amount},${lastBatch.batch}`).join("\n");
         const a = document.createElement("a");
@@ -734,14 +1582,22 @@ tr.adjust-row form{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
         a.click();
       }
     } catch (err) {
-      if (b.id && b.id.startsWith("pt-") || b.dataset.delPrice) flash.prices = { err: true, text: err.message };
-      else if (b.dataset.deleteCode) flash.codes = { err: true, text: err.message };
-      else flash.users = { err: true, text: err.message };
-      render();
+      busy(b, false);
+      toast(err.message, true);
     }
   });
 
-  load().catch((err) => { app.innerHTML = `<div class="gate card"><p class="msg err">${esc(err.message)}</p></div>`; });
+  window.addEventListener("hashchange", () => {
+    const next = location.hash.slice(1);
+    if (TABS.includes(next) && next !== tab) {
+      tab = next;
+      drawerUser = null;
+      render();
+      window.scrollTo(0, 0);
+    }
+  });
+
+  load().catch((err) => { app.innerHTML = `<div class="gate panel"><p style="color:var(--bad)">${esc(err.message)}</p><p><a href="/">返回老屋作坊</a></p></div>`; });
 })();
 </script>
 </body>
