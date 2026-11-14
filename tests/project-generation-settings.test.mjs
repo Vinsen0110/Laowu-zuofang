@@ -270,7 +270,24 @@ test("image model picker stays below its trigger after selecting GPT models", ()
     const start = source.indexOf('className:"canvas-model-menu');
     assert.notEqual(start, -1);
     const menu = source.slice(start, source.indexOf("children:d.length", start));
-    assert.match(menu, /position:"popper",align:"start",side:"bottom",sideOffset:7,avoidCollisions:!1/);
+    // The side is chosen once when the menu opens and never flips while it is open.
+    assert.match(menu, /position:"popper",align:"start",side:lwSide,sideOffset:7,avoidCollisions:!1/);
+    assert.match(source, /x&&lwSetSide\(lwModelMenuSide\(lwTrigger\.current,d\)\),i\(x\)/);
+    assert.match(source, /onPointerDown:x=>\{x\.stopPropagation\(\),lwTrigger\.current=x\.currentTarget\}/);
+});
+
+test("image model picker opens upward only when it would not fit below", () => {
+    const start = source.indexOf("function lwModelMenuSide");
+    assert.notEqual(start, -1);
+    const side = new Function("window", `${source.slice(start, source.indexOf("\n", start))};return lwModelMenuSide;`);
+    const trigger = (top, bottom) => ({ getBoundingClientRect: () => ({ top, bottom }) });
+    const groups = [{ name: "Google", models: ["a", "b"] }, { name: "OpenAI", models: ["c"] }];
+    const at = (height) => side({ innerHeight: height });
+    assert.equal(at(1150)(trigger(790, 822), groups), "bottom", "plenty of room below");
+    assert.equal(at(900)(trigger(790, 822), groups), "top", "squeezed below, more room above");
+    assert.equal(at(900)(trigger(40, 72), groups), "bottom", "near the top of the screen");
+    assert.equal(at(300)(trigger(140, 172), groups), "bottom", "neither side fits: keep the larger one");
+    assert.equal(at(900)(null, groups), "bottom", "keyboard open without a pointer");
 });
 
 test("image model order stays in the site catalog order before and after generation and reopening", () => {
