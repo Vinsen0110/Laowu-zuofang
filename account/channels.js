@@ -10,7 +10,7 @@ import { AccountError, milliToYuan, yuanToMilli } from "./service.js";
 const TUDOU_ORIGIN = "https://api.ai-tudou.net";
 
 export const CHANNELS = [
-    { id: "tudou", name: "土豆", unit: "$", topupUrl: "https://api.ai-tudou.net/wallet", models: ["nano-banana-2.1", "nano-banana-pro", "gpt-image-2.5", "gemini-3.8-flash"] },
+    { id: "tudou", name: "土豆", unit: "$", topupUrl: "https://api.ai-tudou.net/wallet", models: ["nano-banana-2.1", "nano-banana-pro", "gpt-image-2.6", "gemini-3.8-flash"] },
     { id: "apimart", name: "APIMart", unit: "$", topupUrl: "https://apimart.ai/zh/billing", models: [...APIMART_IMAGE_MODELS, ...APIMART_TEXT_MODELS] },
     { id: "grsai", name: "Grsai", unit: "$", topupUrl: "https://grsai.com/zh/dashboard/billing", models: [...GRSAI_IMAGE_MODELS], extraKey: "账户 Token（查账户总余额用，可选）" },
     { id: "runninghub", name: "RunningHub", unit: "$", topupUrl: "https://www.runninghub.ai/vip-rights/4", models: [...RUNNINGHUB_IMAGE_MODELS, ...RUNNINGHUB_TEXT_MODELS] },

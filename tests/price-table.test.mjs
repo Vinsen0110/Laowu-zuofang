@@ -72,9 +72,11 @@ test("price table lists Nano Banana 2.1 for every site that offers it, and has n
   assert.doesNotMatch(script, /soon/i);
 });
 
-test("price table shows Tudou GPT Image 2.5 variants", () => {
-  assert.match(script, /GPT Image 2\.5 · Flare/);
-  assert.match(script, /GPT Image 2\.5 · Sunburst/);
+test("price table shows Tudou GPT Image 2.6 variants, without 4K", () => {
+  assert.match(script, /GPT Image 2\.6 · Flare/);
+  assert.match(script, /GPT Image 2\.6 · Sunburst/);
+  assert.match(script, /model === "gpt-image-2\.6" && provider === "tudou" && quality === "4k"/);
+  assert.match(script, /if \(value === "不支持"\) return value;/);
   assert.match(script, /tudouGpt25Variant: "flare"/);
   assert.match(script, /tudouGpt25Variant: "sunburst"/);
 });

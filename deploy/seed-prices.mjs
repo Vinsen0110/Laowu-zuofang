@@ -9,8 +9,6 @@ const all = (v) => R(v, v, v);
 const plan = {
     tudou: {
         "Nano Banana 2.1": R(0.2, 0.2, 0.25), "Nano Banana Pro": R(0.3, 0.3, 0.45),
-        "GPT Image 2.5 · Flare · low": R(0.1, 0.1, 0.15), "GPT Image 2.5 · Flare · medium": R(0.12, 0.12, 0.2), "GPT Image 2.5 · Flare · high": R(0.15, 0.15, 0.25),
-        "GPT Image 2.5 · Flare · xhigh": R(0.18, 0.18, 0.3), "GPT Image 2.5 · Flare · max": R(0.22, 0.3, 0.4),
         "GPT Image 2 · low": R(0.08, 0.1, 0.15), "GPT Image 2 · medium": R(0.1, 0.15, 0.2), "GPT Image 2 · high": R(0.15, 0.2, 0.25),
         "文本 · Gemini 3.8 Flash": 0.02,
     },
@@ -18,10 +16,7 @@ const plan = {
     grsai: { "Nano Banana 2.1": all(0.25), "Nano Banana Pro": all(0.35), "GPT Image 2 VIP": 0.4 },
     runninghub: { "Nano Banana Pro": R(0.7, 0.7, 0.8), "GPT Image 2.5 · 固定": all(0.45), "文本 · Gemini 3.8 Flash": 0.02 },
 };
-for (const q of ["low", "medium", "high", "xhigh", "max"]) {
-    const flare = plan.tudou[`GPT Image 2.5 · Flare · ${q}`];
-    plan.tudou[`GPT Image 2.5 · Sunburst · ${q}`] = Object.fromEntries(Object.entries(flare).map(([k, v]) => [k, Math.round((v + 0.03) * 100) / 100]));
-}
+// GPT Image 2.6 (土豆) has no seeded price yet: set it in the admin price table.
 
 const items = [];
 for (const r of priceCatalog()) {

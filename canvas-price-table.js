@@ -70,6 +70,7 @@
 
   function formatAmount(value, currency) {
     if (value == null || value === "") return "待确认";
+    if (value === "不支持") return value;
     const amount = Number(value);
     if (!Number.isFinite(amount)) return "待确认";
     if (String(currency || "").toUpperCase() === "USD") {
@@ -182,10 +183,13 @@
       const site = names[provider];
       const currency = isAdmin && ["runninghub", "apimart"].includes(provider) ? "USD" : "CNY";
       const models = Array.isArray(channel.models) ? channel.models : [];
+      // GPT image 2.6 on Tudou has no 4K.
+      const unsupported = (model, quality) => model === "gpt-image-2.6" && provider === "tudou" && quality === "4k";
       const add = (model, modelLabel, patch = {}, references = false, note = "", thinkingOptions = null) => {
         const basePatch = thinkingOptions?.length ? { ...patch, gptImageQuality: "medium" } : patch;
         const priceByQuality = {};
         resolutions.forEach((quality) => {
+          if (unsupported(model, quality)) { priceByQuality[quality.toUpperCase()] = "不支持"; return; }
           const requestConfig = { ...config, ...channel, ...basePatch, channels: [channel], model: `${channel.id}::${model}`, imageModel: `${channel.id}::${model}`, quality, count: 1, channelMode: "local" };
           try { priceByQuality[quality.toUpperCase()] = calculate(requestConfig, references); } catch (_) { priceByQuality[quality.toUpperCase()] = null; }
         });
@@ -193,6 +197,7 @@
         for (const option of thinkingOptions || []) {
           const values = {};
           resolutions.forEach((quality) => {
+            if (unsupported(model, quality)) { values[quality.toUpperCase()] = "不支持"; return; }
             const requestConfig = { ...config, ...channel, ...patch, gptImageQuality: option.value, channels: [channel], model: `${channel.id}::${model}`, imageModel: `${channel.id}::${model}`, quality, count: 1, channelMode: "local" };
             try { values[quality.toUpperCase()] = calculate(requestConfig, references); } catch (_) { values[quality.toUpperCase()] = null; }
           });
@@ -222,13 +227,10 @@
           if (!isAdmin) return;
           return add(model, `${label} · 官方`, { gptImageQuality: "medium" });
         }
-        if (model === "gpt-image-2.5" && provider === "tudou") {
-          const thinkingOptions = [
-            { value: "low", label: "Low" }, { value: "medium", label: "Medium" },
-            { value: "high", label: "High" }, { value: "xhigh", label: "XHigh" }, { value: "max", label: "Max" },
-          ];
-          add(model, "GPT Image 2.5 · Flare", { tudouGpt25Variant: "flare" }, false, "", thinkingOptions);
-          return add(model, "GPT Image 2.5 · Sunburst", { tudouGpt25Variant: "sunburst" }, false, "", thinkingOptions);
+        if (model === "gpt-image-2.6" && provider === "tudou") {
+          const thinkingOptions = [{ value: "low", label: "Low" }, { value: "medium", label: "Medium" }, { value: "high", label: "High" }];
+          add(model, "GPT Image 2.6 · Flare", { tudouGpt25Variant: "flare" }, false, "", thinkingOptions);
+          return add(model, "GPT Image 2.6 · Sunburst", { tudouGpt25Variant: "sunburst" }, false, "", thinkingOptions);
         }
         if (["gpt-image-2", "gpt-image-2-all"].includes(model) && ["tudou", "runninghub"].includes(provider)) {
           ["low", "medium", "high"].forEach((quality) => add(model, `GPT Image 2 · ${quality}`, { gptImageQuality: quality }, false, provider === "runninghub" ? "无参考图" : ""));
