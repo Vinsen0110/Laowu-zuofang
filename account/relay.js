@@ -28,8 +28,8 @@ const HOSTS = [
     [/^(?:www|llm)\.runninghub\.ai$/, "runninghub"],
 ];
 
-// GPT Image 2.5 official (usage-billed) models are for admins only.
-export const ADMIN_ONLY_MODELS = new Set(["gpt-image-2.5-flare", "gpt-image-2.5-sunburst", "rhart-image-g-2.5-official-token"]);
+// GPT Image official (usage-billed) models are for admins only: Mart 2.6 (and the 2.5 names it replaced), RH 2.5.
+export const ADMIN_ONLY_MODELS = new Set(["gpt-image-2.6-flare", "gpt-image-2.6-sunburst", "gpt-image-2.5-flare", "gpt-image-2.5-sunburst", "rhart-image-g-2.5-official-token"]);
 // Channels only the admin may use (none for now: 土豆 is open to users, called from their browser).
 export const ADMIN_ONLY_CHANNELS = new Set();
 

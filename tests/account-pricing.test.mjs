@@ -19,7 +19,7 @@ test("canvas selling price matches the relay's catalog row on every site", () =>
         [{ model: "tudou::nano-banana-pro", quality: "4k" }, "tudou", ["tudou", "gemini-3-pro-image-preview", "4k"]],
         [{ model: "tudou::gpt-image-2.6", quality: "2k", gptImageQuality: "high", tudouGpt25Variant: "sunburst" }, "tudou", ["tudou", "gpt-image-2.6-sunburst-async", "2k/high"]],
         [{ model: "apimart::nano-banana-pro", quality: "2k", size: "1:1" }, "apimart", ["apimart", "gemini-3-pro-image-preview", "2k"]],
-        [{ model: "apimart::gpt-image-2.5", quality: "4k", size: "1:1", gptImageQuality: "fixed" }, "apimart", ["apimart", "gpt-image-2.5-ext", "4k"]],
+        [{ model: "apimart::gpt-image-2.6", quality: "4k", size: "1:1", gptImageQuality: "fixed" }, "apimart", ["apimart", "gpt-image-2.6-ext", "4k"]],
         [{ model: "rh::nano-banana-pro", quality: "1k", size: "1:1" }, "runninghub", ["runninghub", "rhart-image-n-pro", "1k"]],
         [{ model: "grsai::nano-banana-2.1", quality: "2k", size: "1:1" }, "grsai", ["grsai", "nano-banana-2.1", "2k"]],
     ];

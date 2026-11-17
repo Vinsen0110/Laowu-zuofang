@@ -12,6 +12,7 @@ import {
     runningHubSupportedAspectRatios,
 } from "../runninghub-api.js";
 import {
+    apiMartFixedQuality,
     apiMartGptBackground,
     apiMartGptImageQuality,
     apiMartGptOutputFormat,
@@ -66,6 +67,7 @@ const context = vm.createContext({
     runningHubQuality,
     runningHubImagePrice,
     runningHubSupportedAspectRatios,
+    apiMartFixedQuality,
     apiMartGptBackground,
     apiMartGptImageQuality,
     apiMartGptOutputFormat,
@@ -296,7 +298,7 @@ test("Mart variant callback stays on its independent setting and other sites hav
         const view = render({
             ...rh,
             provider,
-            model: `${provider}::gpt-image-2.5`,
+            model: `${provider}::gpt-image-2.6`,
             apimartGpt25Variant: "flare",
         });
         view.select(variants).props.onChange("sunburst");
@@ -306,20 +308,20 @@ test("Mart variant callback stays on its independent setting and other sites hav
     assert.equal(other.select(variants), undefined);
 });
 
-test("existing GPT2.5 panel, rendered mode controls and request route all switch together", () => {
+test("existing Mart GPT 2.6 panel, rendered mode controls and request route all switch together", () => {
     const channels = [
-        { id: "default", provider: "custom", apiKey: "custom-test", models: ["gpt-image-2.5"] },
-        { id: "apimart", provider: "apimart", apiKey: "mart-test", models: ["gpt-image-2.5"] },
+        { id: "default", provider: "custom", apiKey: "custom-test", models: ["gpt-image-2.6"] },
+        { id: "apimart", provider: "apimart", apiKey: "mart-test", models: ["gpt-image-2.6"] },
     ];
     const original = {
         id: "existing", type: "image",
-        metadata: { content: "blob:original", model: "apimart::gpt-image-2.5", quality: "2k", size: "1:1", gptImageQuality: "max" },
+        metadata: { content: "blob:original", model: "apimart::gpt-image-2.6", quality: "2k", size: "1:1", gptImageQuality: "max" },
     };
     let node = original;
     for (const id of ["default", "apimart", "default"]) {
         const defaults = {
             ...channels.find(channel => channel.id === id), channels, activeSiteId: id,
-            model: `${id}::gpt-image-2.5`, imageModel: `${id}::gpt-image-2.5`,
+            model: `${id}::gpt-image-2.6`, imageModel: `${id}::gpt-image-2.6`,
         };
         node = context.switchImageNodeSite(node, defaults);
         const panel = context.vke(defaults, node, "image");
@@ -327,13 +329,13 @@ test("existing GPT2.5 panel, rendered mode controls and request route all switch
         const view = render(panel);
         assert.equal(Boolean(view.select(modes)), id === "apimart");
         assert.equal(Boolean(view.select(formats)), id === "apimart");
-        assert.equal(request.model, `${id}::gpt-image-2.5`);
+        assert.equal(request.model, `${id}::gpt-image-2.6`);
         assert.equal(request.apiKey, defaults.apiKey);
         assert.equal(request.provider, defaults.provider);
         assert.equal(request.gptImageQuality, panel.gptImageQuality);
         if (id === "apimart") {
             const spec = apiMartImageRequestSpec(request, "test");
-            assert.match(JSON.stringify(spec), /gpt-image-2\.5/);
+            assert.match(JSON.stringify(spec), /gpt-image-2\.6/);
         }
         assert.equal(node.metadata.model, original.metadata.model);
         assert.equal(node.metadata.gptImageQuality, "max");

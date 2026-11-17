@@ -1,7 +1,7 @@
 export const APIMART_ORIGIN = "https://api.apimart.ai";
 export const APIMART_SITE_ID = "apimart";
 export const APIMART_SITE_NAME = "Mart";
-export const APIMART_IMAGE_MODELS = ["nano-banana-2.1", "nano-banana-pro", "gpt-image-2.5"];
+export const APIMART_IMAGE_MODELS = ["nano-banana-2.1", "nano-banana-pro", "gpt-image-2.6"];
 export const APIMART_TEXT_MODELS = ["gemini-3.8-flash"];
 export const APIMART_SITE_MODELS = [...APIMART_IMAGE_MODELS, ...APIMART_TEXT_MODELS];
 export const APIMART_BACKEND_MODEL = "gemini-3-pro-image-preview";
@@ -10,9 +10,9 @@ export const APIMART_NANO21_UPLOAD_MAX_BYTES = 20_000_000;
 export const APIMART_NANO21_REFERENCE_TOTAL_MAX_BYTES = 50_000_000;
 export const APIMART_GPT_FIXED_BACKEND_MODEL = "gpt-image-2";
 export const APIMART_GPT_OFFICIAL_BACKEND_MODEL = "gpt-image-2-official";
-export const APIMART_GPT25_DEFAULT_BACKEND_MODEL = "gpt-image-2.5-flare";
-export const APIMART_GPT25_SUNBURST_BACKEND_MODEL = "gpt-image-2.5-sunburst";
-export const APIMART_GPT25_FIXED_BACKEND_MODEL = "gpt-image-2.5-ext";
+export const APIMART_GPT26_DEFAULT_BACKEND_MODEL = "gpt-image-2.6-flare";
+export const APIMART_GPT26_SUNBURST_BACKEND_MODEL = "gpt-image-2.6-sunburst";
+export const APIMART_GPT26_FIXED_BACKEND_MODEL = "gpt-image-2.6-ext";
 export const APIMART_GPT_FIXED_QUALITY = "fixed";
 export const APIMART_GPT_DEFAULT_OUTPUT_FORMAT = "png";
 export const APIMART_GPT_DEFAULT_BACKGROUND = "auto";
@@ -44,13 +44,15 @@ const GPT_FIXED_PRICE_USD = {
     "4k": 0.021,
 };
 
-const GPT25_FIXED_PRICE_USD = {
+// gpt-image-2.6-ext, per image (same for Flare and Sunburst):
+// https://apimart.ai/zh/model/gpt-image-2-6-flare
+const GPT26_FIXED_PRICE_USD = {
     "1k": 0.0085,
-    "2k": 0.014,
-    "4k": 0.021,
+    "2k": 0.03,
+    "4k": 0.04,
 };
 
-// Public paid-resolution rates, matching the estimates used for Pro and GPT 2.5:
+// Public paid-resolution rates, matching the estimates used for Pro and GPT 2.6:
 // https://api.apimart.ai/api/pricing/model?model=gemini-nano-banana-2.1-ext
 const NANO21_FIXED_PRICE_USD = {
     "1k": 0.012,
@@ -151,23 +153,32 @@ function validNano21Reference(value) {
     }
 }
 
-// GPT Image 2.5 "official" mode is admin-only; account-ui sets the flag for admins.
+// GPT Image 2.6 "official" mode is admin-only; account-ui sets the flag for admins.
 function officialAllowed(config) {
     return config?.allowOfficial ?? globalThis.__lwGptOfficial === true;
 }
 
 export function apiMartGptImageQuality(config) {
     const value = String(config?.gptImageQuality || APIMART_GPT_FIXED_QUALITY).trim().toLowerCase();
-    const is25 = modelName(config) === "gpt-image-2.5";
-    if (is25 && !officialAllowed(config)) return APIMART_GPT_FIXED_QUALITY;
-    const allowed = is25 ? ["fixed", "auto", "low", "medium", "high", "xhigh", "max"] : ["auto", "low", "medium", "high"];
-    return allowed.includes(value) ? value : (is25 ? "auto" : APIMART_GPT_FIXED_QUALITY);
+    const is26 = modelName(config) === "gpt-image-2.6";
+    if (is26 && !officialAllowed(config)) return APIMART_GPT_FIXED_QUALITY;
+    const allowed = is26 ? ["fixed", "auto", "low", "medium", "high", "xhigh", "max"] : ["auto", "low", "medium", "high"];
+    return allowed.includes(value) ? value : (is26 ? "auto" : APIMART_GPT_FIXED_QUALITY);
 }
 
-export function apiMartGpt25BackendModel(config) {
+export function apiMartGpt26BackendModel(config) {
     return String(config?.apimartGpt25Variant || "flare").trim().toLowerCase() === "sunburst"
-        ? APIMART_GPT25_SUNBURST_BACKEND_MODEL
-        : APIMART_GPT25_DEFAULT_BACKEND_MODEL;
+        ? APIMART_GPT26_SUNBURST_BACKEND_MODEL
+        : APIMART_GPT26_DEFAULT_BACKEND_MODEL;
+}
+
+// gpt-image-2.6-ext (fixed) takes a quality too; it does not change the per-image price.
+// "auto" is Mart's default, so it is sent as no field.
+export const APIMART_GPT26_FIXED_QUALITIES = ["auto", "low", "medium", "high", "xhigh", "max"];
+
+export function apiMartFixedQuality(config) {
+    const value = String(config?.apimartFixedQuality || "auto").trim().toLowerCase();
+    return APIMART_GPT26_FIXED_QUALITIES.includes(value) ? value : "auto";
 }
 
 export function apiMartGptBackground(config) {
@@ -190,9 +201,9 @@ export function apiMartGptOutputFormat(config) {
 export function apiMartImagePrice(config) {
     const model = modelName(config);
     if (model === "nano-banana-2.1") return NANO21_FIXED_PRICE_USD[apiMartResolutionKey(config)];
-    if (model === "gpt-image-2.5") {
+    if (model === "gpt-image-2.6") {
         return apiMartGptImageQuality(config) === APIMART_GPT_FIXED_QUALITY
-            ? GPT25_FIXED_PRICE_USD[apiMartResolutionKey(config)]
+            ? GPT26_FIXED_PRICE_USD[apiMartResolutionKey(config)]
             : null;
     }
     if (model !== "gpt-image-2") {
@@ -208,8 +219,8 @@ export function apiMartImagePrice(config) {
 
 export function apiMartImageRequestSpec(config, prompt, imageUrls = []) {
     const model = modelName(config);
-    if (!["nano-banana-pro", "nano-banana-2.1", "gpt-image-2", "gpt-image-2.5"].includes(model)) {
-        throw new Error("APIMart 当前只支持 Nano Banana Pro、Nano Banana 2.1、GPT Image 2 和 GPT Image 2.5");
+    if (!["nano-banana-pro", "nano-banana-2.1", "gpt-image-2", "gpt-image-2.6"].includes(model)) {
+        throw new Error("APIMart 当前只支持 Nano Banana Pro、Nano Banana 2.1、GPT Image 2 和 GPT Image 2.6");
     }
     if (model === "nano-banana-2.1") {
         if (!Array.isArray(imageUrls) || imageUrls.some((url) => !validNano21Reference(url))) {
@@ -234,21 +245,21 @@ export function apiMartImageRequestSpec(config, prompt, imageUrls = []) {
             },
         };
     }
-    const maxReferences = model === "gpt-image-2" || model === "gpt-image-2.5" ? 16 : NANO_MAX_REFERENCE_IMAGES;
-    if (imageUrls.length > maxReferences) throw new Error(`APIMart ${model === "gpt-image-2" ? "GPT Image 2" : model === "gpt-image-2.5" ? "GPT Image 2.5" : "Nano Banana Pro"} 最多支持 ${maxReferences} 张参考图`);
+    const maxReferences = model === "gpt-image-2" || model === "gpt-image-2.6" ? 16 : NANO_MAX_REFERENCE_IMAGES;
+    if (imageUrls.length > maxReferences) throw new Error(`APIMart ${model === "gpt-image-2" ? "GPT Image 2" : model === "gpt-image-2.6" ? "GPT Image 2.6" : "Nano Banana Pro"} 最多支持 ${maxReferences} 张参考图`);
     const size = String(config?.size || "auto").trim().toLowerCase();
-    const supportedRatios = model === "gpt-image-2" || model === "gpt-image-2.5" ? GPT_ASPECT_RATIOS : NANO_ASPECT_RATIOS;
+    const supportedRatios = model === "gpt-image-2" || model === "gpt-image-2.6" ? GPT_ASPECT_RATIOS : NANO_ASPECT_RATIOS;
     if (!supportedRatios.has(size) && !/^\d+x\d+$/.test(size)) throw new Error(`APIMart 不支持尺寸比例 ${size}`);
 
-    if (model === "gpt-image-2" || model === "gpt-image-2.5") {
+    if (model === "gpt-image-2" || model === "gpt-image-2.6") {
         const quality = apiMartGptImageQuality(config);
-        const is25 = model === "gpt-image-2.5";
-        const isFixed25 = is25 && quality === APIMART_GPT_FIXED_QUALITY;
+        const is26 = model === "gpt-image-2.6";
+        const isFixed26 = is26 && quality === APIMART_GPT_FIXED_QUALITY;
         return {
             endpoint: "/images/generations",
             body: {
-                model: is25
-                    ? (isFixed25 ? APIMART_GPT25_FIXED_BACKEND_MODEL : apiMartGpt25BackendModel(config))
+                model: is26
+                    ? (isFixed26 ? APIMART_GPT26_FIXED_BACKEND_MODEL : apiMartGpt26BackendModel(config))
                     : quality === APIMART_GPT_FIXED_QUALITY
                         ? APIMART_GPT_FIXED_BACKEND_MODEL
                         : APIMART_GPT_OFFICIAL_BACKEND_MODEL,
@@ -256,9 +267,10 @@ export function apiMartImageRequestSpec(config, prompt, imageUrls = []) {
                 size,
                 resolution: apiMartResolutionKey(config),
                 n: 1,
-                ...(isFixed25 ? {
+                ...(isFixed26 ? {
                     version: String(config?.apimartGpt25Variant || "flare").trim().toLowerCase() === "sunburst" ? "sunburst" : "flare",
-                } : is25 || quality !== APIMART_GPT_FIXED_QUALITY ? {
+                    ...(apiMartFixedQuality(config) !== "auto" ? { quality: apiMartFixedQuality(config) } : {}),
+                } : is26 || quality !== APIMART_GPT_FIXED_QUALITY ? {
                     quality,
                     output_format: apiMartGptOutputFormat(config),
                     background: apiMartGptBackground(config),
