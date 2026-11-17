@@ -131,16 +131,24 @@ test("every catalog row can be priced and charged through the relay", async () =
     const { priceCatalog } = await import("../account/catalog.js");
     const { savePrices } = await import("../account/channels.js");
     const rows = priceCatalog();
-    assert.ok(rows.length > 40);
+    assert.ok(rows.length > 25);
     const keys = new Set(rows.map((r) => `${r.channel}|${r.model}|${r.spec}`));
     assert.equal(keys.size, rows.length);
     await savePrices(db, rows.map((r, i) => ({ channel: r.channel, model: r.model, spec: r.spec, price: (i + 1) / 1000 })));
     const { findPrice } = await import("../account/relay.js");
     for (const [i, r] of rows.entries()) assert.equal(await findPrice(db, r.channel, r.model, r.spec), i + 1, `${r.label} ${r.spec}`);
-    // Tudou GPT 2.6 request as the canvas sends it → its catalog row
-    const body = { model: "gpt-image-2.6-sunburst-async", resolution: "2k", quality: "high", prompt: "x" };
-    const d = describeRequest(new URL("https://api.ai-tudou.net/v1/images/generations/async"), body);
-    assert.ok(keys.has(`tudou|${d.model}|${d.spec}`));
+    // 土豆 GPT 2.6 has one catalog row: saved once, it prices both variants at every resolution and quality.
+    const { withPriceAliases } = await import("../account/catalog.js");
+    const tudou26 = rows.find((r) => r.channel === "tudou" && r.label === "GPT Image 2.6");
+    assert.deepEqual({ model: tudou26.model, spec: tudou26.spec, also: tudou26.also }, { model: "gpt-image-2.6-flare-async", spec: "", also: ["gpt-image-2.6-sunburst-async"] });
+    await savePrices(db, withPriceAliases([{ channel: "tudou", model: tudou26.model, spec: tudou26.spec, price: "0.2" }]));
+    for (const variant of ["flare", "sunburst"]) {
+        for (const [resolution, quality] of [["1k", "low"], ["2k", "high"]]) {
+            const body = { model: `gpt-image-2.6-${variant}-async`, resolution, quality, prompt: "x" };
+            const d = describeRequest(new URL("https://api.ai-tudou.net/v1/images/generations/async"), body);
+            assert.equal(await findPrice(db, "tudou", d.model, d.spec), 200, `${variant} ${d.spec}`);
+        }
+    }
     // clearing a price removes it
     await savePrices(db, [{ channel: rows[0].channel, model: rows[0].model, spec: rows[0].spec, price: "" }]);
     assert.equal(await findPrice(db, rows[0].channel, rows[0].model, rows[0].spec), null);

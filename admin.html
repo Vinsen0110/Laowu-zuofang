@@ -1044,7 +1044,7 @@ dialog::backdrop{background:rgb(29 33 41 / .32)}
   }
   // Prices saved earlier that are not in the built-in catalog.
   function extraPrices() {
-    const known = new Set(catalog.map(priceKey));
+    const known = new Set(catalog.flatMap((r) => [priceKey(r), ...(r.also || []).map((model) => priceKey({ ...r, model }))]));
     const extra = prices.filter((p) => !known.has(priceKey(p)));
     if (!extra.length) return "";
     return `<section class="panel" style="margin-top:20px"><div class="panel-head"><div><h2>其他已保存的价格</h2><p class="sub">不在内置模型列表里，可以删掉</p></div></div>
