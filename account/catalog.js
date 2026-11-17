@@ -11,7 +11,6 @@ import { ADMIN_ONLY_MODELS, describeRequest } from "./relay.js";
 export const USD_TO_CNY = 6.7;
 const RES = ["1k", "2k", "4k"];
 const GPT_QUALITIES = ["low", "medium", "high"];
-const TUDOU_GPT26_RES = ["1k", "2k"];
 const TUDOU_ORIGIN = "https://api.ai-tudou.net";
 
 // Tudou's request builder and prices live in the app bundle; mirrored here (CNY).
@@ -38,13 +37,12 @@ function tudouRows() {
         RES.forEach((r, i) => rows.push(row("tudou", name, `${TUDOU_ORIGIN}/v1beta/models/${backend}:generateContent`,
             { generationConfig: { imageConfig: { imageSize: r.toUpperCase() } } }, prices[i], "CNY")));
     }
-    for (const variant of ["flare", "sunburst"]) {
-        for (const q of GPT_QUALITIES) {
-            TUDOU_GPT26_RES.forEach((r) => rows.push(row("tudou", `GPT Image 2.6 · ${variant === "flare" ? "Flare" : "Sunburst"} · ${q}`,
-                `${TUDOU_ORIGIN}/v1/images/generations/async`,
-                { model: `gpt-image-2.6-${variant}-async`, resolution: r, quality: q }, TUDOU_GPT26_PRICE, "CNY")));
-        }
-    }
+    // 土豆 2.6 costs the same for both variants, every resolution and quality, so it has one
+    // catch-all price (spec ""), saved for Flare and, through `also`, for Sunburst.
+    rows.push({
+        ...row("tudou", "GPT Image 2.6", `${TUDOU_ORIGIN}/v1/images/generations/async`, { model: "gpt-image-2.6-flare-async" }, TUDOU_GPT26_PRICE, "CNY"),
+        also: ["gpt-image-2.6-sunburst-async"],
+    });
     return rows;
 }
 
@@ -102,4 +100,16 @@ export function priceCatalog() {
         return true;
     });
     return cached;
+}
+
+// A catalog row priced together with other models (`also`): saving its price saves the
+// same price (or removal) for each of them, so the admin fills one cell.
+export function withPriceAliases(items) {
+    if (!Array.isArray(items)) return items;
+    const catalog = priceCatalog();
+    return items.flatMap((item) => {
+        const spec = String(item?.spec ?? "").trim();
+        const r = catalog.find((x) => x.also && x.channel === item?.channel && x.model === String(item?.model || "").trim() && x.spec === spec);
+        return r ? [item, ...r.also.map((model) => ({ ...item, model }))] : [item];
+    });
 }

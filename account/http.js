@@ -1,7 +1,7 @@
 // HTTP routes for /api/account/*. Uses web-standard Request/Response so the
 // same code runs on Vercel and in the local preview server.
 
-import { USD_TO_CNY, priceCatalog } from "./catalog.js";
+import { USD_TO_CNY, priceCatalog, withPriceAliases } from "./catalog.js";
 import { channelBalances, channelConfig, deletePrice, getCloudinary, getMailSettings, listChannels, listPrices, saveChannel, saveCloudinary, saveMailSettings, savePrice, savePrices } from "./channels.js";
 import { setResendKey } from "./mailer.js";
 import { getDatabase } from "./db.js";
@@ -333,7 +333,7 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
             }
             if (path === "/admin/prices/bulk" && method === "POST") {
                 const { items } = await body(request);
-                return json(200, { items: await savePrices(db, items) });
+                return json(200, { items: await savePrices(db, withPriceAliases(items)) });
             }
             if (path === "/admin/prices/delete" && method === "POST") {
                 const { id } = await body(request);

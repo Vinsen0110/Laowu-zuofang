@@ -4,7 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 
 import { lwSellPrice } from "../account-pricing.js";
-import { priceCatalog } from "../account/catalog.js";
+import { priceCatalog, withPriceAliases } from "../account/catalog.js";
 import { CHANNELS } from "../account/channels.js";
 
 const bundle = await readFile(new URL("../assets/index-B2KJ37fm.js", import.meta.url), "utf8");
@@ -90,18 +90,16 @@ test("saved 土豆 and Mart GPT 2.5 selections move to 2.6; RunningHub's 2.5 is 
     assert.equal(context.v5("tudou::gpt-image-2.6"), "tudou::gpt-image-2.6");
 });
 
-test("the relay catalog prices 2.6 by variant, 1K/2K and quality, and has no 土豆 2.5", () => {
+test("土豆 2.6 has one catalog price for both variants, every resolution and quality, and no 土豆 2.5", () => {
     const rows = priceCatalog().filter((r) => r.channel === "tudou" && r.model.startsWith("gpt-image-2."));
-    assert.equal(rows.filter((r) => r.model.startsWith("gpt-image-2.5")).length, 0);
-    for (const model of ["gpt-image-2.6-flare-async", "gpt-image-2.6-sunburst-async"]) {
-        assert.deepEqual(rows.filter((r) => r.model === model).map((r) => r.spec).sort(),
-            ["1k/high", "1k/low", "1k/medium", "2k/high", "2k/low", "2k/medium"]);
-    }
-    assert.ok(rows.every((r) => r.cost === 0.07));
-    // The canvas selling price looks up the same row (4K falls back to 2K).
-    const prices = rows.map((r, i) => ({ channel: r.channel, model: r.model, spec: r.spec, price: (i + 1) / 100 }));
-    const priceOf = (model, spec) => prices.find((p) => p.model === model && p.spec === spec).price;
+    assert.deepEqual(rows.map(({ label, model, spec, cost, also }) => ({ label, model, spec, cost, also })), [
+        { label: "GPT Image 2.6", model: "gpt-image-2.6-flare-async", spec: "", cost: 0.07, also: ["gpt-image-2.6-sunburst-async"] },
+    ]);
+    // Saving it writes the same price for Sunburst; the canvas finds it for any variant / spec (4K falls back to 2K).
+    const prices = withPriceAliases([{ channel: "tudou", model: rows[0].model, spec: "", price: 0.2 }]);
+    assert.deepEqual(prices.map((p) => p.model), ["gpt-image-2.6-flare-async", "gpt-image-2.6-sunburst-async"]);
     const sell = (patch) => lwSellPrice({ model: "tudou::gpt-image-2.6", ...patch }, { provider: "tudou" }, prices);
-    assert.equal(sell({ quality: "2k", gptImageQuality: "high", tudouGpt25Variant: "sunburst" }), priceOf("gpt-image-2.6-sunburst-async", "2k/high"));
-    assert.equal(sell({ quality: "4k", gptImageQuality: "max" }), priceOf("gpt-image-2.6-flare-async", "2k/high"));
+    assert.equal(sell({ quality: "2k", gptImageQuality: "high", tudouGpt25Variant: "sunburst" }), 0.2);
+    assert.equal(sell({ quality: "1k", gptImageQuality: "low", tudouGpt25Variant: "flare" }), 0.2);
+    assert.equal(sell({ quality: "4k", gptImageQuality: "max" }), 0.2);
 });
