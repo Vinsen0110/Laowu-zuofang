@@ -885,6 +885,10 @@
           background: color-mix(in srgb, var(--site) 8%, transparent);
         }
         .canvas-site-menu-item:focus-visible { outline: 2px solid color-mix(in srgb, var(--site) 45%, transparent); outline-offset: -2px; }
+        /* After a mouse pick, the select menu hands focus back to its trigger. When the prompt box
+           was focused before, Chrome counts that as keyboard focus and drew a grey, half-clipped ring
+           around the ratio / resolution / quality buttons until something else was clicked. */
+        button[data-slot="select-trigger"]:focus-visible { box-shadow: none; }
         .canvas-site-switch-button ~ button[aria-label="快捷键"],
         .canvas-site-switch-button ~ span:has(+ button[aria-label="快捷键"]) {
           display: none !important;
