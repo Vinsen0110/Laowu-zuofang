@@ -1014,7 +1014,7 @@ dialog::backdrop{background:rgb(29 33 41 / .32)}
     const labels = [];
     for (const r of catalog) if (!labels.includes(r.label)) labels.push(r.label);
     const cols = COLS.filter((ch) => catalog.some((r) => r.channel === ch));
-    const seg = [["all", "全部"], ["nano", "Nano Banana"], ["gpt", "GPT Image 2.5"], ["text", "文本"]];
+    const seg = [["all", "全部"], ["nano", "Nano Banana"], ["gpt", "GPT Image"], ["text", "文本"]];
     return `
       ${head("价格表", `客户价是用户每张图扣的钱，留空就不开放这个规格。成本按 1 美元 = ${fx} 元换算`)}
       <section class="panel">

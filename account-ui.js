@@ -967,7 +967,7 @@ button.lw-gate-face:hover{transform:scale(1.04)}
         <div class="lw-gate-caption">
           <h1>无限画布 无限创作</h1>
           <p>文生图、图生图、多图参考与局部修改，在同一张画布上完成。</p>
-          <div class="lw-gate-tags"><span>Nano Banana Pro</span><span>GPT Image 2.5</span><span>最高 4K</span><span>失败自动退回</span></div>
+          <div class="lw-gate-tags"><span>Nano Banana Pro</span><span>GPT Image 2.6</span><span>最高 4K</span><span>失败自动退回</span></div>
         </div>
       </section>`;
   }
