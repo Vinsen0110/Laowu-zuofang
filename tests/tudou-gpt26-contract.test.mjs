@@ -82,9 +82,10 @@ test("2.6 costs ¥0.07 per image for both variants", () => {
     }
 });
 
-test("saved 土豆 GPT 2.5 selections move to 2.6; other sites' 2.5 is untouched", () => {
+test("saved 土豆 and Mart GPT 2.5 selections move to 2.6; RunningHub's 2.5 is untouched", () => {
     assert.equal(context.v5("tudou::gpt-image-2.5"), "tudou::gpt-image-2.6");
-    assert.equal(context.v5("apimart::gpt-image-2.5"), "apimart::gpt-image-2.5");
+    assert.equal(context.v5("apimart::gpt-image-2.5"), "apimart::gpt-image-2.6");
+    assert.equal(context.v5("apimart::gpt-image-2.6"), "apimart::gpt-image-2.6");
     assert.equal(context.v5("rh::gpt-image-2.5"), "rh::gpt-image-2.5");
     assert.equal(context.v5("tudou::gpt-image-2.6"), "tudou::gpt-image-2.6");
 });

@@ -54,9 +54,9 @@ function apimartRows() {
         { provider: "apimart", size: "1:1", quality, allowOfficial: true, ...patch })));
     add("Nano Banana 2.1", { model: "apimart::nano-banana-2.1" });
     add("Nano Banana Pro", { model: "apimart::nano-banana-pro" });
-    add("GPT Image 2.5 · 固定", { model: "apimart::gpt-image-2.5", gptImageQuality: "fixed" });
+    add("GPT Image 2.6 · 固定", { model: "apimart::gpt-image-2.6", gptImageQuality: "fixed" });
     for (const variant of ["flare", "sunburst"]) {
-        for (const q of GPT_QUALITIES) add(`GPT Image 2.5 · 官方 ${variant} · ${q}`, { model: "apimart::gpt-image-2.5", gptImageQuality: q, apimartGpt25Variant: variant });
+        for (const q of GPT_QUALITIES) add(`GPT Image 2.6 · 官方 ${variant} · ${q}`, { model: "apimart::gpt-image-2.6", gptImageQuality: q, apimartGpt25Variant: variant });
     }
     return rows;
 }
@@ -93,7 +93,7 @@ let cached = null;
 export function priceCatalog() {
     if (cached) return cached;
     const seen = new Set();
-    // Admin-only models (GPT 2.5 official) are free for the admin and closed to users, so they are not priced.
+    // Admin-only models (GPT official: Mart 2.6, RH 2.5) are free for the admin and closed to users, so they are not priced.
     cached = [...tudouRows(), ...apimartRows(), ...runningHubRows(), ...grsaiRows(), ...textRows()].filter((r) => {
         if (ADMIN_ONLY_MODELS.has(r.model)) return false;
         const key = `${r.channel}|${r.model}|${r.spec}`;

@@ -2,7 +2,7 @@
 // provider request the canvas sends and reads it with the relay's
 // describeRequest, so the price shown is exactly what the relay charges.
 
-import { APIMART_ORIGIN, apiMartImageRequestSpec } from "./apimart-api.js?v=20261022-ratio-01";
+import { APIMART_ORIGIN, apiMartImageRequestSpec } from "./apimart-api.js?v=20261117-mart26-01";
 import { GRSAI_ORIGIN, grsaiImageRequestSpec } from "./grsai-api.js?v=20261022-ratio-01";
 import { RUNNINGHUB_ORIGIN, runningHubImageRequestSpec } from "./runninghub-api.js?v=20261023-proratio-01";
 import { describeRequest } from "./account/describe.js?v=20261021-01";

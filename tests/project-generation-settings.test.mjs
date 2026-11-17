@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import vm from "node:vm";
 import { runningHubGpt25Mode, runningHubGpt25Variant } from "../runninghub-api.js";
+import { apiMartFixedQuality } from "../apimart-api.js";
 import { orderModelReferences } from "../display-order.js";
 
 // These checks cover the admin's view, where every site (土豆 included) is listed.
@@ -28,7 +29,7 @@ function functionSource(name) {
 const channels = [
     { id: "default", name: "Custom", provider: "custom", baseUrl: "https://custom.example", apiKey: "custom-latest", models: ["nano-banana-pro", "gpt-image-2", "gpt-image-2.5"] },
     { id: "tudou", name: "Tudou", provider: "tudou", baseUrl: "https://api.ai-tudou.net", apiKey: "tudou-latest", models: ["nano-banana-pro", "gpt-image-2"] },
-    { id: "apimart", name: "Mart", provider: "apimart", baseUrl: "https://api.apimart.ai", apiKey: "mart-latest", models: ["nano-banana-pro", "gpt-image-2", "gpt-image-2.5"] },
+    { id: "apimart", name: "Mart", provider: "apimart", baseUrl: "https://api.apimart.ai", apiKey: "mart-latest", models: ["nano-banana-pro", "gpt-image-2", "gpt-image-2.6"] },
     { id: "runninghub", name: "RH", provider: "runninghub", baseUrl: "https://www.runninghub.ai", apiKey: "rh-latest", models: ["nano-banana-pro", "gpt-image-2", "gpt-image-2.5"] },
     { id: "grsai", name: "Grsai", provider: "grsai", baseUrl: "https://grsai.dakka.com.cn", apiKey: "grsai-latest", models: ["nano-banana-pro", "gpt-image-2-vip"] },
 ];
@@ -47,7 +48,7 @@ function config(site = "default") {
 
 function runtime(extra = {}) {
     const scope = vm.createContext({
-        VR: "::", DP: "default", an: config(), Blob, Date,
+        VR: "::", DP: "default", an: config(), Blob, Date, apiMartFixedQuality,
         c: { useCallback: callback => callback },
         Ne: { Image: "image", Text: "text", Config: "config", Video: "video" },
         Vr: { image: { width: 400, height: 400 } },
@@ -80,7 +81,7 @@ function runtime(extra = {}) {
 }
 
 const metadata = {
-    generationType: "generation", model: "runninghub::gpt-image-2.5", quality: "2k", size: "16:9",
+    generationType: "generation", model: "runninghub::gpt-image-2", quality: "2k", size: "16:9",
     gptImageQuality: "xhigh", runningHubGpt25Mode: "official", runningHubGpt25Variant: "sunburst",
     runningHubOutputFormat: "webp", runningHubBackground: "transparent",
     apimartGpt25Variant: "sunburst", apimartOutputFormat: "png", apimartBackground: "transparent",
@@ -147,7 +148,7 @@ test("new nodes keep current defaults while saved nodes use fresh keys from thei
     assert.equal(restored.baseUrl, channels.find(site => site.id === "runninghub").baseUrl);
     assert.equal(restored.activeSiteId, "runninghub");
     assert.equal(defaults.activeSiteId, "tudou");
-    assert.equal(node.metadata.model, "runninghub::gpt-image-2.5");
+    assert.equal(node.metadata.model, "runninghub::gpt-image-2");
 });
 
 test("ungenerated image panels follow the active site and preserve compatible model names", () => {
@@ -155,11 +156,11 @@ test("ungenerated image panels follow the active site and preserve compatible mo
     const ungenerated = { ...node, metadata: { ...metadata } };
     for (const name of ["vke", "cPe", "Q0"]) {
         const routed = scope[name](config("apimart"), plain(ungenerated), "image");
-        assert.equal(routed.model, "apimart::gpt-image-2.5", name);
+        assert.equal(routed.model, "apimart::gpt-image-2", name);
         assert.equal(routed.provider, "apimart", name);
         assert.equal(routed.activeSiteId, "apimart", name);
         assert.equal(routed.apiKey, "mart-latest", name);
-        assert.ok(routed.imageModels.includes("apimart::gpt-image-2.5"), name);
+        assert.ok(routed.imageModels.includes("apimart::gpt-image-2"), name);
     }
 });
 
@@ -167,7 +168,7 @@ test("duplicated generated image panels follow the active site while originals k
     const scope = runtime();
     const original = {
         ...node,
-        metadata: { ...metadata, model: "default::gpt-image-2.5", content: "blob:custom-history" },
+        metadata: { ...metadata, model: "default::gpt-image-2", content: "blob:custom-history" },
     };
     const duplicate = {
         ...original,
@@ -179,23 +180,23 @@ test("duplicated generated image panels follow the active site while originals k
         assert.equal(routedDuplicate.activeSiteId, active);
         assert.equal(routedDuplicate.provider, channels.find(site => site.id === active).provider);
         assert.equal(routedDuplicate.apiKey, channels.find(site => site.id === active).apiKey);
-        assert.equal(routedDuplicate.model, `${active}::gpt-image-2.5`);
+        assert.equal(routedDuplicate.model, `${active}::gpt-image-2`);
     }
 
     const routedOriginal = scope.Q0(config("apimart"), original, "image");
     assert.equal(routedOriginal.activeSiteId, "default");
     assert.equal(routedOriginal.provider, "custom");
     assert.equal(routedOriginal.apiKey, "custom-latest");
-    assert.equal(routedOriginal.model, "default::gpt-image-2.5");
+    assert.equal(routedOriginal.model, "default::gpt-image-2");
     assert.equal(original.metadata.followActiveImageSite, undefined);
 });
 
 test("ungenerated Mart image panels switch to the active site controls with the active site", () => {
     const scope = runtime();
-    const ungenerated = { ...node, metadata: { ...metadata, model: "apimart::gpt-image-2.5", generationStartedAt: "2026-09-20T13:00:00Z" } };
+    const ungenerated = { ...node, metadata: { ...metadata, model: "apimart::gpt-image-2", generationStartedAt: "2026-09-20T13:00:00Z" } };
     for (const name of ["vke", "cPe", "Q0"]) {
         const routed = scope[name](config("default"), plain(ungenerated), "image");
-        assert.equal(routed.model, "default::gpt-image-2.5", name);
+        assert.equal(routed.model, "default::gpt-image-2", name);
         assert.equal(routed.provider, "custom", name);
         assert.equal(routed.activeSiteId, "default", name);
         assert.equal(routed.apiKey, "custom-latest", name);
@@ -204,7 +205,8 @@ test("ungenerated Mart image panels switch to the active site controls with the 
 
 test("ungenerated image panels fall back to the active site's image model when unsupported", () => {
     const scope = runtime();
-    const ungenerated = { ...node, metadata: { ...metadata } };
+    // 土豆 has no GPT Image 2.5.
+    const ungenerated = { ...node, metadata: { ...metadata, model: "runninghub::gpt-image-2.5" } };
     const routed = scope.Q0(config("tudou"), ungenerated, "image");
     assert.equal(routed.model, "tudou::nano-banana-pro");
     assert.equal(routed.provider, "tudou");
@@ -213,14 +215,14 @@ test("ungenerated image panels fall back to the active site's image model when u
 
 test("explicit site switches update generated panels and requests without rewriting image history", () => {
     const scope = runtime();
-    const original = { ...node, metadata: { ...metadata, model: "apimart::gpt-image-2.5", content: "blob:generated" } };
+    const original = { ...node, metadata: { ...metadata, model: "apimart::gpt-image-2", content: "blob:generated" } };
     const history = plain(original.metadata);
     let current = original;
     for (const active of ["default", "apimart", "runninghub", "default"]) {
         current = scope.switchImageNodeSite(current, config(active));
         for (const name of ["cPe", "vke", "Q0"]) {
             const routed = scope[name](config(active), current, "image");
-            assert.equal(routed.model, `${active}::gpt-image-2.5`, name);
+            assert.equal(routed.model, `${active}::gpt-image-2`, name);
             assert.equal(routed.activeSiteId, active, name);
             assert.equal(routed.apiKey, channels.find(site => site.id === active).apiKey, name);
         }
@@ -234,12 +236,12 @@ test("explicit site switches update generated panels and requests without rewrit
 
 test("editing next generation parameters leaves generated image parameters intact", () => {
     const scope = runtime();
-    const changed = scope.Zke(node, { model: "apimart::gpt-image-2.5", gptImageQuality: "fixed", size: "1:1" });
+    const changed = scope.Zke(node, { model: "apimart::gpt-image-2", gptImageQuality: "fixed", size: "1:1" });
     assert.equal(changed.metadata.model, metadata.model);
     assert.equal(changed.metadata.gptImageQuality, metadata.gptImageQuality);
     assert.equal(changed.metadata.size, metadata.size);
     const request = scope.Q0(config("apimart"), changed, "image");
-    assert.equal(request.model, "apimart::gpt-image-2.5");
+    assert.equal(request.model, "apimart::gpt-image-2");
     assert.equal(request.gptImageQuality, "fixed");
     assert.equal(request.size, "1:1");
     assert.equal(scope.X0("generation", request, 1, []).imageGenerationDraft, undefined);
@@ -256,7 +258,7 @@ test("site subscription updates the live request node and ignores key-only updat
     scope.useImageSiteSync(next => { rendered = next; }, ref);
     listener({ config: config("apimart") }, { config: config("runninghub") });
     assert.equal(rendered, ref.current);
-    assert.equal(scope.Q0(config("apimart"), ref.current[0], "image").model, "apimart::gpt-image-2.5");
+    assert.equal(scope.Q0(config("apimart"), ref.current[0], "image").model, "apimart::gpt-image-2");
     assert.equal(ref.current[1].metadata.model, "old-text");
     const before = ref.current;
     listener({ config: config("apimart") }, { config: config("apimart") });
@@ -316,7 +318,7 @@ test("historical models absent from the catalog remain available without moving 
     const scope = runtime();
     const defaults = config("apimart");
     const expected = defaults.imageModels;
-    for (const saved of ["apimart::retired-model", "missing-site::gpt-image-2.5"]) {
+    for (const saved of ["apimart::retired-model", "missing-site::gpt-image-2"]) {
         const restored = scope.imageNodeConfig(defaults, { model: saved, content: "blob:generated" });
         assert.deepEqual(plain(restored.imageModels), [...expected, saved]);
         assert.equal(restored.model, saved);
@@ -338,7 +340,7 @@ test("local project save and reopen preserve actual generated model and paramete
     };
     const savedNode = {
         ...node,
-        metadata: { ...metadata, imageGenerationDraft: { model: "apimart::gpt-image-2.5", gptImageQuality: "fixed" }, generationPanelWidth: 820, generationPanelHeight: 350, content: "blob:old-session", generatedAt: "2026-09-17T08:30:00Z", naturalWidth: 640, naturalHeight: 360 },
+        metadata: { ...metadata, imageGenerationDraft: { model: "apimart::gpt-image-2", gptImageQuality: "fixed" }, generationPanelWidth: 820, generationPanelHeight: 350, content: "blob:old-session", generatedAt: "2026-09-17T08:30:00Z", naturalWidth: 640, naturalHeight: 360 },
     };
     const scope = runtime({
         Zo: { current: { root: folder, generatedAssets: folder, uploadedAssets: folder, nextGeneratedImageNumber: 1 } },

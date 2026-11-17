@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import {
+    apiMartFixedQuality,
     apiMartGptImageQuality,
     APIMART_BACKEND_MODEL,
     APIMART_IMAGE_MODELS,
@@ -11,9 +12,9 @@ import {
     APIMART_GPT_FIXED_BACKEND_MODEL,
     APIMART_GPT_FIXED_QUALITY,
     APIMART_GPT_OFFICIAL_BACKEND_MODEL,
-    APIMART_GPT25_DEFAULT_BACKEND_MODEL,
-    APIMART_GPT25_SUNBURST_BACKEND_MODEL,
-    APIMART_GPT25_FIXED_BACKEND_MODEL,
+    APIMART_GPT26_DEFAULT_BACKEND_MODEL,
+    APIMART_GPT26_SUNBURST_BACKEND_MODEL,
+    APIMART_GPT26_FIXED_BACKEND_MODEL,
     APIMART_ORIGIN,
     APIMART_SITE_NAME,
     APIMART_TEXT_MODELS,
@@ -30,7 +31,7 @@ import {
     validateApiMartNano21ReferenceBytes,
 } from "../apimart-api.js";
 
-// These tests cover the admin view, where GPT Image 2.5 "official" mode is available.
+// These tests cover the admin view, where GPT Image 2.6 "official" mode is available.
 globalThis.__lwGptOfficial = true;
 
 const bundle = await readFile(new URL("../assets/index-B2KJ37fm.js", import.meta.url), "utf8");
@@ -79,7 +80,7 @@ test("APIMart Nano Banana Pro uses the discounted displayed dollar prices", () =
 });
 
 test("APIMart Nano Banana 2.1 uses only the Ext contract and remains distinct from Pro", () => {
-    assert.deepEqual(APIMART_IMAGE_MODELS, ["nano-banana-2.1", "nano-banana-pro", "gpt-image-2.5"]);
+    assert.deepEqual(APIMART_IMAGE_MODELS, ["nano-banana-2.1", "nano-banana-pro", "gpt-image-2.6"]);
     const references = ["https://cdn.example/reference.png", "data:image/png;base64,AQID"];
     const spec = apiMartImageRequestSpec({
         model: "apimart::nano-banana-2.1", size: "1920x1080", quality: "2k", count: "4",
@@ -229,32 +230,32 @@ test("APIMart GPT Image 2 uses fixed mode without quality and official mode for 
     assert.equal(apiMartImagePrice({ model: "gpt-image-2", size: "auto", quality: "4k", gptImageQuality: "high" }), null);
 });
 
-test("APIMart GPT Image 2.5 sends the selected backend variant with its extended quality tiers", () => {
+test("APIMart GPT Image 2.6 sends the selected backend variant with its extended quality tiers", () => {
     for (const quality of ["auto", "low", "medium", "high", "xhigh", "max"]) {
         const spec = apiMartImageRequestSpec(
             {
-                model: "gpt-image-2.5",
+                model: "gpt-image-2.6",
                 size: "16:9",
                 quality: "2k",
                 gptImageQuality: quality,
             },
             "draw it",
         );
-        assert.equal(spec.body.model, APIMART_GPT25_DEFAULT_BACKEND_MODEL);
+        assert.equal(spec.body.model, APIMART_GPT26_DEFAULT_BACKEND_MODEL);
         assert.equal(spec.body.quality, quality);
         assert.equal(spec.body.resolution, "2k");
     }
     const sunburst = apiMartImageRequestSpec(
-        { model: "gpt-image-2.5", apimartGpt25Variant: "sunburst", quality: "2k", gptImageQuality: "xhigh" },
+        { model: "gpt-image-2.6", apimartGpt25Variant: "sunburst", quality: "2k", gptImageQuality: "xhigh" },
         "edit it",
     );
-    assert.equal(sunburst.body.model, APIMART_GPT25_SUNBURST_BACKEND_MODEL);
+    assert.equal(sunburst.body.model, APIMART_GPT26_SUNBURST_BACKEND_MODEL);
 });
 
-test("APIMart GPT Image 2.5 fixed mode uses ext with the selected version and fixed price", () => {
+test("APIMart GPT Image 2.6 fixed mode uses ext with the selected version and fixed price", () => {
     const spec = apiMartImageRequestSpec(
         {
-            model: "gpt-image-2.5",
+            model: "gpt-image-2.6",
             apimartGpt25Variant: "sunburst",
             gptImageQuality: "fixed",
             quality: "2k",
@@ -262,17 +263,17 @@ test("APIMart GPT Image 2.5 fixed mode uses ext with the selected version and fi
         },
         "edit it",
     );
-    assert.equal(spec.body.model, APIMART_GPT25_FIXED_BACKEND_MODEL);
+    assert.equal(spec.body.model, APIMART_GPT26_FIXED_BACKEND_MODEL);
     assert.equal(spec.body.version, "sunburst");
     assert.equal(spec.body.resolution, "2k");
     assert.equal(spec.body.size, "auto");
     assert.equal("quality" in spec.body, false);
     assert.equal("output_format" in spec.body, false);
     assert.equal("background" in spec.body, false);
-    assert.equal(apiMartImagePrice({ model: "gpt-image-2.5", gptImageQuality: "fixed", quality: "1k" }), 0.0085);
-    assert.equal(apiMartImagePrice({ model: "gpt-image-2.5", gptImageQuality: "fixed", quality: "2k" }), 0.014);
-    assert.equal(apiMartImagePrice({ model: "gpt-image-2.5", gptImageQuality: "fixed", quality: "4k" }), 0.021);
-    assert.equal(apiMartImagePrice({ model: "gpt-image-2.5", gptImageQuality: "high", quality: "2k" }), null);
+    assert.equal(apiMartImagePrice({ model: "gpt-image-2.6", gptImageQuality: "fixed", quality: "1k" }), 0.0085);
+    assert.equal(apiMartImagePrice({ model: "gpt-image-2.6", gptImageQuality: "fixed", quality: "2k" }), 0.03);
+    assert.equal(apiMartImagePrice({ model: "gpt-image-2.6", gptImageQuality: "fixed", quality: "4k" }), 0.04);
+    assert.equal(apiMartImagePrice({ model: "gpt-image-2.6", gptImageQuality: "high", quality: "2k" }), null);
 });
 
 test("APIMart submits once and always polls the original task id", async () => {
@@ -412,7 +413,7 @@ test("APIMart GPT Image 2 exposes isolated fixed and official controls", () => {
     assert.match(bundle, /APIMART_GPT_OFFICIAL_QUALITY_OPTIONS=\[\{value:"auto",label:"Auto"\},\.\.\.GPT_IMAGE_QUALITY_OPTIONS\]/);
     assert.match(bundle, /APIMART_GPT_OUTPUT_FORMAT_OPTIONS=\[\{value:"png",label:"PNG"\},\{value:"jpeg",label:"JPEG"\},\{value:"webp",label:"WebP"\}\]/);
     assert.match(bundle, /APIMART_GPT_BACKGROUND_OPTIONS=\[\{value:"auto",label:"自动"\},\{value:"opaque",label:"不透明"\},\{value:"transparent",label:"透明"\}\]/);
-    assert.match(bundle, /\(!e\?\.model&&!e\?\.imageModel\|\|pr\(e\?\.model\|\|e\?\.imageModel\)==="gpt-image-2\.5"\?\["fixed","auto","low","medium","high","xhigh","max"\]:\["fixed","low","medium","high"\]\)\.includes\(r\)/);
+    assert.match(bundle, /\(!e\?\.model&&!e\?\.imageModel\|\|\["gpt-image-2\.5","gpt-image-2\.6"\]\.includes\(pr\(e\?\.model\|\|e\?\.imageModel\)\)\?\["fixed","auto","low","medium","high","xhigh","max"\]:\["fixed","low","medium","high"\]\)\.includes\(r\)/);
     assert.match(bundle, /isApiMartGptImageConfig\?y\.jsxs\(y\.Fragment/);
     assert.match(bundle, /\(apiMartModeValue==="official"\)\?y\.jsxs\(y\.Fragment/);
     assert.match(bundle, /options:APIMART_GPT_OUTPUT_FORMAT_OPTIONS\.map/);
@@ -447,8 +448,36 @@ test("APIMart official output settings survive generation, retry, and project re
     assert.match(bundle, /projectImageModelParams\(e\).*apimartOutputFormat:t\.apimartOutputFormat,apimartBackground:t\.apimartBackground/);
 });
 
-test("GPT Image 2.5 official mode is admin-only", () => {
-    const config = { provider: "apimart", model: "apimart::gpt-image-2.5", gptImageQuality: "high" };
+test("Mart GPT 2.6 fixed mode sends the chosen quality (auto sends none) without changing the price", () => {
+    const fixed = (apimartFixedQuality) => ({ model: "apimart::gpt-image-2.6", gptImageQuality: "fixed", quality: "2k", size: "1:1", apimartFixedQuality });
+    for (const q of ["low", "medium", "high", "xhigh", "max"]) {
+        const spec = apiMartImageRequestSpec(fixed(q), "draw");
+        assert.equal(spec.body.model, "gpt-image-2.6-ext");
+        assert.equal(spec.body.quality, q);
+        assert.equal(apiMartImagePrice(fixed(q)), 0.03);
+    }
+    for (const q of [undefined, "auto", "ultra"]) {
+        assert.equal(apiMartFixedQuality(fixed(q)), "auto");
+        assert.equal("quality" in apiMartImageRequestSpec(fixed(q), "draw").body, false);
+    }
+    // Regular users are forced to fixed mode and still get their quality.
+    const user = apiMartImageRequestSpec({ ...fixed("high"), gptImageQuality: "max", allowOfficial: false }, "draw");
+    assert.equal(user.body.model, "gpt-image-2.6-ext");
+    assert.equal(user.body.quality, "high");
+});
+
+test("Mart GPT 2.6 fixed mode shows a quality picker in the node toolbar and settings, kept with the node", () => {
+    assert.match(bundle, /isApiMartGpt25&&apiMartModeValue==="fixed"\?y\.jsx\(n\$,\{value:apiMartFixedQuality\(t\),items:GPT_IMAGE_25_QUALITY_OPTIONS,[^}]*\}\),widthClass:"w-\[68px\]",onOpenChange:f,onChange:C=>a\(e\.id,\{apimartFixedQuality:C\}\)\}\)/);
+    assert.match(bundle, /isApiMartGpt25&&apiMartModeValue==="fixed"\?y\.jsx\(ur\.Item,\{label:"\\u8D28\\u91CF"[^]*?value:apiMartFixedQuality\(a\),options:GPT_IMAGE_25_QUALITY_OPTIONS,onChange:\$=>h\(\{apimartFixedQuality:\$\}\)/);
+    assert.match(bundle, /apimartGpt25Variant:"flare",apimartFixedQuality:"auto"/);
+    assert.match(bundle, /apimartGpt25Variant:u,apimartFixedQuality:apiMartFixedQuality\(e\)/);
+    assert.equal((bundle.match(/apimartGpt25Variant:/g) || []).length, (bundle.match(/apimartFixedQuality:/g) || []).length);
+    // Official 2.6 keeps Auto / XHigh / Max when params are normalized, as 2.5 did.
+    assert.match(bundle, /\["gpt-image-2\.5","gpt-image-2\.6"\]\.includes\(pr\(e\?\.model\|\|e\?\.imageModel\)\)\?\["fixed","auto","low","medium","high","xhigh","max"\]/);
+});
+
+test("GPT Image 2.6 official mode is admin-only", () => {
+    const config = { provider: "apimart", model: "apimart::gpt-image-2.6", gptImageQuality: "high" };
     assert.equal(apiMartGptImageQuality(config), "high");
     globalThis.__lwGptOfficial = false;
     try {

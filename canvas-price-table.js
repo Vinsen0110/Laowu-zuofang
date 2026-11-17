@@ -221,8 +221,8 @@
           if (!isAdmin) return;
           return add(model, "GPT Image 2.5 · 官方", { runningHubGpt25Mode: "official", gptImageQuality: "medium" });
         }
-        if (["gpt-image-2", "gpt-image-2.5"].includes(model) && provider === "apimart") {
-          const label = model === "gpt-image-2.5" ? "GPT Image 2.5" : "GPT Image 2";
+        if (["gpt-image-2", "gpt-image-2.6"].includes(model) && provider === "apimart") {
+          const label = model === "gpt-image-2.6" ? "GPT Image 2.6" : "GPT Image 2";
           add(model, `${label} · 固定`, { gptImageQuality: "fixed" });
           if (!isAdmin) return;
           return add(model, `${label} · 官方`, { gptImageQuality: "medium" });
