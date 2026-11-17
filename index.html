@@ -196,14 +196,17 @@
                             });
                         }
                     }
-                    if (useLocalTudouProxy && method === "GET" && rawUrl) {
+                    // 土豆's result images (mg.ai-tudou.net) can be shown in an <img> but not read
+                    // with fetch (no CORS), so saving GPT results and using them as references
+                    // failed on the live site. Read them through our server everywhere.
+                    if (method === "GET" && rawUrl) {
                         try {
                             var target = new URL(rawUrl, location.href);
                             var isTudouResult = target.protocol === "https:" &&
                                 target.hostname !== "api.ai-tudou.net" &&
                                 (target.hostname === "ai-tudou.net" || target.hostname.endsWith(".ai-tudou.net"));
                             if (isTudouResult) {
-                                return nativeFetch("/api/tudou-image?url=" + encodeURIComponent(target.href), init);
+                                return nativeFetch(hostedProxyOrigin + "/api/tudou-image?url=" + encodeURIComponent(target.href), init);
                             }
                         } catch (error) {}
                     }
@@ -699,7 +702,7 @@
       <script type="module" src="./canvas-price-table.js?v=20261116-gpt26-01"></script>
       <script src="./prevent-canvas-drag-download.js?v=20260827-01"></script>
       <script src="./avatar.js?v=20261022-avatar-01"></script>
-      <script src="./account-ui.js?v=20261106-nosoon-01"></script>
+      <script src="./account-ui.js?v=20261117-gpt26-01"></script>
       <script src="./canvas-polish.js?v=20261023-reveal-02"></script>
       <link rel="stylesheet" crossorigin href="./assets/index-DT58oPsm.css">
       <link rel="stylesheet" href="./theme.css?v=20261106-nosoon-01">
