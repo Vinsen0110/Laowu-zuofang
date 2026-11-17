@@ -51,14 +51,15 @@ test("打包文件里不再把土豆请求改写到 /api/tudou 或托管代理�
     assert.match(body, /return e\.baseUrl\}/);
 });
 
-test("Gemini 流式直连：参考图在浏览器侧内联后只发一次 POST", () => {
+test("Gemini 直连：参考图在浏览器侧内联后只发一次 POST", () => {
     // 代理原来负责把 Cloudinary 参考图下载成 inlineData，现在由前端自己做。
     assert.match(bundle, /inlineTudouGeminiReferences\(new URL\(tudouUrl\),\s*t,\s*\{signal:n,redirect:"follow"\}\)/);
     // 内联后再体一次请求；fetch 调用仍然只有一个。
     const start = bundle.indexOf("async function tudouGeminiStreamImages");
     const body = bundle.slice(start, bundle.indexOf("async function qMe", start));
     assert.equal((body.match(/fetch\(/g) || []).length, 1);
-    assert.match(body, /const tudouUrl=isTudouNano21Model\(e\.model\)\?Jq\(e,"generateContent"\)/);
+    // 土豆的流式接口对 Pro 一直返回 0 字节，所有 Gemini 生图都改用 generateContent。
+    assert.match(body, /const tudouUrl=Jq\(e,"generateContent"\);/);
 });
 
 test("内联器同时支持 Node 与浏览器（Vercel 代理仍可回退使用）", () => {

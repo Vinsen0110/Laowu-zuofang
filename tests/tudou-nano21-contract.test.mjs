@@ -106,15 +106,17 @@ test('2.1 sends one synchronous POST and accepts direct JSON or proxy SSE withou
     }
 });
 
-test('Pro retains streamGenerateContent and 2.1 errors do not trigger a second request', async () => {
+test('Pro uses non-streaming generateContent (土豆 streaming returns 0 bytes) and 2.1 errors do not trigger a second request', async () => {
     let requests = 0;
     const scope = runtime({ fetch: async url => {
         requests++;
-        assert.equal(url, 'https://api.ai-tudou.net/v1beta/models/gemini-3-pro-image-preview:streamGenerateContent?alt=sse');
+        assert.equal(url, 'https://api.ai-tudou.net/v1beta/models/gemini-3-pro-image-preview:generateContent');
         return Response.json(imageJson);
     } });
-    await scope.tudouGeminiStreamImages(config('gemini-3-pro-image-preview'), { contents: [] });
+    const images = await scope.tudouGeminiStreamImages(config('gemini-3-pro-image-preview'), { contents: [] });
+    assert.deepEqual(plain(images), [{ id: 'image-id', dataUrl: 'data:image/png;base64,AQID' }]);
     assert.equal(requests, 1);
+    assert.ok(!source.includes('streamGenerateContent")}?alt=sse`;return lwTudouDirect'), 'Pro must not go back to streaming');
     scope.fetch = async url => {
         requests++;
         assert.equal(url, endpoint);
