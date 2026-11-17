@@ -11,14 +11,12 @@ import { ADMIN_ONLY_MODELS, describeRequest } from "./relay.js";
 export const USD_TO_CNY = 6.7;
 const RES = ["1k", "2k", "4k"];
 const GPT_QUALITIES = ["low", "medium", "high"];
-const TUDOU_GPT25_QUALITIES = ["low", "medium", "high", "xhigh", "max"];
+const TUDOU_GPT26_RES = ["1k", "2k"];
 const TUDOU_ORIGIN = "https://api.ai-tudou.net";
 
 // Tudou's request builder and prices live in the app bundle; mirrored here (CNY).
-const TUDOU_GPT25 = {
-    flare: { low: [0.03, 0.03, 0.06], medium: [0.04, 0.04, 0.08], high: [0.05, 0.05, 0.1], xhigh: [0.06, 0.06, 0.12], max: [0.08, 0.12, 0.16] },
-    sunburst: { low: [0.04, 0.04, 0.08], medium: [0.05, 0.05, 0.1], high: [0.07, 0.07, 0.12], xhigh: [0.1, 0.1, 0.15], max: [0.12, 0.12, 0.18] },
-};
+// GPT image 2.6 (Flare and Sunburst) is a flat ¥0.07 per image, 1K/2K only.
+const TUDOU_GPT26_PRICE = 0.07;
 
 function row(channel, label, target, body, cost, currency) {
     const { model, spec } = describeRequest(new URL(target), body);
@@ -41,10 +39,10 @@ function tudouRows() {
             { generationConfig: { imageConfig: { imageSize: r.toUpperCase() } } }, prices[i], "CNY")));
     }
     for (const variant of ["flare", "sunburst"]) {
-        for (const q of TUDOU_GPT25_QUALITIES) {
-            RES.forEach((r, i) => rows.push(row("tudou", `GPT Image 2.5 · ${variant === "flare" ? "Flare" : "Sunburst"} · ${q}`,
+        for (const q of GPT_QUALITIES) {
+            TUDOU_GPT26_RES.forEach((r) => rows.push(row("tudou", `GPT Image 2.6 · ${variant === "flare" ? "Flare" : "Sunburst"} · ${q}`,
                 `${TUDOU_ORIGIN}/v1/images/generations/async`,
-                { model: `gpt-image-2.5-${variant}-async`, resolution: r, quality: q }, TUDOU_GPT25[variant][q][i], "CNY")));
+                { model: `gpt-image-2.6-${variant}-async`, resolution: r, quality: q }, TUDOU_GPT26_PRICE, "CNY")));
         }
     }
     return rows;

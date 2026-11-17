@@ -32,5 +32,5 @@ test("loads the display-only model label layer after the app bundle", () => {
 
 
 test("image model labels use the requested casing and spacing", () => {
-    assert.match(bundle, /t===\"nano-banana-2\.1\"\?\"Nano Banana 2\.1\":t\.startsWith\(\"nano-banana-pro\"\)\?\"Nano Banana Pro\":t\.startsWith\(\"gpt-image-2\.5\"\)\?\"GPT image 2\.5\"/);
+    assert.match(bundle, /t===\"nano-banana-2\.1\"\?\"Nano Banana 2\.1\":t\.startsWith\(\"nano-banana-pro\"\)\?\"Nano Banana Pro\":t\.startsWith\(\"gpt-image-2\.6\"\)\?\"GPT image 2\.6\":t\.startsWith\(\"gpt-image-2\.5\"\)\?\"GPT image 2\.5\"/);
 });

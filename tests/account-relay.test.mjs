@@ -131,14 +131,14 @@ test("every catalog row can be priced and charged through the relay", async () =
     const { priceCatalog } = await import("../account/catalog.js");
     const { savePrices } = await import("../account/channels.js");
     const rows = priceCatalog();
-    assert.ok(rows.length > 50);
+    assert.ok(rows.length > 40);
     const keys = new Set(rows.map((r) => `${r.channel}|${r.model}|${r.spec}`));
     assert.equal(keys.size, rows.length);
     await savePrices(db, rows.map((r, i) => ({ channel: r.channel, model: r.model, spec: r.spec, price: (i + 1) / 1000 })));
     const { findPrice } = await import("../account/relay.js");
     for (const [i, r] of rows.entries()) assert.equal(await findPrice(db, r.channel, r.model, r.spec), i + 1, `${r.label} ${r.spec}`);
-    // Tudou GPT 2.5 request as the canvas sends it → its catalog row
-    const body = { model: "gpt-image-2.5-sunburst-async", resolution: "4k", quality: "xhigh", prompt: "x" };
+    // Tudou GPT 2.6 request as the canvas sends it → its catalog row
+    const body = { model: "gpt-image-2.6-sunburst-async", resolution: "2k", quality: "high", prompt: "x" };
     const d = describeRequest(new URL("https://api.ai-tudou.net/v1/images/generations/async"), body);
     assert.ok(keys.has(`tudou|${d.model}|${d.spec}`));
     // clearing a price removes it

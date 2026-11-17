@@ -11,16 +11,21 @@ const TUDOU_ORIGIN = "https://api.ai-tudou.net";
 
 const modelName = (value) => String(value || "").split("::").at(-1).trim();
 
+// GPT image 2.6 on Tudou only supports 1K/2K and low/medium/high.
+const isTudouGpt26 = (config) => modelName(config?.model || config?.imageModel).toLowerCase() === "gpt-image-2.6";
+
 function tudouResolution(config) {
     const q = String(config?.quality || "").trim().toLowerCase();
-    if (q === "low" || q === "standard") return "1k";
-    if (q === "medium" || q === "hd") return "2k";
-    if (q === "high") return "4k";
-    return ["1k", "2k", "4k"].includes(q) ? q : "1k";
+    const resolution = q === "low" || q === "standard" ? "1k"
+        : q === "medium" || q === "hd" ? "2k"
+        : q === "high" ? "4k"
+        : ["1k", "2k", "4k"].includes(q) ? q : "1k";
+    return resolution === "4k" && isTudouGpt26(config) ? "2k" : resolution;
 }
 
 function tudouQuality(config) {
     const q = String(config?.gptImageQuality || "").trim().toLowerCase();
+    if (isTudouGpt26(config)) return ["xhigh", "max"].includes(q) ? "high" : ["low", "medium", "high"].includes(q) ? q : "medium";
     return ["low", "medium", "high", "xhigh", "max"].includes(q) ? q : "medium";
 }
 
@@ -34,9 +39,9 @@ function tudouRequest(config) {
     if (model.startsWith("nano-banana-pro") || model === "gemini-3-pro-image-preview") {
         return { target: `${TUDOU_ORIGIN}/v1beta/models/gemini-3-pro-image-preview:generateContent`, body: { generationConfig: { imageConfig: { imageSize: resolution.toUpperCase() } } } };
     }
-    if (model === "gpt-image-2.5") {
+    if (model === "gpt-image-2.6" || model === "gpt-image-2.5") {
         const variant = String(config?.tudouGpt25Variant || "flare").trim().toLowerCase() === "sunburst" ? "sunburst" : "flare";
-        return { target: `${TUDOU_ORIGIN}/v1/images/generations/async`, body: { model: `gpt-image-2.5-${variant}-async`, resolution, quality: tudouQuality(config) } };
+        return { target: `${TUDOU_ORIGIN}/v1/images/generations/async`, body: { model: `${model}-${variant}-async`, resolution, quality: tudouQuality(config) } };
     }
     if (model === "gpt-image-2" || model === "gpt-image-2-all") {
         return { target: `${TUDOU_ORIGIN}/v1/images/generations/async`, body: { model: "gpt-image-2-all", resolution, quality: tudouQuality(config) } };

@@ -102,7 +102,7 @@ test("bundle keeps Grsai generation, balance, and settings branches", () => {
     assert.match(bundle, /isGrsaiSite\(le\).*fetchGrsaiAccountCredits/);
     assert.match(bundle, /g\?\.provider==="grsai"\?y\.jsxs\("section",\{key:"balance-section:"/);
     assert.match(bundle, /children:"Grsai \\u8D26\\u6237\\u4F59\\u989D"/);
-    assert.match(bundle, /\["gpt-image-2","gpt-image-2-vip","gpt-image-2\.5"\]/);
+    assert.match(bundle, /\["gpt-image-2","gpt-image-2-vip","gpt-image-2\.5","gpt-image-2\.6"\]/);
     assert.match(bundle, /s&&\(n==="nano-banana-pro"\|\|n==="nano-banana-2\.1"\)\?grsaiImagePrice\(e\)/);
     assert.match(bundle, /s&&\(n==="gpt-image-2"\|\|n==="gpt-image-2-vip"\)\?\.2/);
     assert.match(bundle, /pr\(t\)==="gpt-image-2-vip"\?"gpt-image-2"/);
