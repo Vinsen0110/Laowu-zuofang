@@ -95,7 +95,7 @@ test("saved 土豆 and Mart GPT 2.5 selections move to 2.6; RH's retired 2.5 mov
 test("土豆 2.6 has one catalog price for both variants, every resolution and quality, and no 土豆 2.5", () => {
     const rows = priceCatalog().filter((r) => r.channel === "tudou" && r.model.startsWith("gpt-image-2."));
     assert.deepEqual(rows.map(({ label, model, spec, cost, also }) => ({ label, model, spec, cost, also })), [
-        { label: "GPT Image 2.6", model: "gpt-image-2.6-flare-async", spec: "", cost: 0.07, also: ["gpt-image-2.6-sunburst-async"] },
+        { label: "GPT Image 2.6 · 固定", model: "gpt-image-2.6-flare-async", spec: "", cost: 0.07, also: ["gpt-image-2.6-sunburst-async"] },
     ]);
     // Saving it writes the same price for Sunburst; the canvas finds it for any variant / spec (4K falls back to 2K).
     const prices = withPriceAliases([{ channel: "tudou", model: rows[0].model, spec: "", price: 0.2 }]);
