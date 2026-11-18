@@ -98,7 +98,7 @@ let cached = null;
 export function priceCatalog() {
     if (cached) return cached;
     const seen = new Set();
-    // Admin-only models (GPT official: Mart 2.6, RH 2.5) are free for the admin and closed to users, so they are not priced.
+    // Admin-only models (GPT official: Mart 2.6) are free for the admin and closed to users, so they are not priced.
     cached = [...tudouRows(), ...apimartRows(), ...runningHubRows(), ...grsaiRows(), ...textRows()].filter((r) => {
         if (isAdminOnlyModel(r.channel, r.model)) return false;
         const key = `${r.channel}|${r.model}|${r.spec}`;

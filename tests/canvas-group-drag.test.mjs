@@ -16,7 +16,7 @@ function harness(scale = 1) {
     const state = {
         nodes: ["a", "b", "other"].map((id, index) => ({
             id, type: "image", title: id, position: { x: index * 300, y: 100 },
-            width: 200, height: 150, metadata: { model: "gpt-image-2.5", content: "blob:original" },
+            width: 200, height: 150, metadata: { model: "gpt-image-2.6", content: "blob:original" },
             ...(index < 2 ? { canvasGroup: { id: "g", name: "Group", color: "#22a06b" } } : {}),
         })),
         selected: new Set(["a", "b"]),
@@ -108,7 +108,7 @@ for (const scale of [0.5, 1, 2]) {
             const copy = app.state.nodes.find(node => node.id === copyId);
             assert.equal(copy.canvasGroup?.id, dx === 40 ? "g" : undefined);
             assert.equal(copy.position.x, dx);
-            assert.equal(copy.metadata.model, "gpt-image-2.5");
+            assert.equal(copy.metadata.model, "gpt-image-2.6");
             assert.equal(copy.metadata.followActiveImageSite, true);
             assert.equal(app.state.nodes[0], before[0]);
             assert.equal(app.state.nodes[2], before[2]);

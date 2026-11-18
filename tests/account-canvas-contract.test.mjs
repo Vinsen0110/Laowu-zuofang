@@ -15,8 +15,8 @@ test("the 固定/官方 selector only shows when there is more than one mode", (
     const uses = bundle.match(/APIMART_GPT_MODE_OPTIONS(?!=)/g) || [];
     const guarded = bundle.match(/APIMART_GPT_MODE_OPTIONS\.length>1/g) || [];
     // every render site is guarded (definitions and the guards themselves aside)
-    assert.equal(guarded.length, 5);
-    assert.ok(uses.length >= 10);
+    assert.equal(guarded.length, 3);
+    assert.ok(uses.length >= 6);
 });
 
 test("admins get no 图床 page; users get a refund hint on failures", () => {

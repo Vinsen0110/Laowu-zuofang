@@ -9,7 +9,7 @@ import {
 
 const node = (id, x, y = 120) => ({ id, type: "image", title: id,
     position: { x, y }, width: 120, height: 100,
-    metadata: { model: "gpt-image-2.5", prompt: "@\u56fe\u72471", generationPanelWidth: 1250, content: "blob:original" },
+    metadata: { model: "gpt-image-2.6", prompt: "@\u56fe\u72471", generationPanelWidth: 1250, content: "blob:original" },
 });
 const frame = { x: 0, y: 0, width: 600, height: 450 };
 const scene = () => updateCanvasGroup(
@@ -115,7 +115,7 @@ test("actual canvas paste into a group preserves source membership and model par
     const state = pasteHarness(nodes, [nodes[0]], { x: 300, y: 300 });
     const clone = state.nodes.find(item => state.selected.has(item.id));
     assert.equal(clone.canvasGroup.id, "g");
-    assert.equal(clone.metadata.model, "gpt-image-2.5");
+    assert.equal(clone.metadata.model, "gpt-image-2.6");
     assert.equal(clone.metadata.generationPanelWidth, 1250);
     assert.equal(clone.metadata.followActiveImageSite, true);
     assert.deepEqual(plain(clone.position), { x: 240, y: 250 });

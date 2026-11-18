@@ -12,7 +12,7 @@ const bundle = await readFile(new URL("../assets/index-B2KJ37fm.js", import.meta
 const css = await readFile(new URL("../canvas-groups.css", import.meta.url), "utf8");
 const node = (id, x = 0, y = 0) => ({
     id, type: "image", title: id, position: { x, y }, width: 200, height: 100,
-    metadata: { model: "gpt-image-2.5", prompt: "@\u56fe\u72471", generationPanelWidth: 1250,
+    metadata: { model: "gpt-image-2.6", prompt: "@\u56fe\u72471", generationPanelWidth: 1250,
         content: "blob:original", storageKey: "original-key", status: "success" },
 });
 const fixture = () => [node("a", -100, 20), node("b", 240, 190), node("c", 600, 400)];

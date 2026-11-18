@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import vm from "node:vm";
-import { runningHubGpt25Mode, runningHubGpt25Variant } from "../runninghub-api.js";
 import { apiMartFixedQuality } from "../apimart-api.js";
 import { orderModelReferences } from "../display-order.js";
 
@@ -27,7 +26,7 @@ function functionSource(name) {
 }
 
 const channels = [
-    { id: "default", name: "Custom", provider: "custom", baseUrl: "https://custom.example", apiKey: "custom-latest", models: ["nano-banana-pro", "gpt-image-2", "gpt-image-2.5"] },
+    { id: "default", name: "Custom", provider: "custom", baseUrl: "https://custom.example", apiKey: "custom-latest", models: ["nano-banana-pro", "gpt-image-2", "gpt-image-2.6"] },
     { id: "tudou", name: "Tudou", provider: "tudou", baseUrl: "https://api.ai-tudou.net", apiKey: "tudou-latest", models: ["nano-banana-pro", "gpt-image-2"] },
     { id: "apimart", name: "Mart", provider: "apimart", baseUrl: "https://api.apimart.ai", apiKey: "mart-latest", models: ["nano-banana-pro", "gpt-image-2", "gpt-image-2.6"] },
     { id: "runninghub", name: "RH", provider: "runninghub", baseUrl: "https://www.runninghub.ai", apiKey: "rh-latest", models: ["nano-banana-pro", "gpt-image-2"] },
@@ -41,8 +40,6 @@ function config(site = "default") {
         model: `${site}::nano-banana-pro`, imageModels: channel.models.map(model => `${site}::${model}`),
         quality: "4k", size: "auto", gptImageQuality: "medium",
         apimartGpt25Variant: "flare", apimartOutputFormat: "jpeg", apimartBackground: "opaque",
-        runningHubGpt25Mode: "fixed", runningHubGpt25Variant: "flare",
-        runningHubOutputFormat: "jpeg", runningHubBackground: "opaque",
     };
 }
 
@@ -62,14 +59,13 @@ function runtime(extra = {}) {
         IDe: state => state.imageModel,
         textRequestConfig: () => ({ textModel: "default::global-text" }),
         isRunningHubSite: site => site?.provider === "runninghub",
-        runningHubGpt25Mode, runningHubGpt25Variant,
         bg: "reverse prompt",
         ...extra,
     });
     for (const name of [
         "ES", "$S", "pr", "v5", "yx", "Nxe", "siteModelRefs", "CS", "bxe", "ODe",
         "imageNodeConfig", "bd", "xxe", "cPe", "vke", "Q0", "X0", "NX",
-        "runningHubUiParams", "defaultImageModelParams", "normalizeImageModelParams",
+        "defaultImageModelParams", "normalizeImageModelParams",
         "canonicalImageModel", "imageGenerationDefaultsKey", "imageGenerationDefaultsFor",
         "imageNodeDraftPatch", "switchImageNodeSite", "useImageSiteSync", "Zke",
         "n4e", "ZM", "Qa", "Hke", "vLocalAsset", "CX", "Ey",
@@ -82,8 +78,7 @@ function runtime(extra = {}) {
 
 const metadata = {
     generationType: "generation", model: "runninghub::gpt-image-2", quality: "2k", size: "16:9",
-    gptImageQuality: "xhigh", runningHubGpt25Mode: "official", runningHubGpt25Variant: "sunburst",
-    runningHubOutputFormat: "webp", runningHubBackground: "transparent",
+    gptImageQuality: "xhigh",
     apimartGpt25Variant: "sunburst", apimartOutputFormat: "png", apimartBackground: "transparent",
     localPromptPresetId: "custom-preset", count: 1,
 };
@@ -205,8 +200,8 @@ test("ungenerated Mart image panels switch to the active site controls with the 
 
 test("ungenerated image panels fall back to the active site's image model when unsupported", () => {
     const scope = runtime();
-    // 土豆 has no GPT Image 2.5.
-    const ungenerated = { ...node, metadata: { ...metadata, model: "runninghub::gpt-image-2.5" } };
+    // This test's 土豆 has no GPT Image 2.6.
+    const ungenerated = { ...node, metadata: { ...metadata, model: "apimart::gpt-image-2.6" } };
     const routed = scope.Q0(config("tudou"), ungenerated, "image");
     assert.equal(routed.model, "tudou::nano-banana-pro");
     assert.equal(routed.provider, "tudou");
@@ -381,7 +376,7 @@ test("local project save and reopen preserve actual generated model and paramete
     for (const [key, value] of Object.entries(metadata)) assert.equal(reopened[0].metadata[key], value);
     const restored = scope.Q0(config("tudou"), reopened[0], "image");
     assert.equal(restored.model, metadata.model);
-    assert.equal(restored.runningHubGpt25Mode, "official");
+    assert.equal(restored.apimartGpt25Variant, "sunburst");
     assert.equal(restored.gptImageQuality, "xhigh");
 });
 

@@ -4,23 +4,17 @@ import test from "node:test";
 import vm from "node:vm";
 import {
     isRunningHubSite,
-    runningHubGpt25Mode,
     runningHubImageModel,
     runningHubImageRequestSpec,
     runningHubReferenceAspectRatio,
     runningHubSupportedAspectRatios,
 } from "../runninghub-api.js";
 
-// These tests cover the admin view, where GPT Image 2.5 "official" mode is available.
-globalThis.__lwGptOfficial = true;
-
 const source = await readFile(new URL("../assets/index-B2KJ37fm.js", import.meta.url), "utf8");
 const plain = value => JSON.parse(JSON.stringify(value));
 const base = {
     provider: "runninghub",
-    model: "runninghub::gpt-image-2.5",
-    runningHubGpt25Mode: "fixed",
-    runningHubGpt25Variant: "sunburst",
+    model: "runninghub::nano-banana-pro",
     quality: "4k",
     size: "auto",
 };
@@ -45,7 +39,6 @@ function runtime({ width = 3840, height = 2160, decodeError, sourceError, pendin
     const calls = { decoded: [], resolved: [], uploaded: [], submitted: [] };
     const context = vm.createContext({
         isRunningHubSite,
-        runningHubGpt25Mode,
         runningHubImageModel,
         runningHubReferenceAspectRatio,
         runningHubSupportedAspectRatios,
@@ -91,13 +84,13 @@ function runtime({ width = 3840, height = 2160, decodeError, sourceError, pendin
         cn: () => "output-id",
         th: error => error.message,
     });
-    for (const name of ["runningHub25RatioValue", "withRunningHubReferenceAspectRatio", "P0"]) {
+    for (const name of ["runningHubRatioValue", "withRunningHubReferenceAspectRatio", "P0"]) {
         vm.runInContext(functionSource(name), context);
     }
     return { context, calls };
 }
 
-test("RH 2.5 uses the same reference ratio at 2K and 4K without mutating stored Auto", () => {
+test("RH uses the same reference ratio at 2K and 4K without mutating stored Auto", () => {
     for (const quality of ["2k", "4k"]) {
         const config = { ...base, quality };
         const resolved = runningHubReferenceAspectRatio(config, 3840, 2160);
@@ -111,46 +104,34 @@ test("RH 2.5 uses the same reference ratio at 2K and 4K without mutating stored 
     }
 });
 
-test("RH reference ratio uses each mode's supported horizontal, vertical and extreme ratios", () => {
-    for (const [width, height, fixed, official] of [
-        [3840, 2160, "16:9", "16:9"],
-        [2160, 3840, "9:16", "9:16"],
-        [1500, 1000, "3:2", "3:2"],
-        [1000, 1500, "2:3", "2:3"],
-        [1536, 1536, "1:1", "1:1"],
-        [2100, 900, "21:9", "21:9"],
-        [900, 2100, "9:16", "9:21"],
-        [5000, 1000, "21:9", "3:1"],
-        [1000, 5000, "9:16", "1:3"],
-        [2000, 1000, "16:9", "2:1"],
+test("RH reference ratio picks the closest supported horizontal, vertical and extreme ratio", () => {
+    for (const [width, height, expected] of [
+        [3840, 2160, "16:9"],
+        [2160, 3840, "9:16"],
+        [1500, 1000, "3:2"],
+        [1000, 1500, "2:3"],
+        [1536, 1536, "1:1"],
+        [2100, 900, "21:9"],
+        [900, 2100, "9:16"],
+        [5000, 1000, "21:9"],
+        [1000, 5000, "9:16"],
+        [2000, 1000, "16:9"],
     ]) {
-        for (const [mode, expected] of [["fixed", fixed], ["official", official]]) {
-            assert.equal(runningHubReferenceAspectRatio({ ...base, runningHubGpt25Mode: mode }, width, height).size,
-                expected, `${mode} ${width}x${height}`);
-        }
+        assert.equal(runningHubReferenceAspectRatio(base, width, height).size, expected, `${width}x${height}`);
     }
 });
 
-test("RH 2.5 fixed exposes ten supported ratios while official and existing GPT2 retain fifteen", () => {
-    const fixed = runningHubSupportedAspectRatios(base);
-    const official = runningHubSupportedAspectRatios({ ...base, runningHubGpt25Mode: "official" });
-    assert.equal(fixed.length, 10);
-    assert.equal(official.length, 15);
-    for (const ratio of ["2:1", "1:2", "3:1", "1:3", "9:21"]) {
-        assert.equal(fixed.includes(ratio), false, ratio);
-        assert.equal(official.includes(ratio), true, ratio);
-    }
+test("Nano Banana Pro exposes ten supported ratios while the retired GPT Image 2 keeps fifteen", () => {
+    const nano = runningHubSupportedAspectRatios(base);
+    assert.equal(nano.length, 10);
+    for (const ratio of ["2:1", "1:2", "3:1", "1:3", "9:21"]) assert.equal(nano.includes(ratio), false, ratio);
     assert.equal(runningHubSupportedAspectRatios({ ...base, model: "gpt-image-2" }).length, 15);
 });
 
 test("old fixed projects with unsupported explicit ratios omit aspectRatio rather than send a rejected value", () => {
     for (const size of ["2:1", "1:2", "3:1", "1:3", "9:21"]) {
-        const fixed = runningHubImageRequestSpec({ ...base, size }, "draw");
-        assert.equal(Object.hasOwn(fixed.body, "aspectRatio"), false, size);
-        const official = runningHubImageRequestSpec({
-            ...base, size, runningHubGpt25Mode: "official",
-        }, "draw");
-        assert.equal(official.body.aspectRatio, size);
+        const spec = runningHubImageRequestSpec({ ...base, size }, "draw");
+        assert.equal(Object.hasOwn(spec.body, "aspectRatio"), false, size);
     }
 });
 
@@ -169,25 +150,13 @@ test("RH Nano Banana Pro follows the reference image's shape on Auto", () => {
     assert.equal(runningHubReferenceAspectRatio({ ...base, model }, 3840, 2160).size, "16:9");
 });
 
-test("ratio inference preserves all fixed/official and Flare/Sunburst routing choices", () => {
-    for (const mode of ["fixed", "official"]) {
-        for (const variant of ["flare", "sunburst"]) {
-            const config = {
-                ...base,
-                runningHubGpt25Mode: mode,
-                runningHubGpt25Variant: variant,
-                gptImageQuality: "high",
-                runningHubBackground: "transparent",
-                runningHubOutputFormat: "png",
-            };
-            const resolved = runningHubReferenceAspectRatio(config, 2160, 3840);
-            assert.deepEqual(resolved, { ...config, size: "9:16" });
-            const spec = runningHubImageRequestSpec(resolved, "edit", ["https://rh.test/ref.png"]);
-            assert.equal(spec.body.aspectRatio, "9:16");
-            assert.match(spec.endpoint, new RegExp(`/${variant}/${mode === "official" ? "edit" : "image-to-image"}$`));
-            assert.equal(spec.endpoint.includes("official-token"), mode === "official");
-        }
-    }
+test("ratio inference keeps the other settings and routes to the Nano Banana Pro edit endpoint", () => {
+    const config = { ...base, quality: "2k" };
+    const resolved = runningHubReferenceAspectRatio(config, 2160, 3840);
+    assert.deepEqual(resolved, { ...config, size: "9:16" });
+    const spec = runningHubImageRequestSpec(resolved, "edit", ["https://rh.test/ref.png"]);
+    assert.equal(spec.body.aspectRatio, "9:16");
+    assert.equal(spec.endpoint, "/openapi/v2/rhart-image-n-pro/edit");
 });
 
 test("invalid decoded dimensions fail instead of submitting an unconstrained Auto request", () => {
@@ -225,15 +194,13 @@ test("actual RH edit flow never submits or uploads after source/dimension decodi
     }
 });
 
-test("legacy fixed 2:1 edits recover as Auto and infer a supported first-image ratio", async () => {
-    for (const mode of ["fixed", "official"]) {
-        const { context, calls } = runtime({ width: 2000, height: 1000 });
-        const config = { ...base, runningHubGpt25Mode: mode, size: "2:1" };
-        await context.P0(config, "edit", [{ dataUrl: "blob:reference" }], null, {});
-        assert.equal(config.size, "2:1");
-        assert.equal(calls.submitted[0].spec.body.aspectRatio, mode === "fixed" ? "16:9" : "2:1");
-        assert.equal(calls.decoded.length, mode === "fixed" ? 1 : 0);
-    }
+test("legacy 2:1 edits recover as Auto and infer a supported first-image ratio", async () => {
+    const { context, calls } = runtime({ width: 2000, height: 1000 });
+    const config = { ...base, size: "2:1" };
+    await context.P0(config, "edit", [{ dataUrl: "blob:reference" }], null, {});
+    assert.equal(config.size, "2:1");
+    assert.equal(calls.submitted[0].spec.body.aspectRatio, "16:9");
+    assert.equal(calls.decoded.length, 1);
 });
 
 test("manual ratio edits bypass decoding and retain the selected ratio", async () => {
@@ -249,15 +216,15 @@ test("no-reference generation leaves Auto unchanged and does not read image pixe
     assert.equal(resolved, base);
     assert.equal(calls.decoded.length, 0);
     const spec = runningHubImageRequestSpec(resolved, "draw");
-    assert.equal(spec.endpoint, "/openapi/v2/rhart-image-g-2.5/sunburst/text-to-image");
+    assert.equal(spec.endpoint, "/openapi/v2/rhart-image-n-pro/text-to-image");
     assert.equal(Object.hasOwn(spec.body, "aspectRatio"), false);
 });
 
 test("the browser helper does not infer ratios for Mart, other sites or older RH models", async () => {
     const { context, calls } = runtime({ decodeError: new Error("must not decode") });
     for (const config of [
-        { ...base, provider: "apimart", model: "apimart::gpt-image-2.5" },
-        { ...base, provider: "custom", model: "custom::gpt-image-2.5" },
+        { ...base, provider: "apimart", model: "apimart::nano-banana-pro" },
+        { ...base, provider: "custom", model: "custom::nano-banana-pro" },
         { ...base, model: "runninghub::gpt-image-2" },
     ]) {
         assert.equal(await context.withRunningHubReferenceAspectRatio(config, ["blob:ref"]), config);
