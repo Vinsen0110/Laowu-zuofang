@@ -64,8 +64,6 @@ function runningHubRows() {
     const add = (label, patch) => RES.forEach((quality) => rows.push(fromBuilder("runninghub", RUNNINGHUB_ORIGIN, runningHubImageRequestSpec, runningHubImagePrice, "USD", label,
         { provider: "runninghub", size: "1:1", quality, allowOfficial: true, ...patch })));
     add("Nano Banana Pro", { model: "rh::nano-banana-pro" });
-    add("GPT Image 2.5 · 固定", { model: "rh::gpt-image-2.5", runningHubGpt25Mode: "fixed" });
-    for (const q of GPT_QUALITIES) add(`GPT Image 2.5 · 官方 · ${q}`, { model: "rh::gpt-image-2.5", runningHubGpt25Mode: "official", gptImageQuality: q });
     return rows;
 }
 

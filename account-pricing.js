@@ -4,7 +4,7 @@
 
 import { APIMART_ORIGIN, apiMartImageRequestSpec } from "./apimart-api.js?v=20261117-mart26-01";
 import { GRSAI_ORIGIN, grsaiImageRequestSpec } from "./grsai-api.js?v=20261117-grsai26-01";
-import { RUNNINGHUB_ORIGIN, runningHubImageRequestSpec } from "./runninghub-api.js?v=20261023-proratio-01";
+import { RUNNINGHUB_ORIGIN, runningHubImageRequestSpec } from "./runninghub-api.js?v=20261118-norh25-01";
 import { describeRequest } from "./account/describe.js?v=20261117-grsai26-01";
 
 const TUDOU_ORIGIN = "https://api.ai-tudou.net";

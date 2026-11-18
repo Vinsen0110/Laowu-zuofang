@@ -30,7 +30,7 @@ const channels = [
     { id: "default", name: "Custom", provider: "custom", baseUrl: "https://custom.example", apiKey: "custom-latest", models: ["nano-banana-pro", "gpt-image-2", "gpt-image-2.5"] },
     { id: "tudou", name: "Tudou", provider: "tudou", baseUrl: "https://api.ai-tudou.net", apiKey: "tudou-latest", models: ["nano-banana-pro", "gpt-image-2"] },
     { id: "apimart", name: "Mart", provider: "apimart", baseUrl: "https://api.apimart.ai", apiKey: "mart-latest", models: ["nano-banana-pro", "gpt-image-2", "gpt-image-2.6"] },
-    { id: "runninghub", name: "RH", provider: "runninghub", baseUrl: "https://www.runninghub.ai", apiKey: "rh-latest", models: ["nano-banana-pro", "gpt-image-2", "gpt-image-2.5"] },
+    { id: "runninghub", name: "RH", provider: "runninghub", baseUrl: "https://www.runninghub.ai", apiKey: "rh-latest", models: ["nano-banana-pro", "gpt-image-2"] },
     { id: "grsai", name: "Grsai", provider: "grsai", baseUrl: "https://grsai.dakka.com.cn", apiKey: "grsai-latest", models: ["nano-banana-pro", "gpt-image-2-vip"] },
 ];
 
