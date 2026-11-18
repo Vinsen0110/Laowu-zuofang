@@ -216,11 +216,6 @@
         if (["nano-banana-pro-2k", "nano-banana-pro-4k"].includes(model)) return;
         if (model === "nano-banana-2.1") return add(model, "Nano Banana 2.1");
         if (model === "nano-banana-pro") return add(model, "Nano Banana Pro");
-        if (model === "gpt-image-2.5" && provider === "runninghub") {
-          add(model, "GPT Image 2.5 · 固定", { runningHubGpt25Mode: "fixed", gptImageQuality: "medium" });
-          if (!isAdmin) return;
-          return add(model, "GPT Image 2.5 · 官方", { runningHubGpt25Mode: "official", gptImageQuality: "medium" });
-        }
         if (["gpt-image-2", "gpt-image-2.6"].includes(model) && provider === "apimart") {
           const label = model === "gpt-image-2.6" ? "GPT Image 2.6" : "GPT Image 2";
           add(model, `${label} · 固定`, { gptImageQuality: "fixed" });

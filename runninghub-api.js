@@ -2,8 +2,9 @@ export const RUNNINGHUB_ORIGIN = "https://www.runninghub.ai";
 export const RUNNINGHUB_LLM_ORIGIN = "https://llm.runninghub.ai";
 export const RUNNINGHUB_SITE_ID = "runninghub";
 export const RUNNINGHUB_SITE_NAME = "RH";
-export const RUNNINGHUB_SITE_MODELS = ["nano-banana-pro", "gpt-image-2.5", "google/gemini-3.8-flash"];
-export const RUNNINGHUB_IMAGE_MODELS = ["nano-banana-pro", "gpt-image-2.5"];
+// GPT image 2.5 is no longer offered; saved 2.5 nodes switch to Nano Banana Pro in the canvas.
+export const RUNNINGHUB_SITE_MODELS = ["nano-banana-pro", "google/gemini-3.8-flash"];
+export const RUNNINGHUB_IMAGE_MODELS = ["nano-banana-pro"];
 export const RUNNINGHUB_TEXT_MODELS = ["google/gemini-3.8-flash"];
 
 export const RUNNINGHUB_GPT25_VARIANTS = ["flare", "sunburst"];
