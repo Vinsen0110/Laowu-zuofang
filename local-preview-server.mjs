@@ -228,7 +228,10 @@ async function proxyTudouApi(request, response, requestUrl) {
 async function proxyTudouImage(response, requestUrl) {
     try {
         const target = new URL(requestUrl.searchParams.get("url") || "");
-        const allowedHost = target.hostname === "ai-tudou.net" || target.hostname.endsWith(".ai-tudou.net");
+        // 土豆 GPT 2.6 results are on Cloudflare R2 (pub-<32 hex>.r2.dev/image-hub/…), which
+        // mainland browsers cannot reach.
+        const r2Result = /^pub-[0-9a-f]{32}\.r2\.dev$/.test(target.hostname) && target.pathname.startsWith("/image-hub/");
+        const allowedHost = target.hostname === "ai-tudou.net" || target.hostname.endsWith(".ai-tudou.net") || r2Result;
         if (target.protocol !== "https:" || !allowedHost || target.hostname === "api.ai-tudou.net") {
             sendJson(response, 400, "Unsupported Tudou image URL");
             return;

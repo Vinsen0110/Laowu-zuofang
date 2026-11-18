@@ -4,14 +4,14 @@
 
 import { APIMART_ORIGIN, apiMartImageRequestSpec } from "./apimart-api.js?v=20261117-mart26-01";
 import { GRSAI_ORIGIN, grsaiImageRequestSpec } from "./grsai-api.js?v=20261117-grsai26-01";
-import { RUNNINGHUB_ORIGIN, runningHubImageRequestSpec } from "./runninghub-api.js?v=20261118-clean25-01";
+import { RUNNINGHUB_ORIGIN, runningHubImageRequestSpec } from "./runninghub-api.js?v=20261118-tudou26sync-01";
 import { describeRequest } from "./account/describe.js?v=20261117-grsai26-01";
 
 const TUDOU_ORIGIN = "https://api.ai-tudou.net";
 
 const modelName = (value) => String(value || "").split("::").at(-1).trim();
 
-// GPT image 2.6 on Tudou only supports 1K/2K and low/medium/high.
+// GPT image 2.6 on Tudou supports 1K/2K/4K and low/medium/high.
 const isTudouGpt26 = (config) => modelName(config?.model || config?.imageModel).toLowerCase() === "gpt-image-2.6";
 
 function tudouResolution(config) {
@@ -20,7 +20,7 @@ function tudouResolution(config) {
         : q === "medium" || q === "hd" ? "2k"
         : q === "high" ? "4k"
         : ["1k", "2k", "4k"].includes(q) ? q : "1k";
-    return resolution === "4k" && isTudouGpt26(config) ? "2k" : resolution;
+    return resolution;
 }
 
 function tudouQuality(config) {
@@ -41,7 +41,8 @@ function tudouRequest(config) {
     }
     if (model === "gpt-image-2.6") {
         const variant = String(config?.tudouGpt25Variant || "flare").trim().toLowerCase() === "sunburst" ? "sunburst" : "flare";
-        return { target: `${TUDOU_ORIGIN}/v1/images/generations/async`, body: { model: `${model}-${variant}-async`, resolution, quality: tudouQuality(config) } };
+        // Synchronous OpenAI-style request: a pixel size (not read for the price) and quality.
+        return { target: `${TUDOU_ORIGIN}/v1/images/generations`, body: { model: `${model}-${variant}`, quality: tudouQuality(config) } };
     }
     if (model === "gpt-image-2" || model === "gpt-image-2-all") {
         return { target: `${TUDOU_ORIGIN}/v1/images/generations/async`, body: { model: "gpt-image-2-all", resolution, quality: tudouQuality(config) } };

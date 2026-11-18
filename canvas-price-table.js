@@ -183,13 +183,10 @@
       const site = names[provider];
       const currency = isAdmin && ["runninghub", "apimart"].includes(provider) ? "USD" : "CNY";
       const models = Array.isArray(channel.models) ? channel.models : [];
-      // GPT image 2.6 on Tudou has no 4K.
-      const unsupported = (model, quality) => model === "gpt-image-2.6" && provider === "tudou" && quality === "4k";
       const add = (model, modelLabel, patch = {}, references = false, note = "", thinkingOptions = null) => {
         const basePatch = thinkingOptions?.length ? { ...patch, gptImageQuality: "medium" } : patch;
         const priceByQuality = {};
         resolutions.forEach((quality) => {
-          if (unsupported(model, quality)) { priceByQuality[quality.toUpperCase()] = "不支持"; return; }
           const requestConfig = { ...config, ...channel, ...basePatch, channels: [channel], model: `${channel.id}::${model}`, imageModel: `${channel.id}::${model}`, quality, count: 1, channelMode: "local" };
           try { priceByQuality[quality.toUpperCase()] = calculate(requestConfig, references); } catch (_) { priceByQuality[quality.toUpperCase()] = null; }
         });
@@ -197,7 +194,6 @@
         for (const option of thinkingOptions || []) {
           const values = {};
           resolutions.forEach((quality) => {
-            if (unsupported(model, quality)) { values[quality.toUpperCase()] = "不支持"; return; }
             const requestConfig = { ...config, ...channel, ...patch, gptImageQuality: option.value, channels: [channel], model: `${channel.id}::${model}`, imageModel: `${channel.id}::${model}`, quality, count: 1, channelMode: "local" };
             try { values[quality.toUpperCase()] = calculate(requestConfig, references); } catch (_) { values[quality.toUpperCase()] = null; }
           });
