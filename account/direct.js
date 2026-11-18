@@ -9,7 +9,7 @@ import { background, checkLowBalances } from "./alerts.js";
 import { describeRequest } from "./describe.js";
 import { CHANNEL_LABELS } from "./mask.js";
 import { channelConfig } from "./channels.js";
-import { ADMIN_ONLY_MODELS, channelForUrl, findPrice } from "./relay.js";
+import { channelForUrl, findPrice, isAdminOnlyModel } from "./relay.js";
 import { AccountError, adjustBalance, milliToYuan } from "./service.js";
 
 export const DIRECT_CHANNELS = new Set(["tudou"]);
@@ -22,7 +22,7 @@ export async function chargeDirect(db, user, input) {
     if (user.role === "admin") return { ref: "", amount: 0 };
     const config = await channelConfig(db, channel);
     if (!config.enabled || !config.apiKey) throw new AccountError(503, "channel_off", "这个渠道暂时不可用，请换一个渠道");
-    if (ADMIN_ONLY_MODELS.has(model)) throw new AccountError(403, "admin_only", "官方模式仅管理员可用，请切换到固定模式");
+    if (isAdminOnlyModel(channel, model)) throw new AccountError(403, "admin_only", "官方模式仅管理员可用，请切换到固定模式");
     const unit = model ? await findPrice(db, channel, model, spec) : null;
     if (unit == null) {
         const label = [CHANNEL_LABELS[channel] || channel, model || "?", spec].filter(Boolean).join(" / ");
