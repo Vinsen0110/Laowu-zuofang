@@ -64,7 +64,7 @@ test("2.6 only sends 1K/2K and low/medium/high", () => {
     for (const [q, expected] of [["low", "low"], ["medium", "medium"], ["high", "high"], ["xhigh", "high"], ["max", "high"], ["", "medium"]]) {
         assert.equal(context.tudouQuality(config("2k", q)), expected, q);
     }
-    assert.match(bundle, /TUDOU_GPT25_QUALITY_OPTIONS=\[\{value:"low",label:"Low"\},\{value:"medium",label:"Medium"\},\{value:"high",label:"High"\}\];/);
+    assert.match(bundle, /TUDOU_GPT25_QUALITY_OPTIONS=\[\{value:"low",label:"Low"\},\{value:"medium",label:"Medium"\},\{value:"high",label:"High"\}\][;,]/);
     // 4K is greyed out in the node toolbar and in the image settings panel.
     assert.match(bundle, /items:isTudouGpt25\?hX\.map\(C=>C\.value==="4k"\?\{\.\.\.C,disabled:!0/);
     assert.match(bundle, /disabled:isTudouGpt26&&k\.value==="4k"/);

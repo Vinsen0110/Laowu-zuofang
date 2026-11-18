@@ -28,8 +28,13 @@ const HOSTS = [
     [/^(?:www|llm)\.runninghub\.ai$/, "runninghub"],
 ];
 
-// GPT Image official (usage-billed) models are for admins only: Mart 2.6 (and the 2.5 names it replaced), RH 2.5.
-export const ADMIN_ONLY_MODELS = new Set(["gpt-image-2.6-flare", "gpt-image-2.6-sunburst", "gpt-image-2.5-flare", "gpt-image-2.5-sunburst", "rhart-image-g-2.5-official-token"]);
+// GPT Image official (usage-billed) models are for admins only. Names repeat across channels
+// (Grsai's per-call gpt-image-2.6-flare is open to users), so the list is per channel.
+export const ADMIN_ONLY_MODELS = {
+    apimart: new Set(["gpt-image-2.6-flare", "gpt-image-2.6-sunburst", "gpt-image-2.5-flare", "gpt-image-2.5-sunburst"]),
+    runninghub: new Set(["rhart-image-g-2.5-official-token"]),
+};
+export const isAdminOnlyModel = (channel, model) => Boolean(ADMIN_ONLY_MODELS[channel]?.has(model));
 // Channels only the admin may use (none for now: 土豆 is open to users, called from their browser).
 export const ADMIN_ONLY_CHANNELS = new Set();
 
@@ -269,7 +274,7 @@ export async function relay(db, user, request, { fetchImpl = fetch } = {}) {
         }
         const { model, spec, count } = describeRequest(target, payload);
         const isAdmin = user.role === "admin";
-        if (!isAdmin && ADMIN_ONLY_MODELS.has(model)) {
+        if (!isAdmin && isAdminOnlyModel(channel, model)) {
             throw new AccountError(403, "admin_only", "官方模式仅管理员可用，请切换到固定模式");
         }
         // The owner's own generations are not charged.

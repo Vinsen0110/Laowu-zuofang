@@ -1,9 +1,14 @@
 export const GRSAI_ORIGIN = "https://grsaiapi.com";
 export const GRSAI_SITE_ID = "grsai";
 export const GRSAI_SITE_NAME = "Grsai";
-export const GRSAI_SITE_MODELS = ["nano-banana-2.1", "nano-banana-pro"];
+export const GRSAI_SITE_MODELS = ["nano-banana-2.1", "nano-banana-pro", "gpt-image-2.6"];
 export const GRSAI_IMAGE_MODELS = GRSAI_SITE_MODELS;
 export const GRSAI_TEXT_MODELS = [];
+
+// GPT image 2.6 comes as Flare or Sunburst (the plain 1K-only gpt-image-2.6 is not offered).
+// Like Tudou, the variant is kept in tudouGpt25Variant. Every quality costs the same per call.
+// Docs list xhigh/max too, but Grsai fails every such request (tested 2026-11-17).
+export const GRSAI_GPT26_QUALITIES = ["auto", "low", "medium", "high"];
 
 const POLL_INTERVAL_MS = 1500;
 const TASK_TIMEOUT_MS = 5 * 60 * 1000;
@@ -75,9 +80,21 @@ function grsaiModel(config) {
     return model;
 }
 
+export function grsaiGpt26Variant(config) {
+    return String(config?.tudouGpt25Variant || "flare").trim().toLowerCase() === "sunburst" ? "sunburst" : "flare";
+}
+
+export function grsaiGptQuality(config) {
+    const value = String(config?.gptImageQuality || "auto").trim().toLowerCase();
+    if (value === "xhigh" || value === "max") return "high";
+    return GRSAI_GPT26_QUALITIES.includes(value) ? value : "auto";
+}
+
 export function grsaiImagePrice(config) {
     // Display convention retained from the app: 10,000 credits = one price unit.
+    // GPT image 2.6: Flare 2,000 / Sunburst 2,400 credits per call, any resolution or quality.
     const model = grsaiModel(config);
+    if (model === "gpt-image-2.6") return grsaiGpt26Variant(config) === "sunburst" ? 0.24 : 0.2;
     return model === "nano-banana-2.1" ? 0.12 : model === "gpt-image-2-vip" ? 0.2 : 0.18;
 }
 
@@ -85,15 +102,18 @@ export function grsaiImageRequestSpec(config, prompt, imageUrls = []) {
     const model = grsaiModel(config);
     const resolution = grsaiResolution(config);
     const ratio = String(config?.size || "auto").trim();
-    const isVip = model === "gpt-image-2-vip";
+    const isGpt26 = model === "gpt-image-2.6";
+    // VIP and 2.6 Flare/Sunburst take pixel sizes (same table), not ratio names.
+    const isVip = model === "gpt-image-2-vip" || isGpt26;
     const aspectRatio = isVip ? (VIP_RATIO_SIZES[ratio]?.[resolution] || "auto") : ratio;
     const body = {
-        model,
+        model: isGpt26 ? `gpt-image-2.6-${grsaiGpt26Variant(config)}` : model,
         prompt: String(prompt || "").trim(),
         images: Array.isArray(imageUrls) ? imageUrls : [],
         aspectRatio,
         replyType: "async",
         ...(isVip ? {} : { imageSize: resolution.toUpperCase() }),
+        ...(isGpt26 ? { quality: grsaiGptQuality(config) } : {}),
     };
     return { endpoint: "/v1/api/generate", body };
 }

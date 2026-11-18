@@ -232,6 +232,10 @@
           add(model, "GPT Image 2.6 · Flare", { tudouGpt25Variant: "flare" }, false, "", thinkingOptions);
           return add(model, "GPT Image 2.6 · Sunburst", { tudouGpt25Variant: "sunburst" }, false, "", thinkingOptions);
         }
+        if (model === "gpt-image-2.6" && provider === "grsai") {
+          add(model, "GPT Image 2.6 · Flare", { tudouGpt25Variant: "flare", size: "1:1" });
+          return add(model, "GPT Image 2.6 · Sunburst", { tudouGpt25Variant: "sunburst", size: "1:1" });
+        }
         if (["gpt-image-2", "gpt-image-2-all"].includes(model) && ["tudou", "runninghub"].includes(provider)) {
           ["low", "medium", "high"].forEach((quality) => add(model, `GPT Image 2 · ${quality}`, { gptImageQuality: quality }, false, provider === "runninghub" ? "无参考图" : ""));
           if (provider === "runninghub") add(model, "GPT Image 2 · low", { gptImageQuality: "low" }, true, "有参考图");

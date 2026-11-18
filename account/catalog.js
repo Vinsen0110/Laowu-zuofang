@@ -6,7 +6,7 @@
 import { APIMART_ORIGIN, apiMartImagePrice, apiMartImageRequestSpec } from "../apimart-api.js";
 import { GRSAI_ORIGIN, grsaiImagePrice, grsaiImageRequestSpec } from "../grsai-api.js";
 import { RUNNINGHUB_ORIGIN, runningHubImagePrice, runningHubImageRequestSpec } from "../runninghub-api.js";
-import { ADMIN_ONLY_MODELS, describeRequest } from "./relay.js";
+import { describeRequest, isAdminOnlyModel } from "./relay.js";
 
 export const USD_TO_CNY = 6.7;
 const RES = ["1k", "2k", "4k"];
@@ -75,6 +75,15 @@ function grsaiRows() {
         RES.forEach((quality) => rows.push(fromBuilder("grsai", GRSAI_ORIGIN, grsaiImageRequestSpec, grsaiImagePrice, "CNY", label,
             { provider: "grsai", size: "1:1", quality, model: `grsai::${model}` })));
     }
+    // GPT image 2.6 is sold per resolution; quality does not change the cost, so it is left out of the spec.
+    for (const variant of ["flare", "sunburst"]) {
+        RES.forEach((quality) => {
+            const config = { provider: "grsai", model: "grsai::gpt-image-2.6", tudouGpt25Variant: variant, size: "1:1", quality };
+            const { body } = grsaiImageRequestSpec(config, "prompt", []);
+            rows.push(row("grsai", `GPT Image 2.6 · ${variant === "flare" ? "Flare" : "Sunburst"}`, `${GRSAI_ORIGIN}/v1/api/generate`,
+                { model: body.model, aspectRatio: body.aspectRatio }, grsaiImagePrice(config), "CNY"));
+        });
+    }
     return rows;
 }
 
@@ -93,7 +102,7 @@ export function priceCatalog() {
     const seen = new Set();
     // Admin-only models (GPT official: Mart 2.6, RH 2.5) are free for the admin and closed to users, so they are not priced.
     cached = [...tudouRows(), ...apimartRows(), ...runningHubRows(), ...grsaiRows(), ...textRows()].filter((r) => {
-        if (ADMIN_ONLY_MODELS.has(r.model)) return false;
+        if (isAdminOnlyModel(r.channel, r.model)) return false;
         const key = `${r.channel}|${r.model}|${r.spec}`;
         if (seen.has(key)) return false;
         seen.add(key);
