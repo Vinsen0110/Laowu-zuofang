@@ -13,5 +13,5 @@ test("土豆 GPT 2.6 Flare / Sunburst is read back from the node everywhere Mart
     assert.match(bundle, /tudouGpt25Variant:a\.tudouGpt25Variant\|\|an\.tudouGpt25Variant\|\|"flare"/, "saved settings keep it");
     assert.match(bundle, /tudouGpt25Variant:inheritedImageModel\?sourceNode\.metadata\?\.tudouGpt25Variant/, "new nodes inherit it");
     // The request model follows the chosen variant.
-    assert.match(bundle, /n==="gpt-image-2\.6"\?`gpt-image-2\.6-\$\{tudouGpt25Variant\(t\)\}-async`/);
+    assert.match(bundle, /n==="gpt-image-2\.6"\?`gpt-image-2\.6-\$\{tudouGpt25Variant\(t\)\}`/);
 });

@@ -14,8 +14,9 @@ const GPT_QUALITIES = ["low", "medium", "high"];
 const TUDOU_ORIGIN = "https://api.ai-tudou.net";
 
 // Tudou's request builder and prices live in the app bundle; mirrored here (CNY).
-// GPT image 2.6 (Flare and Sunburst) is a flat ¥0.07 per image, 1K/2K only.
-const TUDOU_GPT26_PRICE = 0.07;
+// GPT image 2.6 (Flare and Sunburst) is a flat ¥0.025 per image at 1K, 2K and 4K
+// (OpenAI-style synchronous API since 2026-11-18; the -async models were retired).
+const TUDOU_GPT26_PRICE = 0.025;
 
 function row(channel, label, target, body, cost, currency) {
     const { model, spec } = describeRequest(new URL(target), body);
@@ -41,8 +42,8 @@ function tudouRows() {
     // catch-all price (spec ""), saved for Flare and, through `also`, for Sunburst. It is a
     // fixed per-image price, so it shares the "固定" row with Mart.
     rows.push({
-        ...row("tudou", "GPT Image 2.6 · 固定", `${TUDOU_ORIGIN}/v1/images/generations/async`, { model: "gpt-image-2.6-flare-async" }, TUDOU_GPT26_PRICE, "CNY"),
-        also: ["gpt-image-2.6-sunburst-async"],
+        ...row("tudou", "GPT Image 2.6 · 固定", `${TUDOU_ORIGIN}/v1/images/generations`, { model: "gpt-image-2.6-flare" }, TUDOU_GPT26_PRICE, "CNY"),
+        also: ["gpt-image-2.6-sunburst"],
     });
     return rows;
 }

@@ -140,12 +140,12 @@ test("every catalog row can be priced and charged through the relay", async () =
     // 土豆 GPT 2.6 has one catalog row: saved once, it prices both variants at every resolution and quality.
     const { withPriceAliases } = await import("../account/catalog.js");
     const tudou26 = rows.find((r) => r.channel === "tudou" && r.label === "GPT Image 2.6 · 固定");
-    assert.deepEqual({ model: tudou26.model, spec: tudou26.spec, also: tudou26.also }, { model: "gpt-image-2.6-flare-async", spec: "", also: ["gpt-image-2.6-sunburst-async"] });
+    assert.deepEqual({ model: tudou26.model, spec: tudou26.spec, also: tudou26.also }, { model: "gpt-image-2.6-flare", spec: "", also: ["gpt-image-2.6-sunburst"] });
     await savePrices(db, withPriceAliases([{ channel: "tudou", model: tudou26.model, spec: tudou26.spec, price: "0.2" }]));
     for (const variant of ["flare", "sunburst"]) {
-        for (const [resolution, quality] of [["1k", "low"], ["2k", "high"]]) {
-            const body = { model: `gpt-image-2.6-${variant}-async`, resolution, quality, prompt: "x" };
-            const d = describeRequest(new URL("https://api.ai-tudou.net/v1/images/generations/async"), body);
+        for (const [path, size, quality] of [["generations", "1024x1024", "low"], ["edits", "2048x1152", "high"]]) {
+            const body = { model: `gpt-image-2.6-${variant}`, size, quality, n: 1, prompt: "x" };
+            const d = describeRequest(new URL(`https://api.ai-tudou.net/v1/images/${path}`), body);
             assert.equal(await findPrice(db, "tudou", d.model, d.spec), 200, `${variant} ${d.spec}`);
         }
     }
