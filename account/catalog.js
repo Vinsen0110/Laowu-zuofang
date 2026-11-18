@@ -38,9 +38,10 @@ function tudouRows() {
             { generationConfig: { imageConfig: { imageSize: r.toUpperCase() } } }, prices[i], "CNY")));
     }
     // 土豆 2.6 costs the same for both variants, every resolution and quality, so it has one
-    // catch-all price (spec ""), saved for Flare and, through `also`, for Sunburst.
+    // catch-all price (spec ""), saved for Flare and, through `also`, for Sunburst. It is a
+    // fixed per-image price, so it shares the "固定" row with Mart.
     rows.push({
-        ...row("tudou", "GPT Image 2.6", `${TUDOU_ORIGIN}/v1/images/generations/async`, { model: "gpt-image-2.6-flare-async" }, TUDOU_GPT26_PRICE, "CNY"),
+        ...row("tudou", "GPT Image 2.6 · 固定", `${TUDOU_ORIGIN}/v1/images/generations/async`, { model: "gpt-image-2.6-flare-async" }, TUDOU_GPT26_PRICE, "CNY"),
         also: ["gpt-image-2.6-sunburst-async"],
     });
     return rows;

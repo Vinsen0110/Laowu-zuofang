@@ -139,7 +139,7 @@ test("every catalog row can be priced and charged through the relay", async () =
     for (const [i, r] of rows.entries()) assert.equal(await findPrice(db, r.channel, r.model, r.spec), i + 1, `${r.label} ${r.spec}`);
     // 土豆 GPT 2.6 has one catalog row: saved once, it prices both variants at every resolution and quality.
     const { withPriceAliases } = await import("../account/catalog.js");
-    const tudou26 = rows.find((r) => r.channel === "tudou" && r.label === "GPT Image 2.6");
+    const tudou26 = rows.find((r) => r.channel === "tudou" && r.label === "GPT Image 2.6 · 固定");
     assert.deepEqual({ model: tudou26.model, spec: tudou26.spec, also: tudou26.also }, { model: "gpt-image-2.6-flare-async", spec: "", also: ["gpt-image-2.6-sunburst-async"] });
     await savePrices(db, withPriceAliases([{ channel: "tudou", model: tudou26.model, spec: tudou26.spec, price: "0.2" }]));
     for (const variant of ["flare", "sunburst"]) {
