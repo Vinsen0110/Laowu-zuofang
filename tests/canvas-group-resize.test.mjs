@@ -7,7 +7,7 @@ import {
 } from "../canvas-groups.js";
 
 const fixture = () => createCanvasGroup([
-    { id: "a", position: { x: 0, y: 100 }, width: 200, height: 100, metadata: { model: "gpt-image-2.5" } },
+    { id: "a", position: { x: 0, y: 100 }, width: 200, height: 100, metadata: { model: "gpt-image-2.6" } },
     { id: "b", position: { x: 300, y: 100 }, width: 200, height: 100, metadata: { model: "nano-banana-pro" } },
     { id: "other", position: { x: 700, y: 100 }, width: 200, height: 100 },
 ], ["a", "b"], () => "g");

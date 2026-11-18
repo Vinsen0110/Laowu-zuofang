@@ -5,7 +5,7 @@ import { runRunningHubImageGeneration } from "../runninghub-api.js";
 const config = {
     apiKey: "mock-key",
     provider: "runninghub",
-    model: "gpt-image-2.5",
+    model: "gpt-image-2.6",
     runningHubGpt25Mode: "fixed",
     runningHubGpt25Variant: "sunburst",
     quality: "4k",

@@ -102,7 +102,7 @@ test("bundle keeps Grsai generation, balance, and settings branches", () => {
     assert.match(bundle, /isGrsaiSite\(le\).*fetchGrsaiAccountCredits/);
     assert.match(bundle, /g\?\.provider==="grsai"\?y\.jsxs\("section",\{key:"balance-section:"/);
     assert.match(bundle, /children:"Grsai \\u8D26\\u6237\\u4F59\\u989D"/);
-    assert.match(bundle, /\["gpt-image-2","gpt-image-2-vip","gpt-image-2\.5","gpt-image-2\.6"\]/);
+    assert.match(bundle, /\["gpt-image-2","gpt-image-2-vip","gpt-image-2\.6"\]/);
     assert.match(bundle, /s&&\(n==="nano-banana-pro"\|\|n==="nano-banana-2\.1"\|\|n==="gpt-image-2\.6"\)\?grsaiImagePrice\(e\)/);
     assert.match(bundle, /s&&\(n==="gpt-image-2"\|\|n==="gpt-image-2-vip"\)\?\.2/);
     assert.match(bundle, /pr\(t\)==="gpt-image-2-vip"\?"gpt-image-2"/);
@@ -142,7 +142,6 @@ test("Grsai GPT image 2.6 has a catalog price per variant and resolution and is 
     // Same names as Mart's official models, which stay admin-only.
     assert.equal(isAdminOnlyModel("grsai", "gpt-image-2.6-flare"), false);
     assert.equal(isAdminOnlyModel("apimart", "gpt-image-2.6-flare"), true);
-    assert.equal(isAdminOnlyModel("runninghub", "rhart-image-g-2.5-official-token"), true);
 });
 
 test("Grsai GPT image 2.6 shows its variant and six qualities in the canvas", () => {

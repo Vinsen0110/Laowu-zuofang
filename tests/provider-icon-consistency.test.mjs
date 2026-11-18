@@ -44,7 +44,7 @@ test("Google canvas and settings icons use the same unfiltered local artwork", (
 
 test("OpenAI canvas and settings icons keep the same dark-mode white treatment", () => {
     const canvas = providerIcon("OpenAI");
-    for (const model of ["gpt-image-2", "gpt-image-2.5"]) {
+    for (const model of ["gpt-image-2", "gpt-image-2.6"]) {
         const settings = modelIcon(model);
         assert.equal(settings.props.src, "./icons/openai.svg");
         assert.equal(settings.props.className, canvas.props.className);
@@ -55,7 +55,7 @@ test("OpenAI canvas and settings icons keep the same dark-mode white treatment",
 test("provider icons reserve a stable nonshrinking square in both selectors", () => {
     for (const icon of [
         providerIcon("Google"), providerIcon("OpenAI"),
-        modelIcon("nano-banana-pro"), modelIcon("gpt-image-2.5"),
+        modelIcon("nano-banana-pro"), modelIcon("gpt-image-2.6"),
     ]) {
         assert.equal(icon.props.width, 16);
         assert.equal(icon.props.height, 16);

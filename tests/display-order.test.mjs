@@ -78,8 +78,8 @@ test("all site and ratio selectors use the shared display order", () => {
     assert.match(bundle, /orderSiteChannels\(siteConfig\.channels\|\|\[\]\)\.map/);
     assert.match(bundle, /orderModelReferences\(Array\.from\(new Set/);
     assert.match(bundle, /orderModelReferences\(CS\(e,"image"\)\.filter\(mke\)\)/);
-    assert.match(bundle, /ratioPresets=orderRatioPresets\(isRunningHub25\?runningHub25RatioOptions\(e,\[\.\.\.pg,\.\.\.GPT_IMAGE_EXTRA_RATIO_PRESETS\]\):isGptImageModel\?/);
-    assert.match(bundle, /items:orderRatioPresets\(isRunningHub25\?runningHub25RatioOptions\(t,\[\.\.\.pX,\.\.\.GPT_IMAGE_EXTRA_RATIO_PRESETS\]\):v\?/);
+    assert.match(bundle, /ratioPresets=orderRatioPresets\(isGptImageModel\?/);
+    assert.match(bundle, /items:orderRatioPresets\(v\?/);
 });
 
 test("users see numbered channels, admins see provider names", async () => {

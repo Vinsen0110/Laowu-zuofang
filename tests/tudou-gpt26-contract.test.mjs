@@ -40,8 +40,9 @@ test("土豆 offers GPT image 2.6 instead of 2.5", () => {
     assert.deepEqual(CHANNELS.find((c) => c.id === "tudou").models, ["nano-banana-2.1", "nano-banana-pro", "gpt-image-2.6", "gemini-3.8-flash"]);
 });
 
-test("the canvas shows GPT image 2.6; other sites keep GPT image 2.5", () => {
-    assert.match(bundle, /t\.startsWith\("gpt-image-2\.6"\)\?"GPT image 2\.6":t\.startsWith\("gpt-image-2\.5"\)\?"GPT image 2\.5"/);
+test("the canvas shows GPT image 2.6 and no longer labels GPT image 2.5", () => {
+    assert.match(bundle, /t\.startsWith\("gpt-image-2\.6"\)\?"GPT image 2\.6":t==="gpt-image-2-vip"/);
+    assert.doesNotMatch(bundle, /"GPT image 2\.5"/);
     // The node toolbar's model button too, not only the menu.
     assert.match(bundle, /pr\(t\)==="gpt-image-2\.6"\?"GPT image 2\.6":uy\(e,t\)/);
     assert.match(priceTable, /GPT Image 2\.6 · Flare/);

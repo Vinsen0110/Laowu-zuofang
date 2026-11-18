@@ -211,15 +211,15 @@ test("reads are limited to task polling; balance endpoints are blocked", async (
     assert.equal(ok.status, 200);
 });
 
-test("official GPT 2.5 is admin-only, and admin generations are free", async () => {
+test("official GPT 2.6 is admin-only, and admin generations are free", async () => {
     const seen = [];
     await assert.rejects(
-        relay(db, { ...user, role: "user" }, relayRequest(GEN_URL, { body: { model: "gpt-image-2.5-flare", quality: "high" } }), { fetchImpl: upstream(200, seen) }),
+        relay(db, { ...user, role: "user" }, relayRequest(GEN_URL, { body: { model: "gpt-image-2.6-flare", quality: "high" } }), { fetchImpl: upstream(200, seen) }),
         /仅管理员可用/,
     );
     assert.equal(seen.length, 0);
     const before = await balance();
-    const res = await relay(db, { ...user, role: "admin" }, relayRequest(GEN_URL, { body: { model: "gpt-image-2.5-flare", quality: "high" } }), { fetchImpl: upstream(200, seen) });
+    const res = await relay(db, { ...user, role: "admin" }, relayRequest(GEN_URL, { body: { model: "gpt-image-2.6-flare", quality: "high" } }), { fetchImpl: upstream(200, seen) });
     assert.equal(res.status, 200);
     assert.equal(seen[0].auth, "Bearer sk-site-key");
     assert.equal(await balance(), before);

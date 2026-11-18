@@ -366,7 +366,7 @@ button.lw-gate-face:hover{transform:scale(1.04)}
 
   const SITE_SHORT = { tudou: "土豆", apimart: "Mart", grsai: "Grsai", runninghub: "RH" };
 
-  // GPT Image 2.5 "official" mode is admin-only. The app bundle reads this flag
+  // GPT Image 2.6 "official" mode (Mart) is admin-only. The app bundle reads this flag
   // and the shared option list; the server refuses official requests from users.
   // Users and guests: keep the browser's developer tools shut (the 土豆 key lives in
   // this page). A determined user can still get around it; the owner accepted that.

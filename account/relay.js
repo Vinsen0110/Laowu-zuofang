@@ -31,8 +31,7 @@ const HOSTS = [
 // GPT Image official (usage-billed) models are for admins only. Names repeat across channels
 // (Grsai's per-call gpt-image-2.6-flare is open to users), so the list is per channel.
 export const ADMIN_ONLY_MODELS = {
-    apimart: new Set(["gpt-image-2.6-flare", "gpt-image-2.6-sunburst", "gpt-image-2.5-flare", "gpt-image-2.5-sunburst"]),
-    runninghub: new Set(["rhart-image-g-2.5-official-token"]),
+    apimart: new Set(["gpt-image-2.6-flare", "gpt-image-2.6-sunburst"]),
 };
 export const isAdminOnlyModel = (channel, model) => Boolean(ADMIN_ONLY_MODELS[channel]?.has(model));
 // Channels only the admin may use (none for now: 土豆 is open to users, called from their browser).

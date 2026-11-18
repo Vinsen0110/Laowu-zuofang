@@ -1,6 +1,5 @@
 const DISPLAY_NAME_MAP = new Map([
   ["gpt-image-2.6", "GPT image 2.6"],
-  ["gpt-image-2.5", "GPT image 2.5"],
   ["gpt-image-2-vip", "GPT image 2"],
   ["gpt-image-2", "GPT image 2"],
   ["nano-banana-2.1", "Nano Banana 2.1"],

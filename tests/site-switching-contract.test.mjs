@@ -148,7 +148,7 @@ test("each site keeps its own image model: 2.1 → a site without 2.1 → back a
     vm.runInContext(source, scope);
     const channels = [
         { id: "tudou", baseUrl: "", apiFormat: "openai", models: ["nano-banana-pro", "nano-banana-2.1"] },
-        { id: "runninghub", baseUrl: "", apiFormat: "openai", models: ["nano-banana-pro", "gpt-image-2.5"] },
+        { id: "runninghub", baseUrl: "", apiFormat: "openai", models: ["nano-banana-pro", "gpt-image-2.6"] },
     ];
     let config = { activeSiteId: "tudou", channels, imageModel: "tudou::nano-banana-2.1", model: "tudou::nano-banana-2.1", imageModelBySite: {} };
     config = { ...config, ...scope.buildSiteConfigPatch(config, "runninghub") };

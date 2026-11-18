@@ -7,7 +7,8 @@ const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const bundle = await readFile(new URL("../assets/index-B2KJ37fm.js", import.meta.url), "utf8");
 
 test("maps the Grsai backend VIP model to the shared UI name", () => {
-  assert.match(source, /\["gpt-image-2\.5",\s*"GPT image 2\.5"\]/);
+  assert.match(source, /\["gpt-image-2\.6",\s*"GPT image 2\.6"\]/);
+  assert.doesNotMatch(source, /gpt-image-2\.5/);
   assert.match(source, /\["nano-banana-pro",\s*"Nano Banana Pro"\]/);
   assert.match(source, /\["gemini-3\.7-flash",\s*"Gemini 3\.7 Flash"\]/);
   assert.match(source, /\["gemini-3\.8-flash",\s*"Gemini 3\.8 Flash"\]/);
@@ -32,5 +33,5 @@ test("loads the display-only model label layer after the app bundle", () => {
 
 
 test("image model labels use the requested casing and spacing", () => {
-    assert.match(bundle, /t===\"nano-banana-2\.1\"\?\"Nano Banana 2\.1\":t\.startsWith\(\"nano-banana-pro\"\)\?\"Nano Banana Pro\":t\.startsWith\(\"gpt-image-2\.6\"\)\?\"GPT image 2\.6\":t\.startsWith\(\"gpt-image-2\.5\"\)\?\"GPT image 2\.5\"/);
+    assert.match(bundle, /t===\"nano-banana-2\.1\"\?\"Nano Banana 2\.1\":t\.startsWith\(\"nano-banana-pro\"\)\?\"Nano Banana Pro\":t\.startsWith\(\"gpt-image-2\.6\"\)\?\"GPT image 2\.6\":t===\"gpt-image-2-vip\"/);
 });

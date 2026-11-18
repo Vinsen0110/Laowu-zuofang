@@ -413,7 +413,7 @@ test("APIMart GPT Image 2 exposes isolated fixed and official controls", () => {
     assert.match(bundle, /APIMART_GPT_OFFICIAL_QUALITY_OPTIONS=\[\{value:"auto",label:"Auto"\},\.\.\.GPT_IMAGE_QUALITY_OPTIONS\]/);
     assert.match(bundle, /APIMART_GPT_OUTPUT_FORMAT_OPTIONS=\[\{value:"png",label:"PNG"\},\{value:"jpeg",label:"JPEG"\},\{value:"webp",label:"WebP"\}\]/);
     assert.match(bundle, /APIMART_GPT_BACKGROUND_OPTIONS=\[\{value:"auto",label:"自动"\},\{value:"opaque",label:"不透明"\},\{value:"transparent",label:"透明"\}\]/);
-    assert.match(bundle, /\(!e\?\.model&&!e\?\.imageModel\|\|\["gpt-image-2\.5","gpt-image-2\.6"\]\.includes\(pr\(e\?\.model\|\|e\?\.imageModel\)\)\?\["fixed","auto","low","medium","high","xhigh","max"\]:\["fixed","low","medium","high"\]\)\.includes\(r\)/);
+    assert.match(bundle, /\(!e\?\.model&&!e\?\.imageModel\|\|pr\(e\?\.model\|\|e\?\.imageModel\)==="gpt-image-2\.6"\?\["fixed","auto","low","medium","high","xhigh","max"\]:\["fixed","low","medium","high"\]\)\.includes\(r\)/);
     assert.match(bundle, /isApiMartGptImageConfig\?y\.jsxs\(y\.Fragment/);
     assert.match(bundle, /\(apiMartModeValue==="official"\)\?y\.jsxs\(y\.Fragment/);
     assert.match(bundle, /options:APIMART_GPT_OUTPUT_FORMAT_OPTIONS\.map/);
@@ -473,7 +473,7 @@ test("Mart GPT 2.6 fixed mode shows a quality picker in the node toolbar and set
     assert.match(bundle, /apimartGpt25Variant:u,apimartFixedQuality:apiMartFixedQuality\(e\)/);
     assert.equal((bundle.match(/apimartGpt25Variant:/g) || []).length, (bundle.match(/apimartFixedQuality:/g) || []).length);
     // Official 2.6 keeps Auto / XHigh / Max when params are normalized, as 2.5 did.
-    assert.match(bundle, /\["gpt-image-2\.5","gpt-image-2\.6"\]\.includes\(pr\(e\?\.model\|\|e\?\.imageModel\)\)\?\["fixed","auto","low","medium","high","xhigh","max"\]/);
+    assert.match(bundle, /pr\(e\?\.model\|\|e\?\.imageModel\)==="gpt-image-2\.6"\?\["fixed","auto","low","medium","high","xhigh","max"\]/);
 });
 
 test("GPT Image 2.6 official mode is admin-only", () => {

@@ -4,7 +4,7 @@
 
 import { APIMART_ORIGIN, apiMartImageRequestSpec } from "./apimart-api.js?v=20261117-mart26-01";
 import { GRSAI_ORIGIN, grsaiImageRequestSpec } from "./grsai-api.js?v=20261117-grsai26-01";
-import { RUNNINGHUB_ORIGIN, runningHubImageRequestSpec } from "./runninghub-api.js?v=20261118-norh25-01";
+import { RUNNINGHUB_ORIGIN, runningHubImageRequestSpec } from "./runninghub-api.js?v=20261118-clean25-01";
 import { describeRequest } from "./account/describe.js?v=20261117-grsai26-01";
 
 const TUDOU_ORIGIN = "https://api.ai-tudou.net";
@@ -39,7 +39,7 @@ function tudouRequest(config) {
     if (model.startsWith("nano-banana-pro") || model === "gemini-3-pro-image-preview") {
         return { target: `${TUDOU_ORIGIN}/v1beta/models/gemini-3-pro-image-preview:generateContent`, body: { generationConfig: { imageConfig: { imageSize: resolution.toUpperCase() } } } };
     }
-    if (model === "gpt-image-2.6" || model === "gpt-image-2.5") {
+    if (model === "gpt-image-2.6") {
         const variant = String(config?.tudouGpt25Variant || "flare").trim().toLowerCase() === "sunburst" ? "sunburst" : "flare";
         return { target: `${TUDOU_ORIGIN}/v1/images/generations/async`, body: { model: `${model}-${variant}-async`, resolution, quality: tudouQuality(config) } };
     }
