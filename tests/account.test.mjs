@@ -311,3 +311,38 @@ test("direct refunds are atomic: parallel refunds of one charge pay out once; a 
     await assert.rejects(chargeDirect(db, racer, { url, body }), /暂时不可用/);
     await saveChannel(db, { id: "tudou", enabled: true });
 });
+
+test("土豆 reference upload: signed-in only, image bytes passed on with the site key, 土豆 link returned", async () => {
+    const { saveChannel } = await import("../account/channels.js");
+    await saveChannel(db, { id: "tudou", apiKey: "sk-tudou-upload-1" });
+    await register(db, { email: "upload-user@test.com", password: "password123" });
+    const cookie = cookieOf(await call("/login", { method: "POST", body: { email: "upload-user@test.com", password: "password123" } }));
+    const upload = (bytes, type, extra = {}) => handleAccountRequest(new Request("http://127.0.0.1:4173/api/account/tudou-upload", {
+        method: "POST",
+        headers: { "Content-Type": type, ...(extra.noCookie ? {} : { Cookie: cookie }) },
+        body: bytes,
+    }), { db });
+
+    const realFetch = globalThis.fetch;
+    const sent = [];
+    let reply = { url: "https://img-cdn.ai-tudou.net/i/2026/11/22/abc.png", size: 4, type: "image/png" };
+    globalThis.fetch = async (url, init) => {
+        sent.push({ url: String(url), auth: init.headers.Authorization, type: init.headers["Content-Type"], bytes: init.body.byteLength });
+        return Response.json(reply);
+    };
+    try {
+        const ok = await upload(new Uint8Array([1, 2, 3, 4]), "image/png");
+        assert.equal(ok.status, 200);
+        assert.deepEqual(await ok.json(), { url: "https://img-cdn.ai-tudou.net/i/2026/11/22/abc.png" });
+        assert.deepEqual(sent, [{ url: "https://uploads.ai-tudou.net/upload", auth: "Bearer sk-tudou-upload-1", type: "image/png", bytes: 4 }]);
+
+        assert.equal((await upload(new Uint8Array([1]), "image/png", { noCookie: true })).status, 401);
+        assert.equal((await upload(new Uint8Array([1]), "text/plain")).status, 415);
+        assert.equal((await upload(new Uint8Array(15 * 1024 * 1024 + 1), "image/png")).status, 413);
+        reply = { url: "https://evil.example.com/a.png" };
+        assert.equal((await upload(new Uint8Array([1]), "image/webp")).status, 502);
+        assert.equal(sent.length, 2);
+    } finally {
+        globalThis.fetch = realFetch;
+    }
+});

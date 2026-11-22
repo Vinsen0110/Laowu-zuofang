@@ -196,7 +196,8 @@ async function proxyTudouApi(request, response, requestUrl) {
             && isTudouGeminiImageTarget(target)
             && String(request.headers["content-type"] || "").includes("application/json");
         if (isGeminiImageRequest) {
-            const payload = JSON.parse((await readRequestBody(request)).toString("utf8"));
+            // Nano Banana references are inline (up to 14 MB of images, a third more as base64).
+            const payload = JSON.parse((await readRequestBody(request, 24 * 1024 * 1024)).toString("utf8"));
             await proxyTudouGeminiStream(request, response, target, headers, payload, controller);
             return;
         }
@@ -267,7 +268,9 @@ async function serveAccountApi(request, response, requestUrl) {
     }
     // Generation requests carry prompts and reference images; everything else is small.
     const isRelay = requestUrl.pathname === "/api/account/relay";
-    const body = method === "GET" || method === "HEAD" ? undefined : await readRequestBody(request, isRelay ? 40 * 1024 * 1024 : 64 * 1024);
+    const isTudouUpload = requestUrl.pathname === "/api/account/tudou-upload";
+    const maxBytes = isRelay ? 40 * 1024 * 1024 : isTudouUpload ? 15 * 1024 * 1024 + 1 : 64 * 1024;
+    const body = method === "GET" || method === "HEAD" ? undefined : await readRequestBody(request, maxBytes);
     const abort = new AbortController();
     response.on("close", () => { if (!response.writableFinished) abort.abort(); });
     const webResponse = await handleAccountRequest(new Request(requestUrl, { method, headers, body, signal: abort.signal }));
