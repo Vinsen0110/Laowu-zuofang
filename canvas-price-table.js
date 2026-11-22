@@ -174,12 +174,12 @@
     const isAdmin = globalThis.__lwIsAdmin === true;
     const names = isAdmin
       ? { runninghub: "RH", apimart: "Mart", tudou: "Tudou", grsai: "Grsai" }
-      : { tudou: "渠道 1", apimart: "渠道 2", grsai: "渠道 3", runninghub: "渠道 4" };
-    const order = ["tudou", "apimart", "grsai", "runninghub"];
+      : { tudou: "渠道 1", apimart: "渠道 2", runninghub: "渠道 3", grsai: "渠道 4" };
+    const order = ["tudou", "apimart", "runninghub", "grsai"];
     const resolutions = ["1k", "2k", "4k"];
     channels.slice().sort((a, b) => order.indexOf(a.provider) - order.indexOf(b.provider)).forEach((channel) => {
       const provider = channel.provider;
-      if (!names[provider]) return;
+      if (!names[provider] || globalThis.__lwDisabledSites?.has(provider)) return;
       const site = names[provider];
       const currency = isAdmin && ["runninghub", "apimart"].includes(provider) ? "USD" : "CNY";
       const models = Array.isArray(channel.models) ? channel.models : [];

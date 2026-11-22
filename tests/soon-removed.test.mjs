@@ -36,9 +36,9 @@ test("no running file mentions Soon or its hosts", async () => {
 });
 
 test("server and admin only know the four remaining channels", async () => {
-    assert.deepEqual(CHANNELS.map((c) => c.id), ["tudou", "apimart", "grsai", "runninghub"]);
-    assert.deepEqual(SITE_DISPLAY_ORDER, ["tudou", "apimart", "grsai", "runninghub"]);
-    assert.deepEqual(CHANNEL_LABELS, { tudou: "渠道 1", apimart: "渠道 2", grsai: "渠道 3", runninghub: "渠道 4" });
+    assert.deepEqual(CHANNELS.map((c) => c.id), ["tudou", "apimart", "runninghub", "grsai"]);
+    assert.deepEqual(SITE_DISPLAY_ORDER, ["tudou", "apimart", "runninghub", "grsai"]);
+    assert.deepEqual(CHANNEL_LABELS, { tudou: "渠道 1", apimart: "渠道 2", runninghub: "渠道 3", grsai: "渠道 4" });
     assert.deepEqual(SITE_CHANNEL_LABELS, CHANNEL_LABELS);
     assert.equal(priceCatalog().some((r) => r.channel === "soon"), false, "no Soon rows in the admin price catalog");
     for (const host of ["api.soonstudio.ai", "api-hk.soonstudio.ai", "api-us.soonstudio.ai"]) {
@@ -68,7 +68,7 @@ test("Soon data already in the database stays stored but is hidden from the admi
 
 test("admin page lists no Soon section and no Soon wording", async () => {
     const admin = await read("admin.html");
-    assert.match(admin, /const COLS = \["tudou", "apimart", "grsai", "runninghub"\];/);
+    assert.match(admin, /const COLS = \["tudou", "apimart", "runninghub", "grsai"\];/);
     assert.match(admin, /RH、Grsai、APIMart 的结果图从广州存储下载/);
     assert.match(admin, /RH、Grsai、APIMart 的结果图由浏览器直接从平台下载/);
 });
