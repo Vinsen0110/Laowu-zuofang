@@ -87,6 +87,45 @@ function sameOrigin(request) {
     }
 }
 
+const TUDOU_UPLOAD_URL = "https://uploads.ai-tudou.net/upload";
+export const TUDOU_UPLOAD_MAX_BYTES = 15 * 1024 * 1024;
+const TUDOU_UPLOAD_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
+
+// One reference image (raw bytes, Content-Type = its type) → 土豆's public link (kept 24 hours).
+async function uploadToTudou(db, request) {
+    const type = String(request.headers.get("content-type") || "").split(";", 1)[0].trim().toLowerCase();
+    if (!TUDOU_UPLOAD_TYPES.has(type)) throw new AccountError(415, "bad_type", "参考图只支持 PNG、JPG、WebP");
+    const bytes = await request.arrayBuffer();
+    if (!bytes.byteLength) throw new AccountError(400, "empty", "参考图为空");
+    if (bytes.byteLength > TUDOU_UPLOAD_MAX_BYTES) throw new AccountError(413, "too_large", "参考图超过 15 MB");
+    const tudou = await channelConfig(db, "tudou");
+    if (!tudou.enabled || !tudou.apiKey) throw new AccountError(503, "channel_off", "这个渠道暂时不可用，请换一个渠道");
+    let upstream;
+    try {
+        upstream = await fetch(TUDOU_UPLOAD_URL, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${tudou.apiKey}`, "Content-Type": type },
+            body: bytes,
+            redirect: "error",
+            signal: request.signal,
+        });
+    } catch (error) {
+        if (request.signal?.aborted) throw error;
+        throw new AccountError(502, "upload_failed", "参考图上传失败，请重试");
+    }
+    const result = await upstream.json().catch(() => ({}));
+    if (!upstream.ok) {
+        console.error("Tudou upload failed:", upstream.status, String(result?.error || "").slice(0, 120));
+        throw new AccountError(502, "upload_failed", `参考图上传失败（${upstream.status}），请重试`);
+    }
+    let link;
+    try { link = new URL(result.url); } catch {}
+    if (!link || link.protocol !== "https:" || !(link.hostname === "ai-tudou.net" || link.hostname.endsWith(".ai-tudou.net"))) {
+        throw new AccountError(502, "upload_failed", "参考图上传后没有拿到有效链接");
+    }
+    return { url: link.href };
+}
+
 export async function handleAccountRequest(request, { db: injectedDb } = {}) {
     const url = new URL(request.url);
     // On Vercel the rewrite passes the sub-path as ?path=...; locally it stays in the URL path.
@@ -166,6 +205,11 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
         if (path === "/tudou-key" && method === "GET") {
             const tudou = await channelConfig(db, "tudou");
             return json(200, { apiKey: tudou.enabled ? tudou.apiKey : "" });
+        }
+        // 土豆's own upload (uploads.ai-tudou.net) has no CORS, so the browser sends GPT 2.6
+        // reference images here and this server passes them on with the site key.
+        if (path === "/tudou-upload" && method === "POST") {
+            return json(200, await uploadToTudou(db, request));
         }
         if (path === "/direct/charge" && method === "POST") {
             return json(200, await chargeDirect(db, me, await body(request)));

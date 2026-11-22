@@ -6,7 +6,7 @@
         <meta name="description" content="老屋作坊创作工具" />
         <link rel="icon" type="image/png" href="./kitty.png" />
         <link rel="preload" href="./assets/index-DT58oPsm.css" as="style" crossorigin>
-        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261119-frame-01" crossorigin>
+        <link rel="modulepreload" href="./assets/index-B2KJ37fm.js?v=20261122-tudouref-01" crossorigin>
         <link rel="preload" href="./icons/gemini.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/openai.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="./icons/claude.svg" as="image" type="image/svg+xml" />
@@ -223,6 +223,19 @@
                                     imageTarget.hostname.endsWith(".upload.apimart.ai"));
                             if (isApiMartResult) {
                                 return nativeFetch(hostedProxyOrigin + "/api/apimart-image?url=" + encodeURIComponent(imageTarget.href), init);
+                            }
+                        } catch (error) {}
+                    }
+                    // 土豆 Nano Banana answers with the whole picture as base64 (about 28 MB at 4K).
+                    // Mainland lines to 土豆 (US) crawl on downloads that size (measured 2026-11-22:
+                    // 261 s for 27.8 MB), so these go through our Hong Kong server, which is fast to
+                    // both 土豆 and the user. Everything else still goes straight to 土豆.
+                    if (!useLocalTudouProxy && method === "POST" && rawUrl) {
+                        try {
+                            var geminiTarget = new URL(rawUrl, location.href);
+                            if (geminiTarget.hostname === "api.ai-tudou.net" &&
+                                /^\/v1beta\/models\/[^/]+:generateContent$/.test(geminiTarget.pathname)) {
+                                return nativeFetch(hostedProxyOrigin + "/api/tudou" + geminiTarget.pathname + geminiTarget.search, init);
                             }
                         } catch (error) {}
                     }
@@ -698,12 +711,12 @@
                 else document.addEventListener("DOMContentLoaded", observe, { once: true });
             })();
         </script>
-        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261119-frame-01"></script>
+        <script type="module" crossorigin src="./assets/index-B2KJ37fm.js?v=20261122-tudouref-01"></script>
       <script type="module" src="./display-model-names.js?v=20261118-tudou26sync-01"></script>
       <script type="module" src="./canvas-price-table.js?v=20261118-tudou26sync-01"></script>
       <script src="./prevent-canvas-drag-download.js?v=20260827-01"></script>
       <script src="./avatar.js?v=20261022-avatar-01"></script>
-      <script src="./account-ui.js?v=20261118-tudou26sync-01"></script>
+      <script src="./account-ui.js?v=20261122-tudouref-01"></script>
       <script src="./canvas-polish.js?v=20261023-reveal-02"></script>
       <link rel="stylesheet" crossorigin href="./assets/index-DT58oPsm.css">
       <link rel="stylesheet" href="./theme.css?v=20261106-nosoon-01">

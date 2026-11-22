@@ -34,7 +34,7 @@ function checkAbort(signal) {
     if (signal?.aborted) throw signal.reason || new DOMException("Aborted", "AbortError");
 }
 
-async function decodeImage(blob) {
+export async function decodeImage(blob) {
     if (typeof createImageBitmap === "function") {
         try {
             const image = await createImageBitmap(blob, { imageOrientation: "from-image" });
@@ -56,7 +56,7 @@ async function decodeImage(blob) {
     }
 }
 
-async function encodeImage(image, width, height, quality) {
+export async function encodeImage(image, width, height, quality) {
     const canvas = typeof OffscreenCanvas === "function"
         ? new OffscreenCanvas(width, height)
         : Object.assign(document.createElement("canvas"), { width, height });

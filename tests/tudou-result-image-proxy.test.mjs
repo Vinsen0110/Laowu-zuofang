@@ -40,3 +40,15 @@ test("服务器上的 /api/tudou-image 只接受土豆的 https 图片地址", (
     assert.match(body, /target\.hostname === "ai-tudou\.net" \|\| target\.hostname\.endsWith\("\.ai-tudou\.net"\)/);
     assert.match(body, /target\.hostname === "api\.ai-tudou\.net"/);
 });
+
+test("线上土豆香蕉出图（generateContent）经香港服务器转发，其他土豆接口仍直连", () => {
+    const start = indexHtml.indexOf("var geminiTarget = new URL(rawUrl, location.href);");
+    assert.notEqual(start, -1);
+    const branch = indexHtml.slice(indexHtml.lastIndexOf("if (", start), indexHtml.indexOf("} catch (error) {}", start));
+    assert.match(branch, /if \(!useLocalTudouProxy && method === "POST" && rawUrl\)/);
+    assert.match(branch, /geminiTarget\.hostname === "api\.ai-tudou\.net"/);
+    assert.match(branch, /\/\^\\\/v1beta\\\/models\\\/\[\^\/\]\+:generateContent\$\/\.test\(geminiTarget\.pathname\)/);
+    assert.match(branch, /hostedProxyOrigin \+ "\/api\/tudou" \+ geminiTarget\.pathname \+ geminiTarget\.search/);
+    // 服务器收香蕉请求体放宽到 24 MB（参考图内联）。
+    assert.match(previewServer, /readRequestBody\(request, 24 \* 1024 \* 1024\)/);
+});

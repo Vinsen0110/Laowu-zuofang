@@ -345,7 +345,10 @@ button.lw-gate-face:hover{transform:scale(1.04)}
   globalThis.__lwDirectCharge = async (url, body) => {
     let result;
     try {
-      result = await api("/direct/charge", { method: "POST", body: { url, body } });
+      // The server prices by model / size / count only; Nano Banana requests carry their
+      // reference images inline, which would only make this call megabytes long.
+      const summary = body && typeof body === "object" ? JSON.parse(JSON.stringify(body, (k, v) => (k === "inlineData" ? undefined : v))) : body;
+      result = await api("/direct/charge", { method: "POST", body: { url, body: summary } });
     } catch (error) {
       if (/余额不足/.test(error.message)) window.dispatchEvent(new CustomEvent("lw-insufficient"));
       throw error;
