@@ -251,7 +251,7 @@ test("balance refresh can target a single site", async () => {
     } });
     assert.deepEqual(result.items.map((i) => i.id), ["apimart"]);
     assert.ok(seen.every((u) => u.includes("apimart")));
-    assert.equal((await listChannels(db)).find((c) => c.id === "runninghub").channelLabel, "渠道 4");
+    assert.equal((await listChannels(db)).find((c) => c.id === "runninghub").channelLabel, "渠道 3");
 });
 
 test("users never see supplier hosts: masked targets, scrubbed errors, proxied result URLs", async () => {

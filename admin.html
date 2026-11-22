@@ -115,6 +115,10 @@ button.primary.is-busy::after,button.danger-solid.is-busy::after,button.dark.is-
 .text-link{display:inline-flex;align-items:center;gap:2px;color:var(--brand);font-size:13px;font-weight:500;text-decoration:none}
 .text-link:hover{text-decoration:underline;text-underline-offset:3px}
 label.field{display:flex;flex-direction:column;gap:6px;color:var(--ink-2);font-size:13px;font-weight:500}
+label.check-field{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r-sm);color:var(--ink);font-size:13px;font-weight:500;cursor:pointer}
+label.check-field input{margin:2px 0 0;width:16px;height:16px;accent-color:var(--brand)}
+label.check-field small{display:block;margin-top:3px;color:var(--muted);font-weight:400;line-height:1.5}
+.ch-card[data-off="1"] .ch-amount,.ch-card[data-off="1"] .gauge{opacity:.45}
 .chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .chip{height:28px;padding:0 11px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--panel);color:var(--ink-2);font-size:13px;font-weight:500}
 .chip:hover:not(:disabled){border-color:var(--line-h);color:var(--ink)}
@@ -561,8 +565,8 @@ dialog::backdrop{background:rgb(29 33 41 / .32)}
   let drawerIsNew = false;
   const adj = { amount: "", note: "" };
 
-  const COLS = ["tudou", "apimart", "grsai", "runninghub"];
-  const CHANNEL_NAME = { tudou: "渠道 1", apimart: "渠道 2", grsai: "渠道 3", runninghub: "渠道 4" };
+  const COLS = ["tudou", "apimart", "runninghub", "grsai"];
+  const CHANNEL_NAME = { tudou: "渠道 1", apimart: "渠道 2", runninghub: "渠道 3", grsai: "渠道 4" };
   const RES = ["1k", "2k", "4k"];
   const chName = (id) => channels.find((c) => c.id === id)?.name || id;
   const displayName = (u) => u.customName || u.username.split("@")[0];
@@ -798,8 +802,9 @@ dialog::backdrop{background:rgb(29 33 41 / .32)}
     const note = state === "no_key" ? "还没有填写 API Key"
       : state === "error" ? (b?.message || "查询失败")
       : [b?.detail, threshold ? `提醒线 ${c.unit}${threshold}` : ""].filter(Boolean).join("，");
-    return `<article class="ch-card ${loading ? "is-loading" : ""}" data-state="${state}">
-      <div class="ch-top"><span class="ch-badge">${esc(String(c.name).slice(0, 1).toUpperCase())}</span><div class="ch-name"><b>${esc(c.name)}</b><small>${esc(c.channelLabel || "")}</small></div>${label ? `<span class="tag ${tag}">${label}</span>` : ""}</div>
+    const off = c.enabled === false;
+    return `<article class="ch-card ${loading ? "is-loading" : ""}" data-state="${state}" data-off="${off ? 1 : 0}">
+      <div class="ch-top"><span class="ch-badge">${esc(String(c.name).slice(0, 1).toUpperCase())}</span><div class="ch-name"><b>${esc(c.name)}</b><small>${esc(c.channelLabel || "")}</small></div>${off ? `<span class="tag">已关闭</span>` : label ? `<span class="tag ${tag}">${label}</span>` : ""}</div>
       <div class="ch-amount">${loading && balance == null ? '<span class="skel"></span>' : esc(fmtBal(balance, c.unit))}</div>
       <div class="gauge" aria-hidden="true"><i data-fill="${fill}"></i>${threshold ? `<em style="--at:${threshold / full}"></em>` : ""}</div>
       <p class="ch-note">${esc(note)}</p>
@@ -1134,8 +1139,8 @@ dialog::backdrop{background:rgb(29 33 41 / .32)}
             <div class="acts"><button class="primary" type="submit">保存</button></div>
           </form>
         </section>
-        <section class="panel">
-          <div class="panel-head"><div><h2>${ic("image")}图床 Cloudinary</h2><p class="sub">管理员带参考图生成时用；普通用户在画布设置里填自己的</p></div>
+        <section class="panel" ${channels.find((c) => c.id === "grsai")?.enabled === false ? 'style="display:none"' : ""}>
+          <div class="panel-head"><div><h2>${ic("image")}图床 Cloudinary</h2><p class="sub">只有 Grsai 带参考图生成时用（土豆、Mart、RH 用各自的上传）；普通用户在画布设置里填自己的。Grsai 关着时这一块会隐藏</p></div>
             <a class="link-btn" href="https://console.cloudinary.com/settings/api-keys" target="_blank" rel="noopener">在哪里找${ICON.ext}</a></div>
           <form class="panel-body stack" id="cloud-form" autocomplete="off">
             <label class="field" for="cl-name">Cloud Name<input id="cl-name" name="cloudName" value="${esc(cloud.cloudName)}"></label>
@@ -1189,6 +1194,7 @@ dialog::backdrop{background:rgb(29 33 41 / .32)}
       ${c.extraKey ? `<label class="field">${esc(c.extraKey)}
         ${secret(`<input name="apiKey2" type="password" autocomplete="off" placeholder="${c.hasKey2 ? "已设置 " + esc(c.key2Preview) + "，留空不修改" : "没有可以不填"}">`, `channel:${c.id}:apiKey2`)}</label>` : ""}
       <label class="field">余额低于多少提醒（${esc(c.unit)}）<input name="alertThreshold" type="number" step="0.01" min="0" value="${c.alertThreshold}"></label>
+      <label class="check-field"><input name="enabled" type="checkbox" ${c.enabled === false ? "" : "checked"}><span>开放这个渠道<small>关闭后，你和用户的画布里都看不到它，也不能用它生成${c.id === "grsai" ? "；Grsai 关着时也不需要设置图床" : ""}。</small></span></label>
       <div class="dlg-acts"><button class="ghost" type="button" data-close-dialog>取消</button><button class="primary" type="submit">保存</button></div>
     </form>`;
     chDialog.showModal();
@@ -1289,7 +1295,7 @@ dialog::backdrop{background:rgb(29 33 41 / .32)}
         loadLedger(u.id);
       } else if (form.dataset.channel) {
         const data = Object.fromEntries(new FormData(form).entries());
-        const body = { id: form.dataset.channel, alertThreshold: data.alertThreshold };
+        const body = { id: form.dataset.channel, alertThreshold: data.alertThreshold, enabled: form.enabled.checked };
         if (data.apiKey) body.apiKey = data.apiKey;
         if (data.apiKey2) body.apiKey2 = data.apiKey2;
         await api("/admin/channels", body);

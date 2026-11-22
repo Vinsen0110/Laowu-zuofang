@@ -1,15 +1,19 @@
 // Keep the visible site selector aligned with the user's preferred workflow.
-export const SITE_DISPLAY_ORDER = ["tudou", "apimart", "grsai", "runninghub"];
+// Sites with their own reference upload first; Grsai (needs the user's Cloudinary) last.
+export const SITE_DISPLAY_ORDER = ["tudou", "apimart", "runninghub", "grsai"];
 
 // Users see numbered channels instead of provider names; admins see the real names.
-export const SITE_CHANNEL_LABELS = { tudou: "渠道 1", apimart: "渠道 2", grsai: "渠道 3", runninghub: "渠道 4" };
+export const SITE_CHANNEL_LABELS = { tudou: "渠道 1", apimart: "渠道 2", runninghub: "渠道 3", grsai: "渠道 4" };
 export const SITE_CHANNEL_NOTES = { tudou: "推荐 · 性价比高", apimart: "便宜", grsai: "备用", runninghub: "最稳定 · 价格较高" };
 
 // Sites only the admin sees (none for now).
 export const ADMIN_ONLY_SITES = new Set();
 
 export function siteVisible(siteId) {
-    return globalThis.__lwIsAdmin === true || !ADMIN_ONLY_SITES.has(String(siteId || ""));
+    const id = String(siteId || "");
+    // Switched off on the admin page: hidden for everyone, the admin too (account-ui.js loads the list).
+    if (globalThis.__lwDisabledSites?.has(id)) return false;
+    return globalThis.__lwIsAdmin === true || !ADMIN_ONLY_SITES.has(id);
 }
 
 export function siteDisplayName(channel) {

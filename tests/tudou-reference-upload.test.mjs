@@ -98,3 +98,12 @@ test("the canvas sends 土豆 references through tudouReferenceSource, not Cloud
     // Inline images are capped by the module, so the 4 MB web check leaves them out.
     assert.equal(bundle.split('JSON.stringify(t,(k,v)=>k==="inlineData"?void 0:v)').length - 1, 2);
 });
+
+test("土豆 text-model references also use 土豆 upload links instead of Cloudinary", async () => {
+    const bundle = await readFile(new URL("../assets/index-B2KJ37fm.js", import.meta.url), "utf8");
+    const start = bundle.indexOf("async function prepareTextReferenceDataUrl(");
+    const body = bundle.slice(start, bundle.indexOf("\n}\n", start));
+    const tudou = body.indexOf("if(isTudouSite(t))return tudouReferenceSource({dataUrl:e},{nano:!1,signal:n});");
+    assert.ok(tudou > 0);
+    assert.ok(tudou < body.indexOf("usesCloudinaryReferenceHost(t)"), "土豆 is checked before Cloudinary");
+});

@@ -335,11 +335,13 @@ test("settings accept personal Cloudinary credentials instead of shared applicat
     assert.doesNotMatch(settings, /上传服务访问码|cloudinaryUploadToken|ImgBB|imgbbApiKey|referenceImageHost/);
 });
 
-test("actual text-reference branch changes only Tudou/GRSAI while keeping native uploaders", async () => {
+test("actual text-reference branch: 土豆 uses its own upload, GRSAI Cloudinary, native uploaders kept", async () => {
     const code = between("async function prepareTextReferenceDataUrl(", "async function prepareTextChatMessages(");
     const calls = [];
     const prepare = vm.runInNewContext(`${code};prepareTextReferenceDataUrl`, {
         usesCloudinaryReferenceHost,
+        isTudouSite: e => e.provider === "tudou",
+        tudouReferenceSource: async () => "tudou-link",
         Sw: async () => input, Xl: async () => "",
         cloudinaryReferenceSource: async e => { calls.push(e.provider); return "cloud"; },
         isRunningHubSite: e => e.provider === "runninghub",
@@ -347,11 +349,11 @@ test("actual text-reference branch changes only Tudou/GRSAI while keeping native
         uploadRunningHubReferenceBlob: async () => "native-rh",
         prepareTextReferenceBlob: async blob => blob, P$e: async () => "inline",
     });
-    assert.equal(await prepare("blob:test", { provider: "tudou" }, null, 100), "cloud");
+    assert.equal(await prepare("blob:test", { provider: "tudou" }, null, 100), "tudou-link");
     assert.equal(await prepare("blob:test", { provider: "grsai" }, null, 100), "cloud");
     assert.equal(await prepare("blob:test", { provider: "runninghub" }, null, 100), "native-rh");
     assert.equal(await prepare("blob:test", { provider: "custom" }, null, 100), "inline");
-    assert.deepEqual(calls, ["tudou", "grsai"]);
+    assert.deepEqual(calls, ["grsai"]);
 });
 
 test("Tudou proxy inlines Cloudinary references as MIME-correct Base64 and preserves prompt and generation parameters", async () => {

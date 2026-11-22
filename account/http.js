@@ -2,7 +2,7 @@
 // same code runs on Vercel and in the local preview server.
 
 import { USD_TO_CNY, priceCatalog, withPriceAliases } from "./catalog.js";
-import { channelBalances, channelConfig, deletePrice, getCloudinary, getMailSettings, listChannels, listPrices, saveChannel, saveCloudinary, saveMailSettings, savePrice, savePrices } from "./channels.js";
+import { CHANNELS, channelBalances, channelConfig, deletePrice, getCloudinary, getMailSettings, listChannels, listPrices, saveChannel, saveCloudinary, saveMailSettings, savePrice, savePrices } from "./channels.js";
 import { setResendKey } from "./mailer.js";
 import { getDatabase } from "./db.js";
 import { checkLowBalances } from "./alerts.js";
@@ -189,6 +189,13 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
         if (path === "/logout" && method === "POST") {
             await logout(db, token);
             return json(200, { ok: true }, { "Set-Cookie": sessionCookie(request, "", 0) });
+        }
+
+        // Channels the admin switched off (admin page → 渠道 → 设置): the canvas hides them
+        // for everyone. Only ids, nothing secret.
+        if (path === "/sites" && method === "GET") {
+            const configs = await Promise.all(CHANNELS.map((c) => channelConfig(db, c.id)));
+            return json(200, { disabled: CHANNELS.filter((c, i) => !configs[i].enabled).map((c) => c.id) });
         }
 
         // ---- signed in ----

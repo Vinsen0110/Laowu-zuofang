@@ -455,15 +455,20 @@ button.lw-gate-face:hover{transform:scale(1.04)}
     return `${b.unit || "$"}${Number(b.balance).toFixed(2)}`;
   }
 
+  // A channel switched off on the admin page drops out of the balance list too.
+  function shownBalances() {
+    return (siteBalances || []).filter((b) => !globalThis.__lwDisabledSites?.has(b.id));
+  }
+
   function siteBalancesInline() {
     if (!siteBalances) return `<span class="lw-acct-sites-loading">站点余额…</span>`;
-    return siteBalances.map((b) => `<span class="lw-acct-site ${b.status === "low" ? "is-low" : ""}" title="${esc(b.message || b.detail || "")}">${esc(SITE_SHORT[b.id] || b.name)} <b>${esc(siteBalanceText(b))}</b></span>`).join("");
+    return shownBalances().map((b) => `<span class="lw-acct-site ${b.status === "low" ? "is-low" : ""}" title="${esc(b.message || b.detail || "")}">${esc(SITE_SHORT[b.id] || b.name)} <b>${esc(siteBalanceText(b))}</b></span>`).join("");
   }
 
   // Admin canvas: one site per row under the avatar, right-aligned; each row opens that site's top-up page.
   function siteBalanceStack() {
     if (!siteBalances) return `<div class="lw-acct-sitestack"><span class="lw-acct-siterow is-loading">站点余额加载中…</span></div>`;
-    return `<div class="lw-acct-sitestack" aria-label="站点余额">${siteBalances.map((b) => {
+    return `<div class="lw-acct-sitestack" aria-label="站点余额">${shownBalances().map((b) => {
       const label = `<span class="lw-acct-siterow-name">${esc(SITE_SHORT[b.id] || b.name)}</span><b>${esc(siteBalanceText(b))}</b>`;
       const cls = `lw-acct-siterow ${b.status === "low" ? "is-low" : ""} ${b.status === "error" ? "is-error" : ""}`;
       const title = esc(b.message || b.detail || "");
@@ -615,7 +620,19 @@ button.lw-gate-face:hover{transform:scale(1.04)}
   document.addEventListener("visibilitychange", () => recheckBalance(10_000));
   setInterval(() => recheckBalance(55_000), 60_000);
 
+  // Channels the admin switched off are hidden for everyone (display-order.js siteVisible).
+  // Read before the role so the "laowu-role" check already sees them.
+  async function loadDisabledSites() {
+    try {
+      const ids = (await api("/sites")).disabled || [];
+      const before = [...(globalThis.__lwDisabledSites || [])].sort().join();
+      globalThis.__lwDisabledSites = new Set(ids);
+      if (before !== [...ids].sort().join()) { window.dispatchEvent(new Event("laowu-role")); render(); }
+    } catch (_) { /* keep the last list */ }
+  }
+
   async function refresh() {
+    await loadDisabledSites();
     try {
       const data = await api("/me");
       setUser(data.user);

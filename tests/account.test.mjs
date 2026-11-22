@@ -346,3 +346,16 @@ test("土豆 reference upload: signed-in only, image bytes passed on with the si
         globalThis.fetch = realFetch;
     }
 });
+
+test("/sites tells every visitor which channels the admin switched off", async () => {
+    const { saveChannel } = await import("../account/channels.js");
+    await saveChannel(db, { id: "grsai", enabled: false });
+    try {
+        const res = await call("/sites");
+        assert.equal(res.status, 200);
+        assert.deepEqual(await res.json(), { disabled: ["grsai"] });
+    } finally {
+        await saveChannel(db, { id: "grsai", enabled: true });
+    }
+    assert.deepEqual(await (await call("/sites")).json(), { disabled: [] });
+});
