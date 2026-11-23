@@ -31,7 +31,8 @@ test("preview generation stays queued and both caches stay bounded", () => {
 });
 
 test("remote image caching cannot remain pending forever", () => {
-    assert.match(bundle, /async function fetchImageBlobWithProgress\(e,t\)\{const n=new AbortController,r=setTimeout\(\(\)=>n\.abort\(\),6e4\)/);
+    // Still bounded: aborted after 60 s with no bytes (the timer restarts on every chunk).
+    assert.match(bundle, /const stall=\(\)=>\{clearTimeout\(r\);r=setTimeout\(\(\)=>n\.abort\(\),6e4\)\};stall\(\);/);
     assert.match(bundle, /if\(n\.signal\.aborted\)throw new Error\("图片加载超时，请检查网络后重试"\)/);
     assert.match(bundle, /throw new Error\(`图片下载失败：\$\{o\.status\}`\)/);
     assert.match(bundle, /m&&\(g>0\|\|Number\.isFinite\(h\)&&h>0\)\?y\.jsxs\("div"/);
