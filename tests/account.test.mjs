@@ -359,3 +359,12 @@ test("/sites tells every visitor which channels the admin switched off", async (
     }
     assert.deepEqual(await (await call("/sites")).json(), { disabled: [] });
 });
+
+test("channel alert thresholds can be decimals like 0.5", async () => {
+    const { saveChannel, listChannels } = await import("../account/channels.js");
+    await saveChannel(db, { id: "runninghub", alertThreshold: "0.5" });
+    assert.equal((await listChannels(db)).find((c) => c.id === "runninghub").alertThreshold, 0.5);
+    await saveChannel(db, { id: "runninghub", alertThreshold: "2.75", enabled: true });
+    assert.equal((await listChannels(db)).find((c) => c.id === "runninghub").alertThreshold, 2.75);
+    await saveChannel(db, { id: "runninghub", alertThreshold: 5 });
+});

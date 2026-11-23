@@ -130,13 +130,14 @@ export async function saveChannel(db, input) {
     const key2 = input?.apiKey2 === undefined ? null : String(input.apiKey2).trim();
     await db.query(
         `INSERT INTO lw_channels (id, api_key, api_key2, base_url, alert_threshold, enabled)
-         VALUES ($1, COALESCE($2, ''), COALESCE($3, ''), $4, COALESCE($5, 5), COALESCE($6, TRUE))
+         VALUES ($1, COALESCE($2, ''), COALESCE($3, ''), $4, COALESCE($5::numeric, 5), COALESCE($6::boolean, TRUE))
          ON CONFLICT (id) DO UPDATE SET
            api_key = COALESCE($2, lw_channels.api_key),
            api_key2 = COALESCE($3, lw_channels.api_key2),
            base_url = $4,
-           alert_threshold = COALESCE($5, lw_channels.alert_threshold),
-           enabled = COALESCE($6, lw_channels.enabled),
+           -- ::numeric: with the literal 5 above Postgres would read $5 as an integer and reject 0.5.
+           alert_threshold = COALESCE($5::numeric, lw_channels.alert_threshold),
+           enabled = COALESCE($6::boolean, lw_channels.enabled),
            updated_at = now()`,
         [id, key, key2, baseUrl, input?.alertThreshold === undefined ? null : threshold, input?.enabled === undefined ? null : Boolean(input.enabled)],
     );
