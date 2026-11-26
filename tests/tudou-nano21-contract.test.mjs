@@ -181,7 +181,7 @@ test('local proxy recognizes 2.1 generateContent, inlines references, and return
         return Response.json(imageJson);
     };
     const proxy = vm.runInNewContext(`${localServer.slice(start, end)};proxyTudouGeminiStream`, {
-        Buffer, fetch: fetchImpl, setInterval: callback => { intervals.set(1, callback); return 1; }, clearInterval: id => intervals.delete(id),
+        Buffer, fetch: fetchImpl, resultCos: async () => null, setInterval: callback => { intervals.set(1, callback); return 1; }, clearInterval: id => intervals.delete(id),
         inlineTudouGeminiReferences: (target, payload, options) => inlineTudouGeminiReferences(target, payload, { ...options, fetchImpl }),
         console, errorDetails: error => error.message, sseData: value => `data: ${JSON.stringify(value)}\n\n`,
     });

@@ -52,3 +52,14 @@ test("线上土豆香蕉出图（generateContent）经香港服务器转发，�
     // 服务器收香蕉请求体放宽到 24 MB（参考图内联）。
     assert.match(previewServer, /readRequestBody\(request, 24 \* 1024 \* 1024\)/);
 });
+
+test("土豆结果图允许浏览器缓存，画布量尺寸/显示/存副本只下载一次；出错不缓存", () => {
+    // 2026-11-26 线上日志：同一张 GPT 结果图被下载 2～4 遍（原先 no-store），挤占香港到大陆的慢线路。
+    const start = previewServer.indexOf("async function proxyTudouImage(");
+    const body = previewServer.slice(start, previewServer.indexOf("\n}\n", start));
+    assert.match(body, /upstream\.ok \? \{ "Cache-Control": "private, max-age=86400, immutable" \} : \{\}/);
+    assert.match(body, /pipeFetchResponse\(upstream, response, \{ "X-Tudou-Image-Proxy": "local-node-stream", \.\.\.cache \}\)/);
+    // pipeFetchResponse 先写 no-store，再用 extraHeaders 覆盖，顺序不能反。
+    const pipe = previewServer.slice(previewServer.indexOf("async function pipeFetchResponse("));
+    assert.ok(pipe.indexOf('"Cache-Control", "no-store"') < pipe.indexOf("Object.entries(extraHeaders)"));
+});

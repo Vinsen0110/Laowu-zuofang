@@ -23,6 +23,8 @@ async function runProxy({ chunks, json, status = 200, failRead = false }) {
     };
     const scope = {
         Buffer,
+        // 后台没选 COS（直连）：图片照旧从服务器分段转发。
+        resultCos: async () => null,
         setInterval(callback) { intervals.set(1, callback); return 1; },
         clearInterval(id) { intervals.delete(id); },
         console: { error() {} },
