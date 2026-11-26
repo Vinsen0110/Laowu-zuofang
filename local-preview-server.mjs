@@ -6,6 +6,9 @@ import { pipeline } from "node:stream/promises";
 import { fetchApiMartResultImage } from "./apimart-result-image.js";
 import { inlineTudouGeminiReferences, isTudouGeminiImageTarget } from "./tudou-reference-images.js";
 import { handleAccountRequest } from "./account/http.js";
+import { copyResultToCos, getCos } from "./account/cos.js";
+import { deliveryCos, tudouGeminiAnswer } from "./account/tudou-cos.js";
+import { getDatabase } from "./account/db.js";
 
 const root = resolve(process.cwd());
 const host = process.env.HOST || "127.0.0.1";
@@ -88,6 +91,18 @@ function sseData(value) {
     return `data: ${JSON.stringify(value)}\n\n`;
 }
 
+// 土豆 results reach mainland users from this Hong Kong server at a few dozen KB/s
+// (2026-11-25: a 2K picture made in 33 s took another 88 s to download). When the
+// admin chose "腾讯云 COS", pictures go out from the Guangzhou bucket instead
+// (account/tudou-cos.js). "直连平台", no COS settings, or any COS error: as before.
+async function resultCos() {
+    try {
+        return deliveryCos(await getCos(await getDatabase()));
+    } catch {
+        return null;
+    }
+}
+
 async function proxyTudouGeminiStream(request, response, target, headers, payload, controller) {
     let closed = false;
     const heartbeat = setInterval(() => {
@@ -113,6 +128,18 @@ async function proxyTudouGeminiStream(request, response, target, headers, payloa
             redirect: "manual",
             signal: controller.signal,
         });
+        const cos = upstream.ok && upstream.body ? await resultCos() : null;
+        if (cos) {
+            // Collect the picture here, put it on COS, then send one frame carrying the link.
+            // The heartbeat keeps running meanwhile; each write is a whole frame.
+            const answer = await tudouGeminiAnswer(await upstream.text(), cos, {
+                signal: controller.signal,
+                onError: (error) => console.error("Tudou result to COS failed, sending it from this server:", errorDetails(error)),
+            });
+            clearInterval(heartbeat);
+            if (!closed && !response.writableEnded) response.write(answer);
+            return;
+        }
         // Once upstream bytes start flowing, comments must never split an SSE frame.
         clearInterval(heartbeat);
         if (!upstream.ok) {
@@ -237,11 +264,26 @@ async function proxyTudouImage(response, requestUrl) {
             sendJson(response, 400, "Unsupported Tudou image URL");
             return;
         }
+        const cos = await resultCos();
+        if (cos) {
+            try {
+                const url = await copyResultToCos(cos, target.href);
+                response.writeHead(302, { Location: url, "Cache-Control": "private, max-age=86400, immutable" });
+                response.end();
+                return;
+            } catch (error) {
+                console.error("Tudou image to COS failed, sending it from this server:", errorDetails(error));
+            }
+        }
         const upstream = await fetch(target, {
             headers: { Accept: "image/*", "Accept-Encoding": "identity" },
             redirect: "follow",
         });
-        await pipeFetchResponse(upstream, response, { "X-Tudou-Image-Proxy": "local-node-stream" });
+        // A result link always points at the same picture. The canvas reads it up to three times
+        // (size, display, local copy); letting the browser keep it means it crosses the slow
+        // Hong Kong → mainland line once instead of three times.
+        const cache = upstream.ok ? { "Cache-Control": "private, max-age=86400, immutable" } : {};
+        await pipeFetchResponse(upstream, response, { "X-Tudou-Image-Proxy": "local-node-stream", ...cache });
     } catch (error) {
         console.error("Tudou image proxy failed:", errorDetails(error));
         if (!response.headersSent) sendJson(response, 502, "Tudou image connection failed");

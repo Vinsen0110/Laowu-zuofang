@@ -295,6 +295,24 @@
             })();
         </script>
         <script>
+            // Refreshing or closing while pictures are still generating throws them away (already
+            // paid for: 2026-11-26 a user lost 4 and 7 at once). Ask the browser to confirm first.
+            (function () {
+                window.addEventListener("beforeunload", function (event) {
+                    var generating = false;
+                    try {
+                        var canvas = globalThis.__laowuUnsavedCanvas && globalThis.__laowuUnsavedCanvas();
+                        generating = Boolean(canvas && canvas.nodes && canvas.nodes.some(function (node) {
+                            return node && node.metadata && node.metadata.status === "loading";
+                        }));
+                    } catch (error) {}
+                    if (!generating && !(window.__lwRelay && window.__lwRelay.inflight > 0)) return;
+                    event.preventDefault();
+                    event.returnValue = "";
+                });
+            })();
+        </script>
+        <script>
             (function () {
                 document.addEventListener("pointerover", function (event) {
                     if (event.pointerType && event.pointerType !== "mouse") return;

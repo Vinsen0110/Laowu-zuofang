@@ -10,8 +10,8 @@
 // delivery = "direct" switches link-type results (RH, Grsai, APIMart) back to
 // the supplier's own link, so the browser downloads them straight from the supplier
 // as before accounts existed; users can then see the supplier's image domain.
-// 土豆 is called from the browser in both modes; COS only sees it on the relay
-// fallback (a generation sent before the browser has the 土豆 key).
+// 土豆 is called from the browser in both modes, through this server's /api/tudou/ and
+// /api/tudou-image; with "cos" those hand out COS links too (account/tudou-cos.js).
 
 import { createHash, createHmac, randomBytes } from "node:crypto";
 import { AccountError } from "./service.js";
@@ -237,16 +237,28 @@ export function largestStrings(value, limit = 3) {
 const copied = new Map();
 const COPIED_LIMIT = 2000;
 
-export async function copyResultToCos(cos, sourceUrl, { fetchImpl = fetch, signal } = {}) {
+// The canvas asks for one result up to three times at once (size, display, local copy):
+// they all wait for the same copy instead of each uploading it.
+const copying = new Map();
+
+export async function copyResultToCos(cos, sourceUrl, options = {}) {
     if (!cosReady(cos)) return null;
     const known = copied.get(sourceUrl);
     if (known) return known;
-    const upstream = await fetchImpl(sourceUrl, { redirect: "follow", signal });
+    if (!copying.has(sourceUrl)) {
+        // Shared, so one viewer leaving must not cancel it for the others (options.signal is not passed on).
+        copying.set(sourceUrl, copyOnce(cos, sourceUrl, options.fetchImpl).finally(() => copying.delete(sourceUrl)));
+    }
+    return copying.get(sourceUrl);
+}
+
+async function copyOnce(cos, sourceUrl, fetchImpl = fetch) {
+    const upstream = await fetchImpl(sourceUrl, { redirect: "follow" });
     if (!upstream.ok) throw new Error(`结果图下载失败（${upstream.status}）`);
     const type = upstream.headers.get("content-type") || "image/png";
     if (!/^image\//i.test(type)) throw new Error("结果不是图片");
     const bytes = new Uint8Array(await upstream.arrayBuffer());
-    const url = await uploadToCos(cos, resultKey(type, sourceUrl), bytes, type, { fetchImpl, signal });
+    const url = await uploadToCos(cos, resultKey(type, sourceUrl), bytes, type, { fetchImpl });
     copied.set(sourceUrl, url);
     if (copied.size > COPIED_LIMIT) copied.delete(copied.keys().next().value);
     return url;
