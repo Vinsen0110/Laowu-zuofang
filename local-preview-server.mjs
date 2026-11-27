@@ -6,7 +6,7 @@ import { pipeline } from "node:stream/promises";
 import { fetchApiMartResultImage } from "./apimart-result-image.js";
 import { inlineTudouGeminiReferences, isTudouGeminiImageTarget } from "./tudou-reference-images.js";
 import { handleAccountRequest } from "./account/http.js";
-import { copyResultToCos, getCos } from "./account/cos.js";
+import { getCos } from "./account/cos.js";
 import { deliveryCos, tudouGeminiAnswer } from "./account/tudou-cos.js";
 import { getDatabase } from "./account/db.js";
 
@@ -263,17 +263,6 @@ async function proxyTudouImage(response, requestUrl) {
         if (target.protocol !== "https:" || !allowedHost || target.hostname === "api.ai-tudou.net") {
             sendJson(response, 400, "Unsupported Tudou image URL");
             return;
-        }
-        const cos = await resultCos();
-        if (cos) {
-            try {
-                const url = await copyResultToCos(cos, target.href);
-                response.writeHead(302, { Location: url, "Cache-Control": "private, max-age=86400, immutable" });
-                response.end();
-                return;
-            } catch (error) {
-                console.error("Tudou image to COS failed, sending it from this server:", errorDetails(error));
-            }
         }
         const upstream = await fetch(target, {
             headers: { Accept: "image/*", "Accept-Encoding": "identity" },

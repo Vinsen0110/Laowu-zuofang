@@ -11,7 +11,8 @@ import { background, checkLowBalances } from "./alerts.js";
 import { channelConfig } from "./channels.js";
 import { describeRequest } from "./describe.js";
 import { CHANNEL_LABELS, rewriteUrls, scrubText, unmaskTarget, verifyImageToken } from "./mask.js";
-import { cosReady, dropUnusedSignatures, getCos, largestStrings, moveInlineImagesToCos, parseGeminiAnswer } from "./cos.js";
+import { dropUnusedSignatures, getCos, largestStrings, moveInlineImagesToCos, parseGeminiAnswer } from "./cos.js";
+import { deliveryCos } from "./tudou-cos.js";
 import { AccountError, adjustBalance, milliToYuan } from "./service.js";
 import { findTaskId, recordTask, settleTask, taskOutcome } from "./tasks.js";
 import { inlineTudouGeminiReferences, isTudouGeminiImageTarget } from "../tudou-reference-images.js";
@@ -319,8 +320,8 @@ export async function relay(db, user, request, { fetchImpl = fetch } = {}) {
     // 土豆 Nano Banana answers carry the picture inline (10–14 MB). With COS set up,
     // the original goes to the mainland bucket and the answer carries its link.
     if (upstream.status < 300 && upstream.body && /:streamGenerateContent$/.test(target.pathname)) {
-        const cos = await getCos(db).catch(() => null);
-        if (cosReady(cos)) {
+        const cos = channel === "tudou" ? deliveryCos(await getCos(db).catch(() => null)) : null;
+        if (cos) {
             return deliverGeminiStreamViaCos(upstream, cos, request.signal, async (sawImage) => {
                 if (charge && !sawImage) await refund("平台未返回图片");
                 if (charge) background(checkLowBalances(db, { ids: [channel] }));
@@ -328,8 +329,8 @@ export async function relay(db, user, request, { fetchImpl = fetch } = {}) {
         }
     }
     if (upstream.status < 300 && upstream.body && /:generateContent$/.test(target.pathname)) {
-        const cos = await getCos(db).catch(() => null);
-        if (cosReady(cos)) {
+        const cos = channel === "tudou" ? deliveryCos(await getCos(db).catch(() => null)) : null;
+        if (cos) {
             const delivered = await deliverGeminiViaCos(upstream, cos, request.signal);
             if (charge && !delivered.sawImage) await refund("平台未返回图片");
             if (charge) background(checkLowBalances(db, { ids: [channel] }));
@@ -367,7 +368,8 @@ export async function relay(db, user, request, { fetchImpl = fetch } = {}) {
             await settleTask(db, channel, decodeURIComponent(taskId), taskOutcome(data), (milli) => { refundedMilli += milli; });
         }
     };
-    // "直连平台": result links stay the supplier's own, so the browser downloads them directly.
-    const direct = (await getCos(db).catch(() => null))?.delivery === "direct";
-    return forUser(upstream, request, onJson, () => refundedMilli, { rewrite: !direct });
+    // Result links stay the supplier's own and the browser downloads them directly: fast
+    // enough from the mainland, and COS bills for every download. Only 土豆 Nano Banana,
+    // whose whole picture comes back inside the answer, goes through COS (above).
+    return forUser(upstream, request, onJson, () => refundedMilli, { rewrite: false });
 }
