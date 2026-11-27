@@ -254,7 +254,7 @@ test("balance refresh can target a single site", async () => {
     assert.equal((await listChannels(db)).find((c) => c.id === "runninghub").channelLabel, "渠道 3");
 });
 
-test("users never see supplier hosts: masked targets, scrubbed errors, proxied result URLs", async () => {
+test("supplier hosts stay out of request targets and errors; result links are the supplier's own", async () => {
     const { maskTarget, unmaskTarget, imageToken, verifyImageToken, scrubText } = await import("../account/mask.js");
     assert.equal(unmaskTarget(maskTarget(GEN_URL)), GEN_URL);
     assert.ok(!maskTarget(GEN_URL).includes("apimart"));
@@ -269,9 +269,10 @@ test("users never see supplier hosts: masked targets, scrubbed errors, proxied r
     });
     const ok = await relay(db, { ...user, role: "user" }, masked, { fetchImpl: async () => new Response(
         JSON.stringify({ data: { url: "https://upload.apimart.ai/r/1.png" } }), { headers: { "Content-Type": "application/json" } }) });
+    // 2026-11-26: result links are no longer copied to COS (billed per download); the
+    // browser fetches them from the supplier, as with "直连平台" before.
     const body = await ok.json();
-    assert.match(body.data.url, /^http:\/\/127\.0\.0\.1:4173\/api\/account\/img\?t=/);
-    assert.ok(!JSON.stringify(body).includes("apimart"));
+    assert.equal(body.data.url, "https://upload.apimart.ai/r/1.png");
 
     const bad = await relay(db, { ...user, role: "user" }, relayRequest(GEN_URL, { body: { model: "gemini-3-pro-image-preview" } }), { fetchImpl: async () => new Response(
         JSON.stringify({ error: { message: "apimart upstream busy", type: "apimart_error" } }), { status: 503, headers: { "Content-Type": "application/json" } }) });
@@ -501,7 +502,7 @@ test("土豆 Nano Banana Pro's stream: the picture goes to COS and the browser g
     }
 });
 
-test("直连平台: users get the supplier's own result link; switching back restores the proxy", async () => {
+test("link results always reach users as the supplier's own link, whichever delivery is chosen (COS bills per download)", async () => {
     const { saveCos, getCos } = await import("../account/cos.js");
     await adjustBalance(db, user.id, 2000, { kind: "admin", note: "t" });
     const answer = async () => new Response(
@@ -515,6 +516,6 @@ test("直连平台: users get the supplier's own result link; switching back res
     assert.equal(direct.data.url, "https://upload.apimart.ai/r/2.png");
 
     await saveCos(db, { delivery: "cos" });
-    const proxied = await (await generate()).json();
-    assert.match(proxied.data.url, /^http:\/\/127\.0\.0\.1:4173\/api\/account\/img\?t=/);
+    const viaCos = await (await generate()).json();
+    assert.equal(viaCos.data.url, "https://upload.apimart.ai/r/2.png");
 });

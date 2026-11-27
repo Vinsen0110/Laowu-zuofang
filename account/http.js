@@ -9,7 +9,7 @@ import { checkLowBalances } from "./alerts.js";
 import { ADMIN_ONLY_CHANNELS, relay } from "./relay.js";
 import { chargeDirect, refundDirect } from "./direct.js";
 import { verifyImageToken } from "./mask.js";
-import { copyResultToCos, cosReady, getCos, publicCos, saveCos, testCos } from "./cos.js";
+import { getCos, publicCos, saveCos, testCos } from "./cos.js";
 import { consumeCode, markVerified, requestCode, resetPassword } from "./verify.js";
 import {
     AccountError,
@@ -228,18 +228,6 @@ export async function handleAccountRequest(request, { db: injectedDb } = {}) {
             // Result images for users, fetched here so the supplier never shows in the browser.
             const target = verifyImageToken(url.searchParams.get("t"));
             if (!target) throw new AccountError(404, "not_found", "图片不存在");
-            // Mainland users fetch the copy in the COS bucket, which is far faster for
-            // them than this Hong Kong server. Same bytes, no re-encoding.
-            const cos = await getCos(db).catch(() => null);
-            if (cosReady(cos)) {
-                try {
-                    const copy = await copyResultToCos(cos, target, { signal: request.signal });
-                    if (copy) return new Response(null, { status: 302, headers: { Location: copy, "Cache-Control": "private, max-age=86400" } });
-                } catch (error) {
-                    if (request.signal?.aborted) throw error;
-                    console.error("COS copy failed, serving from this server:", error.message);
-                }
-            }
             const upstream = await fetch(target, { redirect: "follow", signal: request.signal });
             if (!upstream.ok || !upstream.body) throw new AccountError(502, "img_failed", "图片加载失败");
             return new Response(upstream.body, {

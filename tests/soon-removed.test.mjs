@@ -69,8 +69,7 @@ test("Soon data already in the database stays stored but is hidden from the admi
 test("admin page lists no Soon section and no Soon wording", async () => {
     const admin = await read("admin.html");
     assert.match(admin, /const COLS = \["tudou", "apimart", "runninghub", "grsai"\];/);
-    assert.match(admin, /RH、Grsai、APIMart 的结果图从广州存储下载/);
-    assert.match(admin, /RH、Grsai、APIMart 的结果图由浏览器直接从平台下载/);
+    assert.match(admin, /其他平台和土豆 GPT 的结果图始终由浏览器从平台下载/);
 });
 
 test("a user whose saved site was Soon lands on 渠道 1 (土豆), not the RH fallback", async () => {

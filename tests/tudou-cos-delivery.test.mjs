@@ -87,7 +87,7 @@ test("GPT 结果图：画布同时取三次，只下载、上传一次", async (
     assert.deepEqual(puts[0].bytes, picture);
 });
 
-test("服务器：香蕉转发和 /api/tudou-image 在选 COS 时改发广州链接，出错退回原方式", async () => {
+test("服务器：只有香蕉转发在选 COS 时改发广州链接；GPT 结果图（/api/tudou-image）不走 COS", async () => {
     const server = await readFile(new URL("../local-preview-server.mjs", import.meta.url), "utf8");
     const gemini = server.slice(server.indexOf("async function proxyTudouGeminiStream("), server.indexOf("async function proxyTudouApi("));
     assert.match(gemini, /const cos = upstream\.ok && upstream\.body \? await resultCos\(\) : null;/);
@@ -95,8 +95,7 @@ test("服务器：香蕉转发和 /api/tudou-image 在选 COS 时改发广州链
     // 心跳要等 COS 链接写出前才停，否则上传期间连接没动静。
     assert.ok(gemini.indexOf("tudouGeminiAnswer(") < gemini.indexOf("clearInterval(heartbeat);"));
     const image = server.slice(server.indexOf("async function proxyTudouImage("), server.indexOf("async function proxyApiMartImage("));
-    assert.match(image, /const url = await copyResultToCos\(cos, target\.href\);/);
-    assert.match(image, /response\.writeHead\(302, \{ Location: url/);
-    assert.match(image, /Tudou image to COS failed, sending it from this server/);
+    // 2026-11-26 用户要求：COS 按流量收费，只给香蕉用；GPT 图 6MB 左右，经香港转发即可。
+    assert.doesNotMatch(image, /resultCos|copyResultToCos|302/);
     assert.match(server, /return deliveryCos\(await getCos\(await getDatabase\(\)\)\);/);
 });
